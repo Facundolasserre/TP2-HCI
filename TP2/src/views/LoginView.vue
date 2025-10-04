@@ -42,7 +42,7 @@ const router = useRouter()
 
 function onSubmit() {
   console.log('login', { username: username.value, password: password.value })
-  router.push('/ListPage')  // 👈 redirige después del login
+  router.push('/Home')  // 👈 redirige después del login
 }
 function onForgot() {
   router.push('/ForgotPassword')
