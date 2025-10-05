@@ -1,7 +1,7 @@
 <template>
   <section class="card">
     <div class="logo-wrap">
-      <img src="../assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
+      <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
     <h1 class="title">Welcome to BagIt</h1>

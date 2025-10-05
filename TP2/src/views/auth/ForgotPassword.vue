@@ -2,7 +2,7 @@
   <section class="card">
     <!-- Logo -->
     <div class="logo-wrap">
-      <img src="../assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
+      <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
     <!-- Título -->

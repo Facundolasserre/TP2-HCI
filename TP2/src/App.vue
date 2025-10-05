@@ -7,7 +7,7 @@
 // Nada que importar acá
 </script>
 
-<style scoped>
+<style>
 /* opcional: si querés centrar siempre las vistas en pantalla */
 :host {
   display: block;

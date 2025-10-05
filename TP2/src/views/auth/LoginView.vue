@@ -3,7 +3,7 @@
     <!-- Logo -->
     <div class="logo-wrap">
       <div class="logo-circle">
-        <img src="../assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
+        <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
       </div>
     </div>
 
@@ -61,7 +61,6 @@ function onSignUp() {
   padding: 40px 48px 28px;
   box-shadow: 0 12px 40px rgba(0,0,0,.35);
 }
-
 .logo-wrap{ display:flex; justify-content:center; margin-top:-56px; margin-bottom:6px; }
 
 .logo-img { width: 200px; height: auto; object-fit: contain; }
@@ -74,7 +73,15 @@ function onSignUp() {
 }
 
 .form{ display:flex; flex-direction:column; gap:20px; }
-.label{ font-size:14px; color:#CFC9E6; text-align:left; margin-left:0; }
+
+
+.label{ 
+  font-size:14px;
+  color:#CFC9E6; 
+  text-align:left; 
+  margin-left:0; 
+
+}
 .input{
   background: transparent;
   color: #EDEAF6;
@@ -83,10 +90,16 @@ function onSignUp() {
   height: 36px;
   outline: none;
   padding-left: 0;
+
 }
 .input:focus{ border-bottom-color: #fff; }
 
-.links-row{ display:flex; justify-content:flex-end; }
+.links-row{ 
+  display:flex; 
+  justify-content:flex-end;
+  text-decoration: underline;
+
+}
 .link{ color: #DAD4FF; font-size: 14px; cursor:pointer; }
 
 .btn{
@@ -101,12 +114,24 @@ function onSignUp() {
   font-size: 18px;
   cursor: pointer;
 }
-.signup-row{
-  display:flex; gap:6px; justify-content:center;
-  color:#CFC9E6;
-  font-size:14px;
-  border-top: 1px solid rgba(255,255,255,.25);
+.signup-row {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start; /* antes estaba center */
+  color: #CFC9E6;
+  font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
   padding-top: 14px;
   margin-top: 10px;
+}
+
+.signup-row a {
+  color: #CFC9E6;
+  text-decoration: underline;   /* subraya el texto */
+  font-weight: 600;             /* opcional, para hacerlo más visible */
+}
+
+.signup-row a:hover {
+  color: #ffffff;               /* opcional: cambia de color al pasar el mouse */
 }
 </style>
