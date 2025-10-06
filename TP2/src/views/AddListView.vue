@@ -43,7 +43,7 @@
                   class="add-emoji"
                   @click.stop="togglePicker"
                   aria-haspopup="dialog"
-                  aria-expanded="showPicker ? 'true' : 'false'"
+                  :aria-expanded="showPicker"
                   :aria-label="showPicker ? 'Close emoji picker' : 'Open emoji picker'"
                 >
                   {{ emojis.length ? 'Add' : 'Choose' }}

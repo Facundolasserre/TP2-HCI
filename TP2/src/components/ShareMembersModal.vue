@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body">
+<Teleport to="body">
     <div class="overlay" @click.self="$emit('close')">
       <section class="panel">
         <!-- Header sólo con close (sin título grande) -->
@@ -47,15 +47,17 @@
 
         <!-- Footer: botón centrado -->
         <footer class="footer">
-          <button class="btn-add" @click="addMember">
-            <AddMember
-              v-if="showAdd"
-              @close="showAdd=false"
-              @save="onAddSave"
-            />
-            <span class="icon-plus">Add Member</span>
-          </button>
-        </footer>
+      <button class="btn-add" @click="addMember">
+        <span class="icon-plus">Add Member</span>
+      </button>
+
+    <!-- El modal AddMember va afuera -->
+      <AddMember
+        v-if="showAdd"
+        @close="showAdd = false"
+        @save="onAddSave"
+      />
+</footer>
       </section>
     </div>
   </Teleport>
@@ -72,6 +74,30 @@ const q = ref('')
 const tab = ref<'all'|'pending'|'blocked'>('all')
 const openMenuId = ref<string|null>(null)
 
+
+// 👇 payload EXACTO que emite AddMember.vue
+type AddMemberPayload = {
+  email: string
+  role: 'Owner' | 'Member'
+  notes: string
+}
+
+function onAddSave(p: AddMemberPayload) {
+  // ejemplo simple: derive el "name" del email (antes de la @)
+  const nameFromEmail = p.email.split('@')[0] || p.email
+
+  members.value.push({
+    id: String(Date.now()),
+    name: nameFromEmail,          // o pedí name explícito si querés
+    role: p.role ?? null,
+    state: 'all',
+  })
+
+  // si querés usar p.notes, podés guardarlo en tu modelo o ignorarlo
+  showAdd.value = false
+}
+
+
 const members = ref<Member[]>([
   { id:'1', name:'Emma',  role:'Owner',  state:'all' },
   { id:'2', name:'Peter', role:'Member', state:'all' },
@@ -80,15 +106,12 @@ const members = ref<Member[]>([
 ])
 
 
-
 const showAdd = ref(false)
 function addMember() {
   showAdd.value = true
 }
-function onAddSave(m){
-  members.value.push({ id:String(Math.random()), ...m })
-  showAdd.value = false
-}
+
+
 
 
 const filtered = computed(()=>{
@@ -101,10 +124,13 @@ const filtered = computed(()=>{
 })
 
 function toggleMenu(id: string){ openMenuId.value = openMenuId.value === id ? null : id }
+
 function setRole(id: string, role: Role){
   const m = members.value.find(x=>x.id===id); if(!m) return
   m.role = role; m.state = 'all'; openMenuId.value = null
 }
+
+
 function block(id: string){
   const m = members.value.find(x=>x.id===id); if(!m) return
   m.state = 'blocked'; m.role = null; openMenuId.value = null
