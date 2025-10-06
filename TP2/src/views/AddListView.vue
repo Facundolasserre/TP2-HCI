@@ -1,9 +1,9 @@
 <template>
   <Teleport to="body">
     <!-- Overlay (oscuro + blur) -->
-    <div class="overlay" @click.self="close" @keydown.esc="close" tabindex="-1">
+    <div class="overlay" @click.self="close" @keydown.esc="onEsc" tabindex="-1">
       <!-- Modal -->
-      <section class="modal">
+      <section class="modal" @click="maybeClosePickers($event)">
         <header class="modal-head">
           <h2>Add List</h2>
           <button class="x" @click="close" aria-label="Close">✕</button>
@@ -17,15 +17,82 @@
             <p v-if="touched && !name" class="error">Name is required</p>
           </div>
 
-          <!-- Row: Icon + Colors -->
+          <!-- Row: Emojis (multi) + Colors -->
           <div class="row">
+            <!-- ✅ Multi-emoji -->
             <div class="col">
-              <label class="label">Icon</label>
-              <div class="icon-row">
-                <button v-for="n in 4" :key="n" type="button" class="icon-box">⋯</button>
+              <label class="label">Emojis</label>
+
+              <!-- Seleccion actual -->
+              <div class="picked-emojis" aria-live="polite">
+                <button
+                  v-for="(e,i) in emojis"
+                  :key="e + i"
+                  type="button"
+                  class="chip"
+                  @click="removeEmoji(i)"
+                  :aria-label="`Remove ${e}`"
+                  title="Remove"
+                >
+                  <span class="chip-emoji">{{ e }}</span>
+                  <span class="chip-x">×</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="add-emoji"
+                  @click.stop="togglePicker"
+                  aria-haspopup="dialog"
+                  aria-expanded="showPicker ? 'true' : 'false'"
+                  :aria-label="showPicker ? 'Close emoji picker' : 'Open emoji picker'"
+                >
+                  {{ emojis.length ? 'Add' : 'Choose' }}
+                </button>
+
+                <button
+                  v-if="emojis.length"
+                  type="button"
+                  class="clear-emoji"
+                  @click="clearEmojis"
+                  aria-label="Clear all emojis"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <!-- Popover del picker -->
+              <div v-if="showPicker" class="emoji-popover" role="dialog" @click.stop>
+                <div class="emoji-head">
+                  <input
+                    class="input small"
+                    v-model.trim="emojiQuery"
+                    placeholder="Search… (e.g. star)"
+                    @keydown.stop
+                  />
+                  <span class="hint">{{ emojis.length }}/{{ maxEmojis }}</span>
+                </div>
+
+                <div class="emoji-grid">
+                  <button
+                    v-for="e in filteredEmojiOptions"
+                    :key="e"
+                    type="button"
+                    class="emoji-btn"
+                    :disabled="isDisabled(e)"
+                    @click="toggleEmoji(e)"
+                    :title="hasEmoji(e) ? 'Remove' : 'Add'"
+                  >
+                    {{ e }}
+                  </button>
+                </div>
+
+                <div class="emoji-actions">
+                  <button type="button" class="btn-mini" @click="showPicker=false">Done</button>
+                </div>
               </div>
             </div>
 
+            <!-- Colores -->
             <div class="col">
               <label class="label">Color</label>
               <div class="colors">
@@ -54,7 +121,7 @@
                 @click="visibility = 'private'"
               >Private</button>
 
-              <!-- 👇 ABRE EL MODAL DE MIEMBROS -->
+              <!-- Abre modal de miembros -->
               <button
                 type="button"
                 class="seg"
@@ -89,9 +156,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ShareMembersModal from '@/components/ShareMembersModal.vue' // ← ruta según tu árbol
+import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
 const router = useRouter()
 
@@ -101,27 +168,90 @@ const color = ref('#6B7CFF')
 const visibility = ref<'private'|'shared'>('private')
 const touched = ref(false)
 
-/* ▼ estado y handlers para el modal de miembros */
+/** ============ Multi-emoji state ============ */
+const emojis = ref<string[]>([])         // selección actual
+const showPicker = ref(false)
+const emojiQuery = ref('')
+const maxEmojis = 4
+
+// catálogo básico (podés extenderlo)
+const emojiOptions = [
+  // smileys
+  '😀','😄','😊','🙂','😉','🥳','🤓','😎','🫶','❤️','✨','⭐️','⚡️','🔥','🌈','🎯','🚀',
+  // comida / super
+  '🛒','🍎','🍌','🍇','🥦','🥕','🥛','🍞','🧀','🥩','🥚','🧻','🧴','🧂','🥫','🧼',
+  // animales
+  '🐶','🐱','🐼','🐸','🦊','🐧','🐥','🦄',
+  // objetos
+  '📦','🗂️','🧺','🔑','📝','📅','⏰','🔒'
+]
+
+// filtro simple por nombre corto (heurística mínima)
+const nameMap: Record<string,string> = {
+  '😀':'grinning','😄':'smile','😊':'blush','🙂':'slight','😉':'wink','🥳':'party','🤓':'nerd','😎':'cool',
+  '🫶':'hearthands','❤️':'heart','✨':'sparkles','⭐️':'star','⚡️':'zap','🔥':'fire','🌈':'rainbow','🎯':'target','🚀':'rocket',
+  '🛒':'cart','🍎':'apple','🍌':'banana','🍇':'grapes','🥦':'broccoli','🥕':'carrot','🥛':'milk','🍞':'bread','🧀':'cheese','🥩':'meat','🥚':'egg','🧻':'toiletpaper','🧴':'lotion','🧂':'salt','🥫':'canned','🧼':'soap',
+  '🐶':'dog','🐱':'cat','🐼':'panda','🐸':'frog','🦊':'fox','🐧':'penguin','🐥':'chick','🦄':'unicorn',
+  '📦':'box','🗂️':'folders','🧺':'basket','🔑':'key','📝':'note','📅':'calendar','⏰':'alarm','🔒':'lock'
+}
+const filteredEmojiOptions = computed(()=>{
+  const q = emojiQuery.value.trim().toLowerCase()
+  if(!q) return emojiOptions
+  return emojiOptions.filter(e => (nameMap[e] || '').includes(q))
+})
+
+function togglePicker(){ showPicker.value = !showPicker.value }
+function onEsc(){ 
+  if (showPicker.value) showPicker.value = false
+  else close()
+}
+function maybeClosePickers(e: MouseEvent){
+  const el = e.target as HTMLElement
+  if (!el.closest('.emoji-popover') && !el.closest('.add-emoji')) {
+    showPicker.value = false
+  }
+}
+function hasEmoji(e: string){ return emojis.value.includes(e) }
+function isDisabled(e: string){
+  return !hasEmoji(e) && emojis.value.length >= maxEmojis
+}
+function toggleEmoji(e: string){
+  if (hasEmoji(e)) {
+    emojis.value = emojis.value.filter(x => x !== e)
+  } else if (emojis.value.length < maxEmojis) {
+    emojis.value.push(e)
+  }
+}
+function removeEmoji(i: number){ emojis.value.splice(i,1) }
+function clearEmojis(){ emojis.value = [] }
+
+/** ============ Share modal state ============ */
 const showShare = ref(false)
 function setShared(){
   visibility.value = 'shared'
-  showShare.value = true       // abre la segunda vista
+  showShare.value = true
 }
-function onShareClose(){
-  showShare.value = false
-}
+function onShareClose(){ showShare.value = false }
 function onShareSave(payload: { members: string[], pending: string[], blocked: string[] }){
   console.log('SHARE SETTINGS', payload)
   showShare.value = false
 }
 
+/** ============ Colors ============ */
 const colors = ['#6B7CFF','#8A6BFB','#7D68D0','#5EC5A7','#F0B429','#E76F51','#B3B4BE']
 
+/** ============ Submit/Close ============ */
 function close(){ router.back() }
 function submit(){
   touched.value = true
   if(!name.value) return
-  console.log('CREATE LIST', { name: name.value, color: color.value, visibility: visibility.value, notes: notes.value })
+  console.log('CREATE LIST', {
+    name: name.value,
+    color: color.value,
+    visibility: visibility.value,
+    notes: notes.value,
+    emojis: emojis.value
+  })
   close()
 }
 </script>
@@ -131,7 +261,7 @@ function submit(){
 .overlay{
   position: fixed; inset: 0;
   background: rgba(0,0,0,.55);
-  backdrop-filter: blur(4px);      /* 👈 desenfoque del fondo */
+  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: grid; place-items: center;
   z-index: 2000;
@@ -140,7 +270,7 @@ function submit(){
 /* ===== Modal ===== */
 .modal{
   width: min(760px, 92vw);
-  background: #322D59;             /* panel violeta */
+  background: #322D59;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,.55);
   border: 1px solid rgba(255,255,255,.08);
@@ -148,15 +278,8 @@ function submit(){
 }
 
 /* Header */
-.modal-head{
-  position: relative;
-  padding: 18px 22px 6px;
-}
-.modal-head h2{
-  margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-}
+.modal-head{ position: relative; padding: 18px 22px 6px; }
+.modal-head h2{ margin: 0; font-size: 28px; font-weight: 800; }
 .x{
   position: absolute; top: 14px; right: 14px;
   width: 36px; height: 36px; border-radius: 999px;
@@ -178,6 +301,7 @@ function submit(){
   outline: none;
 }
 .input:focus, .textarea:focus{ border-color: #6B7CFF; }
+.input.small{ height: 38px; padding: 8px 12px; font-size: 14px; }
 .textarea{ min-height: 120px; resize: vertical; }
 
 .error{ color:#ff9f9f; font-size: 12px; margin-top: 6px; }
@@ -186,12 +310,53 @@ function submit(){
 .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .col{ display: flex; flex-direction: column; }
 
-/* Iconos placeholder */
-.icon-row{ display: flex; gap: 10px; }
-.icon-box{
-  width: 46px; height: 46px; border-radius: 10px;
-  background: #0E0F1A; color: #fff; border: 2px solid rgba(255,255,255,.12);
+/* ===== Multi-emoji ===== */
+.picked-emojis{
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  min-height: 46px;
+}
+.chip{
+  display: inline-flex; align-items: center; gap: 6px;
+  background:#0E0F1A; border:1px solid rgba(255,255,255,.15);
+  color:#fff; height: 34px; padding: 0 10px; border-radius: 16px;
   cursor: pointer;
+}
+.chip-emoji{ font-size: 16px; line-height: 1; }
+.chip-x{ opacity:.8; font-weight: 700; }
+
+.add-emoji, .clear-emoji{
+  height: 34px; padding: 0 12px; border-radius: 16px; border:none; cursor:pointer;
+  font-weight: 800;
+}
+.add-emoji{ background:#6B7CFF; color:#fff; }
+.clear-emoji{ background:transparent; color:#EDEAF6; border:1px solid rgba(255,255,255,.18); }
+
+.emoji-popover{
+  position: relative; margin-top: 10px;
+  background:#1b1b2a; border:1px solid rgba(255,255,255,.12);
+  border-radius: 12px; box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  padding: 10px;
+}
+.emoji-head{
+  display:flex; align-items:center; gap:8px; margin-bottom: 8px;
+}
+.hint{ font-size: 12px; opacity: .8; }
+
+.emoji-grid{
+  display:grid; grid-template-columns: repeat(12, 1fr);
+  gap:6px; max-height: 180px; overflow:auto; padding:4px;
+}
+.emoji-btn{
+  width:30px; height:30px; border:none; border-radius:8px;
+  background:#0E0F1A; color:#fff; cursor:pointer; font-size:16px;
+}
+.emoji-btn:hover{ background:#26263a; }
+.emoji-btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+.emoji-actions{ display:flex; justify-content:flex-end; padding-top:8px; }
+.btn-mini{
+  border:none; border-radius:8px; height:30px; padding:0 10px;
+  background:#3C3A63; color:#fff; font-weight:700; cursor:pointer;
 }
 
 /* Colores */
@@ -224,5 +389,6 @@ function submit(){
 
 @media (max-width: 760px){
   .row{ grid-template-columns: 1fr; }
+  .emoji-grid{ grid-template-columns: repeat(8, 1fr); }
 }
 </style>

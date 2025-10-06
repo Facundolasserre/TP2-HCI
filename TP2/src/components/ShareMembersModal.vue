@@ -48,8 +48,12 @@
         <!-- Footer: botón centrado -->
         <footer class="footer">
           <button class="btn-add" @click="addMember">
-            Add Member
-            <span class="icon-plus">👥＋</span>
+            <AddMember
+              v-if="showAdd"
+              @close="showAdd=false"
+              @save="onAddSave"
+            />
+            <span class="icon-plus">Add Member</span>
           </button>
         </footer>
       </section>
@@ -59,6 +63,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import AddMember from '@/components/AddMember.vue'
 
 type Role = 'Owner' | 'Member' | null
 type Member = { id: string; name: string; role: Role; state: 'all'|'pending'|'blocked' }
@@ -73,6 +78,18 @@ const members = ref<Member[]>([
   { id:'3', name:'Nina',  role:null,     state:'pending' },
   { id:'4', name:'Vera',  role:null,     state:'blocked' },
 ])
+
+
+
+const showAdd = ref(false)
+function addMember() {
+  showAdd.value = true
+}
+function onAddSave(m){
+  members.value.push({ id:String(Math.random()), ...m })
+  showAdd.value = false
+}
+
 
 const filtered = computed(()=>{
   const text = q.value.toLowerCase()
@@ -93,10 +110,7 @@ function block(id: string){
   m.state = 'blocked'; m.role = null; openMenuId.value = null
 }
 function remove(id: string){ members.value = members.value.filter(x=>x.id!==id); openMenuId.value = null }
-function addMember(){
-  const name = prompt('Member name?')
-  if(name) members.value.push({ id: String(Math.random()), name, role:'Member', state:'all' })
-}
+
 
 defineEmits<{ (e:'close'): void }>()
 </script>
@@ -140,21 +154,24 @@ defineEmits<{ (e:'close'): void }>()
   z-index: 2; /* por si acaso */
 }
 
-/* Search: ocupa el ancho interno del panel sin desbordar */
+/* ===== Search (mismo ancho que tabs) ===== */
 .search-wrap{
-  /* sin márgenes laterales, el padding del panel ya centra todo */
-  margin: 0 0 14px;
+  display: grid;
+  grid-template-columns: 1fr; /* mismo ancho que los tabs */
+  padding: 0 6px 14px; /* mismo lateral y separación inferior */
 }
+
 .search{
   width: 100%;
   height: 48px;
   border-radius: 26px;
-  border:2px solid rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.12);
   background:#201F34;
   color:#EDEAF6;
   padding: 0 16px;
   outline: none;
   font-weight: 700;
+  box-sizing: border-box;
 }
 
 .search::placeholder{ color:#b9b5d1; }
@@ -165,13 +182,36 @@ defineEmits<{ (e:'close'): void }>()
 }
 
 /* ===== Tabs ===== */
-.tabs{ display:flex; gap:22px; padding:0 6px 10px; }
-.tab{
-  min-width:160px; height:40px; border:none; border-radius:22px;
-  background:#27263a; color:#CFC9E6; font-weight:800; cursor:pointer;
-}
-.tab.on{ color:#fff; background:#2d2b46; outline:2px solid rgba(107,124,255,.6); }
+/* ===== Tabs (mismo ancho que las filas de la lista) ===== */
+.tabs{
+  /* mismo padding lateral que .list para alinear bordes */
+  padding: 0 6px 10px;
 
+  /* tres columnas iguales */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* cada pill ocupa TODO su columna (sin min-width) */
+.tab{
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 22px;
+  background:#27263a;
+  color:#CFC9E6;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* activo */
+.tab.on{
+  color:#fff;
+  background:#2d2b46;
+  outline:2px solid rgba(107,124,255,.6);
+}
 /* ===== Lista ===== */
 .list{ display:flex; flex-direction:column; gap:12px; max-height: 48vh; overflow:auto; padding: 0 6px 6px; }
 .row{
@@ -220,8 +260,11 @@ defineEmits<{ (e:'close'): void }>()
 }
 .icon-plus{ opacity:.95; }
 
+/* opcional para pantallas chicas: mantener 3 columnas */
 @media (max-width: 760px){
-  .tab{ min-width: 120px; }
+  .tabs{
+    grid-template-columns: repeat(3, 1fr);
+  }
   .name{ font-size:16px; }
 }
 </style>

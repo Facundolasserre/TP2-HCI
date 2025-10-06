@@ -121,9 +121,10 @@ const filtered = computed(()=>{
 function shareText(list: string[]){ 
   return list.length === 1 ? list[0] : `${list.length} contacts`
 }
+// API CON ESTO FUNCIONARIA 
+function openCard(card: Card){
 
-function openCard(card: Card){ 
-  console.log('open', card.id) 
+  router.push({ name: 'list', params: { name: encodeURIComponent(card.title) } })
 }
 
 /* === Eventos de Topbar === */

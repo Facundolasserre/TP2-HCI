@@ -5,6 +5,7 @@ import RegisterView from '../views/auth/RegisterView.vue'
 import ForgotPassword from '@/views/auth/ForgotPassword.vue'
 import HomeView from '@/views/HomeView.vue'
 import AddListView from '@/views/AddListView.vue'
+import ListView from '@/views/ListView.vue'
 
 
 const router = createRouter({
@@ -15,7 +16,8 @@ const router = createRouter({
     { path: '/register', name: 'register', component: RegisterView },
     { path: '/ForgotPassword', name: 'ForgotPassword', component: ForgotPassword},
     { path: '/Home', name:'Home', component: HomeView},
-    { path: '/AddList', name:'AddList', component: AddListView}
+    { path: '/AddList', name:'AddList', component: AddListView},
+    { path: '/List', name:'List', component: ListView, props: true}
     
   ],
 })
