@@ -58,36 +58,35 @@ defineEmits<{
 /* ======= TOPBAR ======= */
 .topbar{
   position: relative;
-  height: 120px;                   /* altura del header */
+  height: 120px;
   display: flex;
-  align-items: center;             /* centra verticalmente */
-  justify-content: center;         /* centra el contenido central */
+  align-items: center;
+  justify-content: flex-start;
   background: transparent;
+  padding: 0 26px;
 }
 
 /* ======= BURGER ICON ======= */
-/* Topbar contenedor */
-.topbar{
-  position: relative;
-  height: 120px;
-  display:flex; align-items:center; justify-content:center;
-}
-
-/* Botón del menú (misma posición X/Y que pediste) */
 .burger{
-  position:absolute;
-  left:27px; top:43px; transform: translateY(-50%);
-  background:transparent; border:none; padding:0; cursor:pointer;
-  z-index:5;                 /* para que quede por encima de la grid */
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  margin-right: 24px;
 }
 
-/* Imagen del menú */
 .burger-img{
-  width:40px; height:40px;   /* ajustá a gusto */
-  object-fit:contain; display:block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  display: block;
 }
-
-/* resto de tus estilos (topbar-content, top-icons, search, etc.) */
 
 /* ======= CONTENEDOR CENTRAL ======= */
 .topbar-content{
@@ -95,8 +94,10 @@ defineEmits<{
   align-items: center;
   justify-content: center;
   gap: 16px;
-  width: 100%;
-  max-width: 900px;                /* ancho máximo centrado */
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  margin-right: 72px;
 }
 
 /* ======= ICONOS IZQUIERDA ======= */
@@ -126,15 +127,6 @@ defineEmits<{
   transition:  0.2s ease;
 }
 
-.special-plus {
-  background: #4B5CC7;  /* azul del borde search */
-}
-
-.special-plus:hover {
-  background: #5f72e2;  /* versión más clara al hover */
-}
-
-
 .round-btn:hover,
 .search-ico:hover,
 .star:hover,
@@ -154,11 +146,11 @@ defineEmits<{
 .search{
   flex: 1;
   height: 46px;
-  border-radius: 12px;
-  border: 2px solid var(--edge, #4B5CC7);
+  border-radius: 999px;
+  border: none;
   background: #0E0F1A;
   color: #fff;
-  padding: 0 14px;
+  padding: 0 20px;
   outline: none;
   font-size: 16px;
 }

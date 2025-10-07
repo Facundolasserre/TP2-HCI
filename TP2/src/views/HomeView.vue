@@ -28,7 +28,9 @@
         class="card"
         @click="openCard(card)"
       >
-        <div class="card-ico" v-html="card.icon"></div>
+        <div class="card-ico">
+          <img :src="card.icon" :alt="card.title" />
+        </div>
         <h3 class="card-title">{{ card.title }}</h3>
         <p class="card-sub">
           <em v-if="card.sharedWith?.length">
@@ -76,49 +78,25 @@ const cards = ref<Card[]>([
   {
     id: 'supermarket',
     title: 'Supermarket',
-    icon: `<svg width="72" height="72" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-      stroke-linejoin="round">
-      <circle cx="9" cy="21" r="1"/>
-      <circle cx="20" cy="21" r="1"/>
-      <path d="M1 1h4l2.68 12.39A2 2 0 0 0 9.61 15H19
-      a2 2 0 0 0 2-1.59l1-5.41H6"/></svg>`,
+    icon: new URL('@/assets/shopping_cart.svg', import.meta.url).href,
     sharedWith: ['Emma']
   },
   {
     id: 'family',
     title: 'Family',
-    icon:`<svg width="72" height="72" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-      stroke-linejoin="round">
-      <path d="M5.5 22v-3a2 2 0 0 1 2-2h.5"/>
-      <circle cx="7" cy="7" r="2"/>
-      <path d="M17 22v-4a2 2 0 0 0-2-2h-1"/>
-      <circle cx="15" cy="6" r="2"/>
-      <path d="M12 22v-5a2 2 0 0 0-2-2H8"/>
-      <circle cx="10" cy="9" r="2"/></svg>`,
+    icon: new URL('@/assets/family.svg', import.meta.url).href,
     sharedWith: ['Ana','Juan','Emma']
   },
   {
     id: 'travel',
     title: 'Travel',
-    icon:`<svg width="72" height="72" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-      stroke-linejoin="round">
-      <path d="m10.5 7 7 7"/>
-      <path d="M21 16v-2l-8-8-3 3 8 8h2z"/>
-      <path d="M4 13l6-6"/></svg>`,
+    icon: new URL('@/assets/travel.svg', import.meta.url).href,
     sharedWith: ['Ana','Luis','Mar']
   },
   {
     id: 'drinks',
     title: 'Drinks',
-    icon:`<svg width="72" height="72" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-      stroke-linejoin="round">
-      <path d="M8 22h8"/>
-      <path d="M10 2h4l-1 8h-2L10 2z"/>
-      <path d="M12 10v8"/></svg>`,
+    icon: new URL('@/assets/liquor.svg', import.meta.url).href,
     sharedWith: []
   }
 ])
@@ -254,7 +232,19 @@ function onNew() {
   cursor:pointer;
 }
 .card:hover{ transform: translateY(-2px); }
-.card-ico{ color:#EDEAF6; opacity:.85; }
-.card-title{ margin:6px 0 0; font-weight:800; }
-.card-sub{ margin:0; color:var(--muted); font-size:12px; }
+.card-ico{ 
+  color:#EDEAF6; 
+  opacity:.85;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-ico img{
+  width: 72px;
+  height: 72px;
+  filter: brightness(0) invert(1);
+  opacity: .85;
+}
+.card-title{ margin:6px 0 0; font-weight:800; color:#fff; }
+.card-sub{ margin:0; color:#fff; font-size:12px; }
 </style>
