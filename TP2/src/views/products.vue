@@ -1,6 +1,13 @@
 <template>
-  <!-- BARRA DE BÚSQUEDA ARRIBA, CENTRADA -->
-  <div class="search-bar">
+  <!-- TOPBAR: burger + título + search en la misma línea -->
+  <header class="topbar">
+    <div class="left">
+      <button class="burger" @click="toggleSidebar" aria-label="Open menu" title="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="title">Products</h1>
+    </div>
+
     <div class="search-wrap">
       <input
         v-model.trim="q"
@@ -12,19 +19,22 @@
       />
       <span class="search-ico">🔍</span>
     </div>
-  </div>
-
-  <!-- TOPBAR: TÍTULO A LA IZQUIERDA -->
-  <header class="topbar">
-    <h1 class="title">Products</h1>
   </header>
+
+  <!-- SIDEBAR -->
+  <Sidebar
+    :open="sidebarOpen"
+    :active="active"
+    @close="closeSidebar"
+    @update:active="val => active = val"
+  />
 
   <!-- CONTADOR -->
   <p class="meta" v-if="filtered.length">
     {{ filtered.length }} product{{ filtered.length === 1 ? '' : 's' }} found
   </p>
 
-  <!-- LISTA CONSOLIDADA (filas más anchas) -->
+  <!-- LISTA CONSOLIDADA -->
   <section class="list">
     <div v-for="p in filtered" :key="p.key" class="row">
       <div class="left">
@@ -35,7 +45,6 @@
           <span class="qty">Total: {{ p.totalQty }}</span>
         </p>
       </div>
-
       <div class="right">
         <div class="chips">
           <span class="chip" v-for="ln in p.listNames" :key="ln">📋 {{ ln }}</span>
@@ -46,15 +55,24 @@
     <p v-if="!filtered.length" class="empty">No products match your search.</p>
   </section>
 </template>
-
 <script setup lang="ts">
+
+
 import { computed, ref } from 'vue'
+import Sidebar from '@/components/Sidebar.vue';
 
 interface ListItem { id: number; name: string; category?: string; qty?: number }
 interface ShoppingList { id: number; name: string; items: ListItem[] }
 interface AggregatedProduct {
   key: string; name: string; category?: string; totalQty: number; listNames: string[]
 }
+
+
+const active = ref<'home'|'edit'|'history'>('home')
+
+const sidebarOpen = ref(false)
+function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value }
+function closeSidebar(){ sidebarOpen.value = false }
 
 const lists = ref<ShoppingList[]>([
   { id: 1, name: 'Weekly Groceries', items: [
@@ -113,63 +131,96 @@ const filtered = computed(() => {
 </script>
 
 
+
 <style scoped>
-/* Fondo base */
+:root{
+  --container: 1100px;     /* ancho máximo */
+  --side-pad: 24px;        /* padding lateral del contenedor */
+}
+/* ===== FONDO GENERAL ===== */
 :host, :root, body {
   background: #0F1020;
   color: #EDEAF6;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* ===== BARRA DE BÚSQUEDA ARRIBA, CENTRADA ===== */
-.search-bar {
+/* ===== TOPBAR (burger + título + search) ===== */
+.topbar {
   display: flex;
-  justify-content: center;
-  margin: 18px 0 8px;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  width: var(--container);      /* <-- mismo ancho que las tarjetas */
+  margin: 20px auto 14px;
+  padding: 0;                   /* sin padding para alinear con las cards */
 }
+
+/* IZQUIERDA (burger + título) */
+.topbar .left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;               /* <-- no se estira */
+}
+
+.burger {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: #1A1940;
+  color: #EDEAF6;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+.burger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+.burger span + span { margin-top: 4px; }
+.burger:active { transform: scale(0.96); }
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* SEARCH ocupa TODO lo restante */
 .search-wrap {
   position: relative;
-  width: min(720px, 92vw);
+  flex: 1 1 auto;               /* <-- se expande */
+  max-width: none;              /* <-- quita el tope de 480px */
+  min-width: 240px;             /* opcional: evita que colapse en pantallas muy chicas */
 }
+
 .search {
   width: 100%;
-  height: 46px;
-  padding: 0 44px 0 14px;
+  height: 44px;
+  padding: 0 40px 0 14px;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.12);
   background: #1A1940;
   color: #EDEAF6;
-  outline: none;
   font-size: 15px;
-  transition: box-shadow .15s ease, border-color .15s ease;
+  outline: none;
 }
+
 .search:focus {
-  box-shadow: 0 0 0 3px rgba(111, 103, 222, 0.25);
   border-color: rgba(111, 103, 222, 0.65);
+  box-shadow: 0 0 0 3px rgba(111, 103, 222, 0.25);
 }
 .search-ico {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  pointer-events: none;
   opacity: .8;
-}
-
-/* ===== TÍTULO (🛒 Products) ===== */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0 min(5vw, 40px);
-  margin-bottom: 6px;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 800;
-  margin: 0;
-  text-align: left;      /* ⬅️ alinea el texto a la izquierda */
-  padding-left: 22px;    /* ⬅️ lo deja en línea con las tarjetas */
 }
 
 /* ===== CONTADOR ===== */
@@ -178,11 +229,11 @@ const filtered = computed(() => {
   margin: 6px auto 12px;
   opacity: .8;
   font-size: 14px;
-  text-align: left;         /* ⬅️ cambia de center a left */
-  padding-left: 22px;       /* ⬅️ mismo padding que las tarjetas */
+  text-align: left;
+  padding-left: 4px;
 }
 
-/* ===== LISTA ===== */
+/* ===== LISTA DE PRODUCTOS ===== */
 .list {
   width: min(1100px, 92vw);
   margin: 0 auto;
@@ -190,11 +241,11 @@ const filtered = computed(() => {
   gap: 12px;
 }
 
-/* ===== ROW (producto individual) ===== */
+/* Cada fila (producto) */
 .row {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* texto izq + chips der */
+  justify-content: space-between;
   gap: 12px;
   background: #322D59;
   border-radius: 16px;
@@ -202,7 +253,7 @@ const filtered = computed(() => {
   box-shadow: 0 6px 20px rgba(0,0,0,.35);
 }
 
-/* Izquierda */
+/* Izquierda: nombre y categoría */
 .left {
   text-align: left;
   flex: 1;
@@ -221,7 +272,7 @@ const filtered = computed(() => {
 .dot { opacity: .5; margin: 0 6px; }
 .qty { opacity: .9; }
 
-/* Derecha: chips */
+/* Derecha: chips con listas */
 .right .chips {
   display: flex;
   flex-wrap: wrap;
@@ -245,13 +296,15 @@ const filtered = computed(() => {
 }
 
 /* ===== RESPONSIVO ===== */
+/* Responsivo: en móviles apilamos */
 @media (max-width: 640px) {
-  .row {
+  .topbar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 12px;
   }
-  .right .chips {
-    justify-content: flex-start;
-  }
+  .topbar .left { justify-content: flex-start; }
+  .search-wrap { min-width: 0; }
+
 }
 </style>

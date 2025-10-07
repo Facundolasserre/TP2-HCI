@@ -1,7 +1,12 @@
 <template>
- 
-    <!-- WRAPPER TOPBAR -->
-    <div class="layout-topbar">
+  <!-- BOTÓN SETTINGS ARRIBA DERECHA -->
+  <button class="user-settings" @click="goSettings" aria-label="Open settings">
+    <img src="@/assets/fonts/settings.png" alt="Settings" />
+  </button>
+
+  <!-- WRAPPER TOPBAR -->
+  <div class="layout-topbar">
+    <div class="topbar-wrap">
       <Topbar
         v-model:query="q"
         @toggle-sidebar="toggleSidebar"
@@ -10,37 +15,38 @@
         @favorites="onFavs"
         @new="onNew" 
         @search="onSearch"
-      />  
+      />
     </div>
+  </div>
 
-    <!-- WRAPPER GRID -->
-    <div class="layout-grid">
-      <main class="grid">
-        <article
-          v-for="card in filtered"
-          :key="card.id"
-          class="card"
-          @click="openCard(card)"
-        >
-          <div class="card-ico" v-html="card.icon"></div>
-          <h3 class="card-title">{{ card.title }}</h3>
-          <p class="card-sub">
-            <em v-if="card.sharedWith?.length">
-              shared with {{ shareText(card.sharedWith) }}
-            </em>
-            <em v-else>no shares</em>
-          </p>
-        </article>
-      </main>
-    </div>
+  <!-- WRAPPER GRID -->
+  <div class="layout-grid">
+    <main class="grid">
+      <article
+        v-for="card in filtered"
+        :key="card.id"
+        class="card"
+        @click="openCard(card)"
+      >
+        <div class="card-ico" v-html="card.icon"></div>
+        <h3 class="card-title">{{ card.title }}</h3>
+        <p class="card-sub">
+          <em v-if="card.sharedWith?.length">
+            shared with {{ shareText(card.sharedWith) }}
+          </em>
+          <em v-else>no shares</em>
+        </p>
+      </article>
+    </main>
+  </div>
 
-    <!-- SIDEBAR -->
-    <Sidebar
-      :open="sidebarOpen"
-      :active="active"
-      @close="closeSidebar"
-      @update:active="val => active = val"
-    />
+  <!-- SIDEBAR -->
+  <Sidebar
+    :open="sidebarOpen"
+    :active="active"
+    @close="closeSidebar"
+    @update:active="val => active = val"
+  />
 </template>
 
 <script setup lang="ts">
@@ -63,6 +69,9 @@ const sidebarOpen = ref(false)
 function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value }
 function closeSidebar(){ sidebarOpen.value = false }
 
+function goSettings(){
+  router.push('/settings')
+}
 const cards = ref<Card[]>([
   {
     id: 'supermarket',
@@ -161,6 +170,60 @@ function onNew() {
   display:flex;
   flex-direction:column;
   padding: 22px 26px 32px;
+  position: relative;                /* para posicionar el botón settings */
+}
+
+/* ===== BOTÓN SETTINGS (arriba derecha) ===== */
+.user-settings{
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.user-settings:hover{ background: rgba(255,255,255,.07); }
+.user-settings img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== TOPBAR (alineado y centrado) ===== */
+.layout-topbar{
+  display: grid;
+  place-items: center;               /* centra horizontalmente toda la franja */
+  margin: 8px 0 18px;
+}
+.topbar-wrap{
+  width: min(1100px, 92vw);          /* mismo ancho máximo que el grid */
+}
+
+/* Si el Topbar interno expone clases, las alineamos con :deep */
+/* todos los controles (botones e input) alineados al centro y misma altura */
+:deep(.topbar){
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+:deep(.topbar button),
+:deep(.topbar .search),
+:deep(.topbar input){
+  height: 44px;
+  display: inline-flex;
+  align-items: center;               /* centra verticalmente el contenido */
+}
+
+/* El pill de búsqueda alineado */
+:deep(.search-wrap){
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ===== GRID ===== */
@@ -194,6 +257,4 @@ function onNew() {
 .card-ico{ color:#EDEAF6; opacity:.85; }
 .card-title{ margin:6px 0 0; font-weight:800; }
 .card-sub{ margin:0; color:var(--muted); font-size:12px; }
-
-
 </style>

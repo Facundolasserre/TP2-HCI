@@ -6,19 +6,21 @@
           <!-- ENCABEZADO -->
           <div class="sb-top">
             <div class="brand">
-              <img src="@/assets/LogoHCI.png" alt="BagIt" />
+              <img src="@/assets/fonts/settings.png" alt="BagIt" />
             </div>
-            <button class="close" @click="emitClose" aria-label="Close">✖</button>
+            <button class="close" @click="emitClose" aria-label="Close">
+              <img src="@/assets/fonts/language.png" alt="BagIt" />
+            </button>
           </div>
 
           <!-- MENÚ -->
           <ul class="sb-menu">
             <li
-              :class="{ active: active === 'home' }"
-              @click="set('home')"
+            :class="{ active: active === 'home' }"
+            @click="goHome"
             >
-              <span class="ico">🏠</span>
-              <span>Home</span>
+            <span class="ico">🏠</span>
+            <span>Home</span>
             </li>
 
             <li
@@ -49,11 +51,11 @@
 
           <!-- PIE -->
           <div class="sb-bottom">
-            <button class="logout">
+            <button class="logout" @click="logout">
               <span>Log out</span>
-              <span class="exit">↪︎</span>
-            </button>
-          </div>
+          
+          </button>
+        </div>
         </aside>
       </div>
     </transition>
@@ -88,6 +90,17 @@ function goProducts() {
   set('products')
   router.push('/products')
 }
+
+function logout() {
+  router.push('/login')  
+}
+
+function goHome() {
+  set('home')        // mantiene la selección visual
+  router.push('/Home')  // 👈 redirige a la ruta /login
+  emitClose()        // cierra el sidebar
+}
+
 </script>
 
 <style>
