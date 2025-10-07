@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test del Módulo de Categorías</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .icon {
+            font-size: 32px;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .card-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+        
+        .button:hover {
+            background: #5568d3;
+        }
+        
+        .button.secondary {
+            background: #48bb78;
+        }
+        
+        .button.secondary:hover {
+            background: #38a169;
+        }
+        
+        .checklist {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .checklist h2 {
+            font-size: 28px;
+            margin-bottom: 24px;
+            color: #333;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #f7fafc;
+            transition: background 0.2s ease;
+        }
+        
+        .checklist-item:hover {
+            background: #edf2f7;
+        }
+        
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            margin-top: 2px;
+        }
+        
+        .checklist-text {
+            flex: 1;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .commands {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .commands h3 {
+            margin-bottom: 12px;
+            color: #81e6d9;
+        }
+        
+        .command {
+            background: #1a202c;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: #48bb78;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test del Módulo de Categorías</h1>
+            <p>Guía completa para probar todas las funcionalidades</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">📋</span>
+                    <h3 class="card-title">Lista de Categorías</h3>
+                </div>
+                <p class="card-description">
+                    Vista principal con tabla, filtros, búsqueda y paginación. Incluye acciones para ver, editar y eliminar categorías.
+                </p>
+                <a href="http://localhost:5174/categories" class="button" target="_blank">
+                    Abrir Lista →
+                </a>
+                <div class="status success">✓ Implementado</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">➕</span>
+                    <h3 class="card-title">Crear Categoría</h3>
+                </div>
+                <p class="card-description">
+                    Formulario para crear nueva categoría con validación en tiempo real. Incluye campo de metadata JSON opcional.
+                </p>
+                <a href="http://localhost:5174/categories/new" class="button secondary" target="_blank">
+                    Crear Nueva →
+                </a>
+                <div class="status success">✓ Implementado</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">👁️</span>
+                    <h3 class="card-title">Ver Detalles</h3>
+                </div>
+                <p class="card-description">
+                    Vista detallada de una categoría con toda su información: ID, nombre, metadata, fechas de creación y actualización.
+                </p>
+                <a href="http://localhost:5174/categories/1" class="button" target="_blank">
+                    Ver Ejemplo →
+                </a>
+                <div class="status success">✓ Implementado</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">✏️</span>
+                    <h3 class="card-title">Editar Categoría</h3>
+                </div>
+                <p class="card-description">
+                    Formulario de edición pre-cargado con datos actuales. Incluye validación y actualización optimista.
+                </p>
+                <a href="http://localhost:5174/categories/1/edit" class="button secondary" target="_blank">
+                    Editar Ejemplo →
+                </a>
+                <div class="status success">✓ Implementado</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">🔐</span>
+                    <h3 class="card-title">Login</h3>
+                </div>
+                <p class="card-description">
+                    Sistema de autenticación con JWT. El token se guarda automáticamente en localStorage para todas las requests.
+                </p>
+                <a href="http://localhost:5174/login" class="button" target="_blank">
+                    Ir a Login →
+                </a>
+                <div class="status success">✓ Integrado</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="icon">🏠</span>
+                    <h3 class="card-title">Home</h3>
+                </div>
+                <p class="card-description">
+                    Página principal de la aplicación. Desde aquí puedes navegar a cualquier módulo incluyendo categorías.
+                </p>
+                <a href="http://localhost:5174/Home" class="button" target="_blank">
+                    Ir a Home →
+                </a>
+                <div class="status success">✓ Disponible</div>
+            </div>
+        </div>
+        
+        <div class="checklist">
+            <h2>✅ Checklist de Pruebas</h2>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check1">
+                <label for="check1" class="checklist-text">
+                    <strong>Login con JWT:</strong> Ir a /login, ingresar cualquier usuario/password, verificar que se guarda el token en localStorage (DevTools → Application → Local Storage → auth_token)
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check2">
+                <label for="check2" class="checklist-text">
+                    <strong>Lista de categorías:</strong> Verificar que la tabla carga, muestra estados de loading/error/empty correctamente
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check3">
+                <label for="check3" class="checklist-text">
+                    <strong>Búsqueda y filtros:</strong> Probar búsqueda por nombre, cambiar ordenamiento (ASC/DESC), cambiar sort_by, y paginación
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check4">
+                <label for="check4" class="checklist-text">
+                    <strong>Crear categoría:</strong> Click en "Nueva Categoría", completar formulario con nombre y metadata JSON opcional, verificar validaciones (nombre ≤50 chars, JSON válido)
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check5">
+                <label for="check5" class="checklist-text">
+                    <strong>Ver detalles:</strong> Click en 👁️ en cualquier categoría, verificar que muestra toda la información incluyendo metadata formateada
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check6">
+                <label for="check6" class="checklist-text">
+                    <strong>Editar categoría:</strong> Click en ✏️, verificar que carga datos actuales, modificar y guardar, verificar toast de éxito
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check7">
+                <label for="check7" class="checklist-text">
+                    <strong>Eliminar categoría:</strong> Click en 🗑️, verificar modal de confirmación, confirmar eliminación, verificar toast de éxito y actualización de lista
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check8">
+                <label for="check8" class="checklist-text">
+                    <strong>Toast notifications:</strong> Verificar que aparecen toasts en operaciones exitosas (verde) y errores (rojo) con animaciones
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check9">
+                <label for="check9" class="checklist-text">
+                    <strong>Responsive:</strong> Abrir DevTools (F12), activar Device Toolbar, probar en mobile/tablet, verificar que todo se adapta correctamente
+                </label>
+            </div>
+            
+            <div class="checklist-item">
+                <input type="checkbox" class="checkbox" id="check10">
+                <label for="check10" class="checklist-text">
+                    <strong>Consola sin errores:</strong> Verificar en DevTools → Console que no hay errores de JavaScript o TypeScript
+                </label>
+            </div>
+            
+            <div class="commands">
+                <h3>🚀 Comandos útiles:</h3>
+                <div class="command">npm run dev</div>
+                <div class="command">npm run build</div>
+                <div class="command">npm run preview</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-save checkbox state
+        document.querySelectorAll('.checkbox').forEach(checkbox => {
+            const id = checkbox.id;
+            const saved = localStorage.getItem(id);
+            if (saved === 'true') {
+                checkbox.checked = true;
+            }
+            
+            checkbox.addEventListener('change', (e) => {
+                localStorage.setItem(id, e.target.checked);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -21,7 +21,7 @@
 
   <!-- WRAPPER GRID -->
   <div class="layout-grid">
-    <main class="grid">
+    <main v-if="filtered.length > 0" class="grid">
       <article
         v-for="card in filtered"
         :key="card.id"
@@ -40,6 +40,19 @@
         </p>
       </article>
     </main>
+    
+    <!-- Empty state -->
+    <div v-else class="empty-state">
+      <div class="empty-content">
+        <div class="empty-icon">📝</div>
+        <h2 class="empty-title">No lists yet</h2>
+        <p class="empty-text">Create your first shopping list to get started</p>
+        <button class="btn-create" @click="onNew">
+          <span class="plus-icon">+</span>
+          Create List
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- SIDEBAR -->
@@ -53,16 +66,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useListsStore } from '@/stores/lists'
 
 import Topbar from '@/components/Topbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 
-import { useRouter } from 'vue-router' // f
-
-const router = useRouter()                 // 👈 agregado
-
-
-type Card = { id: string; title: string; icon: string; sharedWith?: string[] }
+const router = useRouter()
+const listsStore = useListsStore()
 
 const q = ref('')
 const active = ref<'home'|'edit'|'history'>('home')
@@ -74,34 +85,31 @@ function closeSidebar(){ sidebarOpen.value = false }
 function goSettings(){
   router.push('/settings')
 }
-const cards = ref<Card[]>([
-  {
-    id: 'supermarket',
-    title: 'Supermarket',
-    icon: new URL('@/assets/shopping_cart.svg', import.meta.url).href,
-    sharedWith: ['Emma']
-  },
-  {
-    id: 'family',
-    title: 'Family',
-    icon: new URL('@/assets/family.svg', import.meta.url).href,
-    sharedWith: ['Ana','Juan','Emma']
-  },
-  {
-    id: 'travel',
-    title: 'Travel',
-    icon: new URL('@/assets/travel.svg', import.meta.url).href,
-    sharedWith: ['Ana','Luis','Mar']
-  },
-  {
-    id: 'drinks',
-    title: 'Drinks',
-    icon: new URL('@/assets/liquor.svg', import.meta.url).href,
-    sharedWith: []
-  }
-])
 
-const filtered = computed(()=>{
+// Mapa de iconos por defecto
+const iconMap: Record<string, string> = {
+  'shopping_cart.svg': new URL('@/assets/shopping_cart.svg', import.meta.url).href,
+  'family.svg': new URL('@/assets/family.svg', import.meta.url).href,
+  'travel.svg': new URL('@/assets/travel.svg', import.meta.url).href,
+  'liquor.svg': new URL('@/assets/liquor.svg', import.meta.url).href,
+}
+
+// Convertir las listas del store a cards con iconos
+const cards = computed(() => {
+  return listsStore.allLists.map(list => {
+    // Intentar obtener el icono desde el mapa, o usar el SVG por defecto
+    const icon = iconMap[list.icon] || new URL('@/assets/shopping_cart.svg', import.meta.url).href
+    
+    return {
+      id: list.id,
+      title: list.title,
+      icon,
+      sharedWith: list.sharedWith || []
+    }
+  })
+})
+
+const filtered = computed(() => {
   const t = q.value.trim().toLowerCase()
   return t ? cards.value.filter(c => c.title.toLowerCase().includes(t)) : cards.value
 })
@@ -109,9 +117,8 @@ const filtered = computed(()=>{
 function shareText(list: string[]){ 
   return list.length === 1 ? list[0] : `${list.length} contacts`
 }
-// API CON ESTO FUNCIONARIA 
-function openCard(card: Card){
 
+function openCard(card: { id: string; title: string; icon: string; sharedWith?: string[] }){
   router.push({ name: 'list', params: { name: encodeURIComponent(card.title) } })
 }
 
@@ -247,4 +254,59 @@ function onNew() {
 }
 .card-title{ margin:6px 0 0; font-weight:800; color:#fff; }
 .card-sub{ margin:0; color:#fff; font-size:12px; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state{
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  width: 100%;
+}
+.empty-content{
+  text-align: center;
+  max-width: 400px;
+  padding: 40px 20px;
+}
+.empty-icon{
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+.empty-title{
+  font-size: 32px;
+  font-weight: 800;
+  color: #EDEAF6;
+  margin: 0 0 12px;
+}
+.empty-text{
+  font-size: 16px;
+  color: #CFC9E6;
+  opacity: 0.8;
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+.btn-create{
+  height: 50px;
+  padding: 0 32px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7F89FF, #6B7CFF);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+.btn-create:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 124, 255, 0.4);
+}
+.plus-icon{
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
 </style>

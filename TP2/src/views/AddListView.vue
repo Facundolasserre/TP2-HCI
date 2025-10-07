@@ -17,6 +17,23 @@
             <p v-if="touched && !name" class="error">Name is required</p>
           </div>
 
+          <!-- Icon selector -->
+          <div class="block">
+            <label class="label">Icon</label>
+            <div class="icon-selector">
+              <button
+                v-for="iconOption in availableIcons"
+                :key="iconOption.id"
+                type="button"
+                class="icon-option"
+                :class="{ selected: selectedIcon === iconOption.id }"
+                @click="selectedIcon = iconOption.id"
+              >
+                <img :src="iconOption.src" :alt="iconOption.name" class="icon-img" />
+              </button>
+            </div>
+          </div>
+
           <!-- Row: Emojis (multi) + Colors -->
           <div class="row">
             <!-- ✅ Multi-emoji -->
@@ -158,15 +175,18 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useListsStore } from '@/stores/lists'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
 const router = useRouter()
+const listsStore = useListsStore()
 
 const name = ref('')
 const notes = ref('')
 const color = ref('#6B7CFF')
 const visibility = ref<'private'|'shared'>('private')
 const touched = ref(false)
+const selectedIcon = ref('shopping_cart.svg') // icono por defecto
 
 /** ============ Multi-emoji state ============ */
 const emojis = ref<string[]>([])         // selección actual
@@ -184,6 +204,30 @@ const emojiOptions = [
   '🐶','🐱','🐼','🐸','🦊','🐧','🐥','🦄',
   // objetos
   '📦','🗂️','🧺','🔑','📝','📅','⏰','🔒'
+]
+
+// Iconos disponibles para seleccionar
+const availableIcons = [
+  { 
+    id: 'shopping_cart.svg', 
+    name: 'Shopping Cart',
+    src: new URL('@/assets/shopping_cart.svg', import.meta.url).href
+  },
+  { 
+    id: 'family.svg', 
+    name: 'Family',
+    src: new URL('@/assets/family.svg', import.meta.url).href
+  },
+  { 
+    id: 'travel.svg', 
+    name: 'Travel',
+    src: new URL('@/assets/travel.svg', import.meta.url).href
+  },
+  { 
+    id: 'liquor.svg', 
+    name: 'Drinks',
+    src: new URL('@/assets/liquor.svg', import.meta.url).href
+  },
 ]
 
 // filtro simple por nombre corto (heurística mínima)
@@ -227,6 +271,8 @@ function clearEmojis(){ emojis.value = [] }
 
 /** ============ Share modal state ============ */
 const showShare = ref(false)
+const sharedMembers = ref<string[]>([])
+
 function setShared(){
   visibility.value = 'shared'
   showShare.value = true
@@ -234,6 +280,7 @@ function setShared(){
 function onShareClose(){ showShare.value = false }
 function onShareSave(payload: { members: string[], pending: string[], blocked: string[] }){
   console.log('SHARE SETTINGS', payload)
+  sharedMembers.value = payload.members
   showShare.value = false
 }
 
@@ -245,14 +292,26 @@ function close(){ router.back() }
 function submit(){
   touched.value = true
   if(!name.value) return
+  
+  // Crear la nueva lista en el store
+  listsStore.createList({
+    title: name.value,
+    icon: selectedIcon.value,
+    sharedWith: visibility.value === 'shared' ? sharedMembers.value : []
+  })
+  
   console.log('CREATE LIST', {
     name: name.value,
     color: color.value,
     visibility: visibility.value,
     notes: notes.value,
-    emojis: emojis.value
+    emojis: emojis.value,
+    icon: selectedIcon.value,
+    sharedWith: sharedMembers.value
   })
-  close()
+  
+  // Regresar al home
+  router.push('/')
 }
 </script>
 
@@ -366,6 +425,43 @@ function submit(){
   cursor: pointer;
 }
 .swatch.picked{ outline: 2px solid #fff; }
+
+/* Icon selector */
+.icon-selector{
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.icon-option{
+  width: 60px; height: 60px; border-radius: 12px;
+  border: 2px solid rgba(255,255,255,.15);
+  background: #0E0F1A;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 12px;
+}
+.icon-option:hover{
+  border-color: rgba(255,255,255,.35);
+  background: #1a1b2a;
+}
+.icon-option.selected{
+  border-color: #6B7CFF;
+  background: rgba(107, 124, 255, 0.15);
+  outline: 2px solid #6B7CFF;
+}
+.icon-img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+.icon-option:hover .icon-img{
+  opacity: 1;
+}
+.icon-option.selected .icon-img{
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
 
 /* Visibility segmented */
 .segmented{

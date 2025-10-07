@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { setAuthToken, setAuthUser } from '@/services/auth.service'
 
 const username = ref('')
 const password = ref('')
@@ -42,6 +43,13 @@ const router = useRouter()
 
 function onSubmit() {
   console.log('login', { username: username.value, password: password.value })
+  
+  // TODO: Replace with actual API call
+  // For now, simulate a successful login with a mock token
+  const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpZCI6MSwiZXhwIjoxOTk5OTk5OTk5fQ.mock'
+  setAuthToken(mockToken)
+  setAuthUser({ username: username.value })
+  
   router.push('/Home')  // 👈 redirige después del login
 }
 function onForgot() {

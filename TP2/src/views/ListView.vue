@@ -2,7 +2,7 @@
   <div class="page">
     <!-- TOP BAR -->
     <header class="topbar">
-      <button class="home" @click="$emit('go-home')" aria-label="Home">🏠</button>
+      <button class="home" @click="goHome" aria-label="Home">🏠</button>
 
       <div class="search-wrap">
         <input v-model.trim="q" class="search" type="text" placeholder="Search product" />
@@ -10,78 +10,154 @@
       </div>
 
       <div class="top-actions">
-        <button class="share" @click="$emit('share-list')" aria-label="Share">🔗</button>
+        <button class="share" @click="shareList" aria-label="Share">🔗</button>
       </div>
     </header>
 
     <!-- TITLE BAR -->
     <section class="titlebar">
       <div class="left-actions">
-        <button class="round" title="Filter" @click="$emit('open-filter')">🜜</button>
-        <button class="round" title="Sort" @click="$emit('open-sort')">☰</button>
+        <button class="round" title="Filter">🜜</button>
+        <button class="round" title="Sort">☰</button>
       </div>
 
-      <h1 class="title">{{ listName }}</h1>
+      <h1 class="title">{{ currentList?.title || 'List' }}</h1>
 
       <div class="right-actions">
-        <button class="round" title="Rename / Edit" @click="$emit('edit-list')">✎</button>
-        <button class="add" @click="$emit('add-item')">
+        <button class="round" title="Rename / Edit">✎</button>
+        <button class="add" @click="showAddProduct = true">
           <span>Add</span>
           <span class="plus">＋</span>
         </button>
       </div>
     </section>
-    </div>
+
     <!-- LIST -->
     <main class="sheet">
+      <div v-if="!currentList" class="empty-state">
+        <p>List not found</p>
+      </div>
+      <div v-else-if="filteredProducts.length === 0" class="empty-state">
+        <p>{{ q ? 'No products found' : 'No products yet. Add one!' }}</p>
+      </div>
       <article
-        v-for="it in filtered"
-        :key="it.id"
+        v-else
+        v-for="product in filteredProducts"
+        :key="product.id"
         class="row"
-        @click="$emit('open-item', it)"
       >
         <div class="left">
-          <div class="bullet">🍳</div>
+          <button class="bullet" @click="openAddToListModal(product)">➕</button>
           <div class="info">
-            <div class="name">{{ it.name }}</div>
-            <div class="hint">{{ it.note }}</div>
+            <div class="name">{{ product.name }}</div>
+            <div class="hint">{{ product.addedBy ? `added by ${product.addedBy}` : '' }}</div>
           </div>
         </div>
 
         <div class="right">
-          <div class="qty">x{{ it.qty }}</div>
+          <div class="qty">x{{ product.amount }}</div>
           <label class="box">
-            <input type="checkbox" :checked="it.checked" @change="$emit('toggle', it)" />
+            <input 
+              type="checkbox" 
+              :checked="product.checked" 
+              @change="toggleCheck(product.id)"
+            />
             <span></span>
           </label>
         </div>
       </article>
     </main>
+
+    <!-- Add Product Modal -->
+    <AddProductModal
+      v-model="showAddProduct"
+      :default-list-id="listId || undefined"
+      @product-added="onProductAdded"
+    />
+
+    <!-- Add To List Modal -->
+    <AddToListModal
+      v-model="showAddToList"
+      :product="selectedProduct"
+      :current-list-id="listId || undefined"
+      @product-added="onProductAdded"
+    />
+  </div>
 </template>
 
-<script setup>
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useListsStore } from '@/stores/lists'
+import { useToast } from '@/composables/useToast'
+import AddProductModal from '@/components/AddProductModal.vue'
+import AddToListModal from '@/components/AddToListModal.vue'
+import type { Product } from '@/types/lists'
 
-const props = defineProps({
-  listName: { type: String, default: 'Family' },
-  items: {
-    type: Array,
-    default: () => ([
-      { id: 1, name: 'Eggs', qty: 6, checked: false, note: 'already in cart' },
-      { id: 2, name: 'Cookies', qty: 4, checked: false, note: 'added y/day' },
-    ])
+const route = useRoute()
+const router = useRouter()
+const listsStore = useListsStore()
+const toast = useToast()
+
+const q = ref('')
+const showAddProduct = ref(false)
+const showAddToList = ref(false)
+const selectedProduct = ref<Product | null>(null)
+
+// Get list ID from route
+const listId = computed(() => {
+  const name = route.params.name as string
+  if (!name) return null
+  
+  // Try to find by title
+  const list = listsStore.getListByTitle(decodeURIComponent(name))
+  return list?.id || null
+})
+
+const currentList = computed(() => {
+  if (!listId.value) return null
+  return listsStore.getListById(listId.value)
+})
+
+const filteredProducts = computed(() => {
+  if (!currentList.value) return []
+  if (!q.value) return currentList.value.products
+  
+  const search = q.value.toLowerCase()
+  return currentList.value.products.filter(p => 
+    p.name.toLowerCase().includes(search)
+  )
+})
+
+onMounted(() => {
+  if (!currentList.value) {
+    toast.error('List not found')
+    router.push('/Home')
   }
 })
 
-const q = ref('')
-const filtered = computed(() => {
-  if (!q.value) return props.items
-  const t = q.value.toLowerCase()
-  return props.items.filter(i => i.name.toLowerCase().includes(t))
-})
+const goHome = () => {
+  router.push('/Home')
+}
+
+const shareList = () => {
+  toast.info('Share functionality coming soon!')
+}
+
+const toggleCheck = (productId: string) => {
+  if (!listId.value) return
+  listsStore.toggleProductCheck(listId.value, productId)
+}
+
+const openAddToListModal = (product: Product) => {
+  selectedProduct.value = product
+  showAddToList.value = true
+}
+
+const onProductAdded = () => {
+  // Product added successfully - list will auto-update via store
+}
 </script>
-
-
 <style scoped>
 html, body, #app {
   height: 100%;
@@ -91,16 +167,15 @@ html, body, #app {
 
 /* ===== Página a pantalla completa ===== */
 .page {
-  min-height: 100dvh;               /* alto total incluyendo barra móvil */
-  width: 100vw;                     /* ancho total */
+  min-height: 100dvh;
+  width: 100vw;
   margin: 0;
   padding: 24px clamp(16px, 4vw, 48px);
   box-sizing: border-box;
-
+  background: #1C1C30;
   color: #EDEAF6;
-
   display: grid;
-  grid-template-rows: auto auto 1fr; /* topbar, titlebar, contenido */
+  grid-template-rows: auto auto 1fr;
   gap: 16px;
 }
 
@@ -122,12 +197,18 @@ html, body, #app {
   background: #1A1930;
   color: #fff;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.home:hover,
+.share:hover {
+  background: #252442;
 }
 
 /* ===== Search ===== */
 .search-wrap {
   position: relative;
-  width: 100%; /* ahora ocupa todo el ancho */
+  width: 100%;
   margin: 0;
 }
 
@@ -166,7 +247,7 @@ html, body, #app {
   display: grid;
   grid-template-columns: 180px 1fr 260px;
   align-items: center;
-  background: #1C1C30;
+  background: #322D59;
   border-radius: 18px;
   padding: 14px 18px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -201,6 +282,11 @@ html, body, #app {
   background: #2B2950;
   color: #EDEAF6;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.round:hover {
+  background: #3a3868;
 }
 
 .add {
@@ -216,6 +302,11 @@ html, body, #app {
   color: #fff;
   font-weight: 800;
   font-size: 15px;
+  transition: transform 0.2s ease;
+}
+
+.add:hover {
+  transform: translateY(-2px);
 }
 
 .add .plus {
@@ -225,13 +316,25 @@ html, body, #app {
 
 /* ===== List sheet ===== */
 .sheet {
-  background: #2E2B52;
+  background: #322D59;
   border-radius: 22px;
   padding: 10px 0 18px;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   width: 100%;
-  min-height: 0;      /* para que crezca dentro del grid */
-  overflow-y: auto;   /* scroll interno si hay muchos ítems */
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #CFC9E6;
+  opacity: 0.7;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
 }
 
 /* ===== Filas ===== */
@@ -243,6 +346,7 @@ html, body, #app {
   padding: 14px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .row:first-child {
   border-top: none;
 }
@@ -261,17 +365,27 @@ html, body, #app {
   background: #0E0F1A;
   border-radius: 999px;
   font-size: 18px;
+  border: none;
+  color: #EDEAF6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.bullet:hover {
+  background: #1a1b2e;
 }
 
 .info .name {
   font-weight: 800;
   font-size: 18px;
+  color: #EDEAF6;
 }
 
 .info .hint {
   font-size: 12px;
   opacity: 0.65;
   margin-top: 2px;
+  color: #CFC9E6;
 }
 
 .right {
@@ -283,6 +397,7 @@ html, body, #app {
 .qty {
   font-weight: 800;
   opacity: 0.85;
+  color: #EDEAF6;
 }
 
 /* ===== Checkbox ===== */
@@ -292,6 +407,7 @@ html, body, #app {
   height: 22px;
   display: inline-grid;
   place-items: center;
+  cursor: pointer;
 }
 
 .box input {
@@ -307,6 +423,7 @@ html, body, #app {
   border-radius: 4px;
   background: #0E0F1A;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
 }
 
 .box input:checked + span {

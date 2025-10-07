@@ -1,10 +1,10 @@
 <template>
- 
   <router-view/>
+  <ToastNotification />
 </template>
 
 <script setup>
-// Nada que importar acá
+import ToastNotification from './components/ToastNotification.vue'
 </script>
 
 <style>
