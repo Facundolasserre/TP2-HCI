@@ -6,7 +6,8 @@ import ForgotPassword from '@/views/auth/ForgotPassword.vue'
 import HomeView from '@/views/HomeView.vue'
 import AddListView from '@/views/AddListView.vue'
 import ListView from '@/views/ListView.vue'
-
+import Product from '@/views/Product.vue'
+import Products from '@/views/products.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,8 +18,8 @@ const router = createRouter({
     { path: '/ForgotPassword', name: 'ForgotPassword', component: ForgotPassword},
     { path: '/Home', name:'Home', component: HomeView},
     { path: '/AddList', name:'AddList', component: AddListView},
-    { path: '/List', name:'List', component: ListView, props: true}
-    
+    { path: '/List', name:'List', component: ListView, props: true},
+    { path:'/products', name:'products', component: Products}
   ],
 })
 

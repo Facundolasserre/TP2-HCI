@@ -41,7 +41,7 @@ const isValid = computed(() =>
 
 function onSubmit () {
   console.log('SUBMIT!')   // para verificar
-  router.push('/ListPage')
+  router.push('/Home')
 }
 </script>
 

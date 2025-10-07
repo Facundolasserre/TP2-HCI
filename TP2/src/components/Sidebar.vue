@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <transition name="fade">
-      <div  v-if="open" class="overlay" @click.self="emitClose" @keydown.esc="emitClose" tabindex="-1">
+      <div v-if="open" class="overlay" @click.self="emitClose" @keydown.esc="emitClose" tabindex="-1">
         <aside class="sidebar">
           <!-- ENCABEZADO -->
           <div class="sb-top">
@@ -36,6 +36,15 @@
               <span class="ico">⏱️</span>
               <span>Shopping List History</span>
             </li>
+
+            <!-- NUEVA SECCIÓN -->
+            <li
+              :class="{ active: active === 'products' }"
+              @click="goProducts"
+            >
+              <span class="ico">🛒</span>
+              <span>Products</span>
+            </li>
           </ul>
 
           <!-- PIE -->
@@ -52,27 +61,32 @@
 </template>
 
 <script setup lang="ts">
-// Props que recibe del padre
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 const props = defineProps<{
   open: boolean
-  active: 'home' | 'edit' | 'history'
+  active: 'home' | 'edit' | 'history' | 'products'
 }>()
 
-// Eventos que emite al padre
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'update:active', v: 'home' | 'edit' | 'history'): void
+  (e: 'update:active', v: 'home' | 'edit' | 'history' | 'products'): void
 }>()
 
-// Cerrar sidebar
 function emitClose() {
   emit('close')
 }
 
-// Cambiar sección activa y cerrar
-function set(v: 'home' | 'edit' | 'history') {
+function set(v: 'home' | 'edit' | 'history' | 'products') {
   emit('update:active', v)
   emitClose()
+}
+// llama a Product.vue
+function goProducts() {
+  set('products')
+  router.push('/products')
 }
 </script>
 
@@ -82,7 +96,6 @@ function set(v: 'home' | 'edit' | 'history') {
   --ink: #EDEAF6;
 }
 
-/* Animación de entrada */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.15s ease;
@@ -92,40 +105,25 @@ function set(v: 'home' | 'edit' | 'history') {
   opacity: 0;
 }
 
-/* Fondo oscuro detrás del sidebar */
-.overlay{
+.overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
-  z-index: 1000;              /* ⬅️ que tape todo */
+  z-index: 1000;
 }
 
-/* Panel lateral */
-.sidebar{
+.sidebar {
   width: 300px;
   max-width: 85vw;
   height: 100%;
   background: var(--panel);
   display: flex;
   flex-direction: column;
-  box-shadow: 6px 0 24px rgba(0,0,0,.45);
-  z-index: 1001;              /* ⬅️ por encima del overlay */
+  box-shadow: 6px 0 24px rgba(0, 0, 0, 0.45);
+  z-index: 1001;
 }
 
-/* Animación slide-in */
-@keyframes slideIn {
-  from {
-    transform: translateX(-40px);
-    opacity: 0.6;
-  }
-  to {
-    transform: translateX(-8px);
-    opacity: 1;
-  }
-}
-
-/* Cabecera */
 .sb-top {
   display: flex;
   align-items: center;
@@ -145,7 +143,6 @@ function set(v: 'home' | 'edit' | 'history') {
   cursor: pointer;
 }
 
-/* Menú principal */
 .sb-menu {
   list-style: none;
   padding: 8px;
@@ -171,7 +168,6 @@ function set(v: 'home' | 'edit' | 'history') {
   text-align: center;
 }
 
-/* Pie con botón logout */
 .sb-bottom {
   margin-top: auto;
   padding: 18px;
