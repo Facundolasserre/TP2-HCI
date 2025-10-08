@@ -44,7 +44,9 @@
     <!-- Empty state -->
     <div v-else class="empty-state">
       <div class="empty-content">
-        <div class="empty-icon">📝</div>
+        <div class="empty-icon">
+          <img src="@/assets/emptyLogo.png"/>
+        </div>
         <h2 class="empty-title">No lists yet</h2>
         <p class="empty-text">Create your first shopping list to get started</p>
         <button class="btn-create" @click="onNew">
@@ -138,14 +140,7 @@ function onNew() {
 </script>
 
 <style scoped>
-:root{
-  --bg:#1C1C30;
-  --panel:#322D59;
-  --ink:#EDEAF6;
-  --muted:#CFC9E6;
-  --tile:#0E0F1A;
-  --edge:#4B5CC7;
-}
+
 
 /* ===== LAYOUT GENERAL ===== */
 .layout{
@@ -183,8 +178,12 @@ function onNew() {
 /* ===== TOPBAR (alineado y centrado) ===== */
 .layout-topbar{
   display: grid;
-  place-items: center;               /* centra horizontalmente toda la franja */
-  margin: 8px 0 18px;
+  place-items: center;
+  margin-bottom: 49px;
+}
+
+.layout-grid {
+  max-height: calc(100vh - 49px);  
 }
 .topbar-wrap{
   width: min(1100px, 92vw);          /* mismo ancho máximo que el grid */
@@ -271,6 +270,11 @@ function onNew() {
   font-size: 80px;
   margin-bottom: 20px;
   opacity: 0.6;
+}
+.empty-icon img{
+  width: 350px;
+  height: 350px;
+  object-fit: contain;
 }
 .empty-title{
   font-size: 32px;
