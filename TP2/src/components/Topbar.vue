@@ -1,6 +1,6 @@
 <template>
-  <header class="topbar">
-    <!-- botón con imagen -->
+  <header class="topbar" data-topbar-build="v3">
+    <!-- botón con imagen (siempre a la izquierda) -->
     <button class="burger" @click="$emit('toggle-sidebar')" aria-label="Open menu">
       <img src="@/assets/fonts/burgerIcon.png" alt="Menu" class="burger-img" />
     </button>
@@ -15,20 +15,26 @@
         </button>
       </div>
 
-      <div class="search-wrap">
-        <input
-          :value="query"
-          @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
-          class="search"
-          type="text"
-          placeholder="Search"
-        />
+      <input
+        :value="query"
+        @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
+        class="search"
+        type="text"
+        placeholder="Search"
+      />
+
+      <div class="right-icons">
         <button class="star" title="Favorites" @click="$emit('favorites')">
           <img src="@/assets/fonts/favIcon.png" alt="Menu" class="burger-img" />
         </button>
         <button class="plus special-plus" title="New" @click="$emit('new')">＋</button>
       </div>
     </div>
+
+    <!-- user settings (a la derecha del todo) -->
+    <button class="user-settings-btn" @click="$emit('user-settings')" aria-label="Open settings">
+      <img src="@/assets/fonts/settings.png" alt="Settings" />
+    </button>
   </header>
 </template>
 
@@ -41,6 +47,7 @@ defineEmits<{
   (e: 'favorites'): void
   (e: 'new'): void
   (e: 'search'): void
+  (e: 'user-settings'): void
   (e: 'update:query', v: string): void
 }>()
 
@@ -53,17 +60,25 @@ defineEmits<{
 :root{
   --ink: #EDEAF6;
   --edge: #4B5CC7;
+  
 }
 
 /* ======= TOPBAR ======= */
 .topbar{
-  position: relative;
-  height: 120px;
+  position: fixed;                  /* ocupa todo el ancho de la ventana */
+  top: 10px;                        /* baja apenas la barra */
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100vw;
+  margin: 0;
+  height: 72px;                     /* botones +30% requieren algo más de alto */
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;   /* left burger, center content, right settings */
   background: transparent;
-  padding: 0 26px;
+  padding: 0 40px;                        /* extremos reales */
+  box-sizing: border-box;
 }
 
 /* ======= BURGER ICON ======= */
@@ -75,15 +90,14 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;                      /* +30% */
+  height: 52px;                     /* +30% */
   flex-shrink: 0;
-  margin-right: 24px;
 }
 
 .burger-img{
-  width: 48px;
-  height: 48px;
+  width: 36px;                      /* +30% del ícono */
+  height: 36px;
   object-fit: contain;
   display: block;
 }
@@ -93,11 +107,12 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  flex: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  margin-right: 72px;
+  gap: clamp(8px, 2vw, 16px);
+  flex: 1 1 auto;
+  min-width: 0;                     /* permite encoger el search en pantallas chicas */
+  max-width: none;
+  margin: 0;
+  flex-wrap: nowrap;                /* una sola línea siempre */
 }
 
 /* ======= ICONOS IZQUIERDA ======= */
@@ -105,7 +120,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: clamp(6px, 1.2vw, 12px);
 }
 
 /* ======= BOTONES REDONDOS ======= */
@@ -116,14 +131,14 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 52px;                      /* +30% */
+  height: 52px;                     /* +30% */
   border-radius: 999px;
   border: none;
   cursor: pointer;
   background: #080A14;
   color: #fff;
-  font-size: 22px;                 /* íconos grandes */
+  font-size: 24px;                  /* +33% aprox para matching visual */
   transition:  0.2s ease;
 }
 
@@ -135,33 +150,51 @@ defineEmits<{
 }
 
 /* ======= SEARCH BAR ======= */
-.search-wrap{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex: 1;
-  max-width: 500px;
-}
 .search{
-  flex: 1;
-  height: 46px;
+  flex: 1 1 auto;
+  height: 52px;                     /* +30% */
   border-radius: 999px;
   border: none;
   background: #0E0F1A;
   color: #fff;
-  padding: 0 20px;
+  padding: 0 24px;
   outline: none;
-  font-size: 16px;
+  font-size: 18px;
+  min-width: 140px;
+  max-width: 350px; /* Ajustado */
+  text-align: center;
 }
 .search::placeholder{
   color: rgba(255,255,255,0.6);
 }
 
-/* ======= RESPONSIVE ======= */
-@media (max-width: 768px){
-  .topbar-content{ flex-direction: column; gap: 12px; }
-  .search-wrap{ max-width: 100%; }
-  .round-btn, .search-ico, .star, .plus{ width: 44px; height: 44px; font-size: 18px; }
+.right-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
+
+/* ======= RESPONSIVE ======= */
+/* no wrapping: mantener una sola fila; solo ajustamos gaps/ancho buscador en muy chico */
+@media (max-width: 520px){
+  .topbar-content{ gap: 6px; }
+  .search-wrap{ max-width: 260px; }
+}
+
+/* user settings (derecha) */
+.user-settings-btn{
+  width: 52px;                      /* +30% */
+  height: 52px;                     /* +30% */
+  border-radius: 999px;
+  border: none;                     /* sin borde visible */
+  background: transparent;          /* sin fondo: solo icono visible */
+  display: flex;
+  align-items: center;
+  justify-content: center;          /* centra absolutamente el contenido */
+  line-height: 0;                   /* evita desalineo por línea */
+  overflow: hidden;
+  cursor: pointer;
+}
+.user-settings-btn img{ width: 32px; height: 32px; object-fit: contain; filter: brightness(0) invert(1); display:block; }
 </style>

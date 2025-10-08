@@ -32,3 +32,4 @@ dist-ssr/
 
 # Otros
 *.local
+/AGENTS.md
