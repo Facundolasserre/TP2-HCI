@@ -13,7 +13,8 @@ export interface Product {
 export interface ShoppingList {
   id: string
   title: string
-  icon: string
+  icon?: string
+  color?: string
   sharedWith: string[]
   products: Product[]
   createdAt: string
@@ -29,6 +30,7 @@ export interface CreateProductData {
 
 export interface CreateListData {
   title: string
-  icon: string
+  icon?: string
+  color?: string
   sharedWith?: string[]
 }

@@ -52,6 +52,7 @@ export const useListsStore = defineStore('lists', () => {
       id: `list_${Date.now()}`,
       title: data.title,
       icon: data.icon,
+      color: data.color,
       sharedWith: data.sharedWith || [],
       products: [],
       createdAt: new Date().toISOString(),

@@ -24,10 +24,12 @@
         class="card"
         @click="openCard(card)"
       >
-        <div class="card-ico">
-          <img :src="card.icon" :alt="card.title" />
+        <div class="card-title-wrapper" :style="{ backgroundColor: card.color }">
+          <div class="card-ico">
+            <img :src="card.icon" :alt="card.title" />
+          </div>
+          <h3 class="card-title">{{ card.title }}</h3>
         </div>
-        <h3 class="card-title">{{ card.title }}</h3>
         <p class="card-sub">
           <em v-if="card.sharedWith?.length">
             shared with {{ shareText(card.sharedWith) }}
@@ -92,16 +94,17 @@ const iconMap: Record<string, string> = {
   'liquor.svg': new URL('@/assets/liquor.svg', import.meta.url).href,
 }
 
-// Convertir las listas del store a cards con iconos
+
+
+// Convertir las listas del store a cards
 const cards = computed(() => {
   return listsStore.allLists.map(list => {
-    // Intentar obtener el icono desde el mapa, o usar el SVG por defecto
-    const icon = iconMap[list.icon] || new URL('@/assets/shopping_cart.svg', import.meta.url).href
-    
+    const icon = iconMap[list.icon || 'shopping_cart.svg'] || new URL('@/assets/shopping_cart.svg', import.meta.url).href
     return {
       id: list.id,
       title: list.title,
       icon,
+      color: list.color || '#6B7CFF', // Fallback color
       sharedWith: list.sharedWith || []
     }
   })
@@ -116,7 +119,7 @@ function shareText(list: string[]){
   return list.length === 1 ? list[0] : `${list.length} contacts`
 }
 
-function openCard(card: { id: string; title: string; icon: string; sharedWith?: string[] }){
+function openCard(card: { id: string; title: string; icon: string; color: string; sharedWith?: string[] }){
   router.push({ name: 'list', params: { name: encodeURIComponent(card.title) } })
 }
 
@@ -223,14 +226,25 @@ function onNew() {
   min-height: 260px;
   display:flex;
   flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
+  align-items:stretch; /* Stretch children */
+  justify-content:space-between; /* Push content to top and bottom */
   box-shadow: 0 10px 24px rgba(0,0,0,.35);
   transition: transform .08s ease;
   cursor:pointer;
+  overflow: hidden; /* Ensure title wrapper corners are rounded */
 }
 .card:hover{ transform: translateY(-2px); }
+
+.card-title-wrapper {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .card-ico{ 
   color:#EDEAF6; 
   opacity:.85;
@@ -244,8 +258,9 @@ function onNew() {
   filter: brightness(0) invert(1);
   opacity: .85;
 }
-.card-title{ margin:6px 0 0; font-weight:800; color:#fff; }
-.card-sub{ margin:0; color:#fff; font-size:12px; }
+
+.card-title{ margin:0; font-weight:800; color:#fff; font-size: 24px; }
+.card-sub{ margin:0; color:#fff; font-size:12px; padding: 20px; text-align: center; }
 
 /* ===== EMPTY STATE ===== */
 .empty-state{

@@ -3,7 +3,7 @@
     <!-- Overlay (oscuro + blur) -->
     <div class="overlay" @click.self="close" @keydown.esc="onEsc" tabindex="-1">
       <!-- Modal -->
-      <section class="modal" @click="maybeClosePickers($event)">
+      <section class="modal" @click="closeColorPickerOnClickOutside">
         <header class="modal-head">
           <h2>Add List</h2>
           <button class="x" @click="close" aria-label="Close">✕</button>
@@ -18,6 +18,7 @@
           </div>
 
           <!-- Icon selector -->
+          <hr class="separator">
           <div class="block">
             <label class="label">Icon</label>
             <div class="icon-selector">
@@ -34,80 +35,12 @@
             </div>
           </div>
 
+          
+
           <!-- Row: Emojis (multi) + Colors -->
+          <hr class="separator">
           <div class="row">
-            <!-- ✅ Multi-emoji -->
-            <div class="col">
-              <label class="label">Emojis</label>
-
-              <!-- Seleccion actual -->
-              <div class="picked-emojis" aria-live="polite">
-                <button
-                  v-for="(e,i) in emojis"
-                  :key="e + i"
-                  type="button"
-                  class="chip"
-                  @click="removeEmoji(i)"
-                  :aria-label="`Remove ${e}`"
-                  title="Remove"
-                >
-                  <span class="chip-emoji">{{ e }}</span>
-                  <span class="chip-x">×</span>
-                </button>
-
-                <button
-                  type="button"
-                  class="add-emoji"
-                  @click.stop="togglePicker"
-                  aria-haspopup="dialog"
-                  :aria-expanded="showPicker"
-                  :aria-label="showPicker ? 'Close emoji picker' : 'Open emoji picker'"
-                >
-                  {{ emojis.length ? 'Add' : 'Choose' }}
-                </button>
-
-                <button
-                  v-if="emojis.length"
-                  type="button"
-                  class="clear-emoji"
-                  @click="clearEmojis"
-                  aria-label="Clear all emojis"
-                >
-                  Clear
-                </button>
-              </div>
-
-              <!-- Popover del picker -->
-              <div v-if="showPicker" class="emoji-popover" role="dialog" @click.stop>
-                <div class="emoji-head">
-                  <input
-                    class="input small"
-                    v-model.trim="emojiQuery"
-                    placeholder="Search… (e.g. star)"
-                    @keydown.stop
-                  />
-                  <span class="hint">{{ emojis.length }}/{{ maxEmojis }}</span>
-                </div>
-
-                <div class="emoji-grid">
-                  <button
-                    v-for="e in filteredEmojiOptions"
-                    :key="e"
-                    type="button"
-                    class="emoji-btn"
-                    :disabled="isDisabled(e)"
-                    @click="toggleEmoji(e)"
-                    :title="hasEmoji(e) ? 'Remove' : 'Add'"
-                  >
-                    {{ e }}
-                  </button>
-                </div>
-
-                <div class="emoji-actions">
-                  <button type="button" class="btn-mini" @click="showPicker=false">Done</button>
-                </div>
-              </div>
-            </div>
+            
 
             <!-- Colores -->
             <div class="col">
@@ -123,6 +56,18 @@
                   @click="color = c"
                   aria-label="choose color"
                 />
+                <div class="custom-color-wrapper">
+                  <button
+                    type="button"
+                    class="swatch color-wheel"
+                    @click.stop="toggleCustomColorPicker"
+                    aria-label="choose custom color"
+                  ></button>
+                  <div v-if="showCustomColorPicker" class="custom-color-popover">
+                    <input type="color" v-model="color" @input="selectCustomColor" class="native-color-picker" />
+                    <input type="text" class="input hex-input" v-model="color" placeholder="#RRGGBB" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -173,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useListsStore } from '@/stores/lists'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
@@ -184,27 +129,17 @@ const listsStore = useListsStore()
 const name = ref('')
 const notes = ref('')
 const color = ref('#6B7CFF')
+
 const visibility = ref<'private'|'shared'>('private')
 const touched = ref(false)
 const selectedIcon = ref('shopping_cart.svg') // icono por defecto
+const showCustomColorPicker = ref(false)
 
-/** ============ Multi-emoji state ============ */
-const emojis = ref<string[]>([])         // selección actual
-const showPicker = ref(false)
-const emojiQuery = ref('')
-const maxEmojis = 4
 
-// catálogo básico (podés extenderlo)
-const emojiOptions = [
-  // smileys
-  '😀','😄','😊','🙂','😉','🥳','🤓','😎','🫶','❤️','✨','⭐️','⚡️','🔥','🌈','🎯','🚀',
-  // comida / super
-  '🛒','🍎','🍌','🍇','🥦','🥕','🥛','🍞','🧀','🥩','🥚','🧻','🧴','🧂','🥫','🧼',
-  // animales
-  '🐶','🐱','🐼','🐸','🦊','🐧','🐥','🦄',
-  // objetos
-  '📦','🗂️','🧺','🔑','📝','📅','⏰','🔒'
-]
+
+/** ============ Share modal state ============ */
+const showShare = ref(false)
+const sharedMembers = ref<string[]>([])
 
 // Iconos disponibles para seleccionar
 const availableIcons = [
@@ -230,49 +165,6 @@ const availableIcons = [
   },
 ]
 
-// filtro simple por nombre corto (heurística mínima)
-const nameMap: Record<string,string> = {
-  '😀':'grinning','😄':'smile','😊':'blush','🙂':'slight','😉':'wink','🥳':'party','🤓':'nerd','😎':'cool',
-  '🫶':'hearthands','❤️':'heart','✨':'sparkles','⭐️':'star','⚡️':'zap','🔥':'fire','🌈':'rainbow','🎯':'target','🚀':'rocket',
-  '🛒':'cart','🍎':'apple','🍌':'banana','🍇':'grapes','🥦':'broccoli','🥕':'carrot','🥛':'milk','🍞':'bread','🧀':'cheese','🥩':'meat','🥚':'egg','🧻':'toiletpaper','🧴':'lotion','🧂':'salt','🥫':'canned','🧼':'soap',
-  '🐶':'dog','🐱':'cat','🐼':'panda','🐸':'frog','🦊':'fox','🐧':'penguin','🐥':'chick','🦄':'unicorn',
-  '📦':'box','🗂️':'folders','🧺':'basket','🔑':'key','📝':'note','📅':'calendar','⏰':'alarm','🔒':'lock'
-}
-const filteredEmojiOptions = computed(()=>{
-  const q = emojiQuery.value.trim().toLowerCase()
-  if(!q) return emojiOptions
-  return emojiOptions.filter(e => (nameMap[e] || '').includes(q))
-})
-
-function togglePicker(){ showPicker.value = !showPicker.value }
-function onEsc(){ 
-  if (showPicker.value) showPicker.value = false
-  else close()
-}
-function maybeClosePickers(e: MouseEvent){
-  const el = e.target as HTMLElement
-  if (!el.closest('.emoji-popover') && !el.closest('.add-emoji')) {
-    showPicker.value = false
-  }
-}
-function hasEmoji(e: string){ return emojis.value.includes(e) }
-function isDisabled(e: string){
-  return !hasEmoji(e) && emojis.value.length >= maxEmojis
-}
-function toggleEmoji(e: string){
-  if (hasEmoji(e)) {
-    emojis.value = emojis.value.filter(x => x !== e)
-  } else if (emojis.value.length < maxEmojis) {
-    emojis.value.push(e)
-  }
-}
-function removeEmoji(i: number){ emojis.value.splice(i,1) }
-function clearEmojis(){ emojis.value = [] }
-
-/** ============ Share modal state ============ */
-const showShare = ref(false)
-const sharedMembers = ref<string[]>([])
-
 function setShared(){
   visibility.value = 'shared'
   showShare.value = true
@@ -285,7 +177,34 @@ function onShareSave(payload: { members: string[], pending: string[], blocked: s
 }
 
 /** ============ Colors ============ */
-const colors = ['#6B7CFF','#8A6BFB','#7D68D0','#5EC5A7','#F0B429','#E76F51','#B3B4BE']
+const colors = ['#6B7CFF', '#5EC5A7', '#F0B429', '#E76F51', '#E91E63']
+
+function toggleCustomColorPicker() {
+  showCustomColorPicker.value = !showCustomColorPicker.value
+}
+
+function selectCustomColor(event: Event) {
+  color.value = (event.target as HTMLInputElement).value
+}
+
+function closeColorPickerOnClickOutside(event: MouseEvent) {
+  const el = event.target as HTMLElement
+  if (!el.closest('.custom-color-wrapper')) {
+    showCustomColorPicker.value = false
+  }
+}
+
+
+
+
+
+function onEsc() {
+  if (showCustomColorPicker.value) {
+    showCustomColorPicker.value = false
+  } else {
+    close()
+  }
+}
 
 /** ============ Submit/Close ============ */
 function close(){ router.back() }
@@ -297,6 +216,7 @@ function submit(){
   listsStore.createList({
     title: name.value,
     icon: selectedIcon.value,
+    color: color.value,
     sharedWith: visibility.value === 'shared' ? sharedMembers.value : []
   })
   
@@ -305,7 +225,6 @@ function submit(){
     color: color.value,
     visibility: visibility.value,
     notes: notes.value,
-    emojis: emojis.value,
     icon: selectedIcon.value,
     sharedWith: sharedMembers.value
   })
@@ -343,6 +262,7 @@ function submit(){
   position: absolute; top: 14px; right: 14px;
   width: 36px; height: 36px; border-radius: 999px;
   background: #3C3A63; color: #fff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
 
 /* Body */
@@ -352,6 +272,7 @@ function submit(){
 
 .input, .textarea{
   width: 100%;
+  box-sizing: border-box; /* Fix overflow */
   background: #0E0F1A;
   color: #fff;
   border: 2px solid rgba(255,255,255,.12);
@@ -361,7 +282,13 @@ function submit(){
 }
 .input:focus, .textarea:focus{ border-color: #6B7CFF; }
 .input.small{ height: 38px; padding: 8px 12px; font-size: 14px; }
-.textarea{ min-height: 120px; resize: vertical; }
+.textarea{ min-height: 120px; resize: none; }
+
+.separator {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,.1);
+  margin: 16px 0;
+}
 
 .error{ color:#ff9f9f; font-size: 12px; margin-top: 6px; }
 
@@ -419,12 +346,59 @@ function submit(){
 }
 
 /* Colores */
-.colors{ display: flex; gap: 10px; flex-wrap: wrap; }
+.colors {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .swatch{
-  width: 30px; height: 30px; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,.25);
   cursor: pointer;
 }
+
 .swatch.picked{ outline: 2px solid #fff; }
+
+.color-wheel {
+  background: conic-gradient(from 90deg at 50% 50%, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  border: none; /* Remove border to ensure gradient fills */
+}
+
+.custom-color-wrapper {
+  position: relative;
+}
+
+.custom-color-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background: #1b1b2a;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  padding: 10px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.native-color-picker {
+  width: 100%;
+  height: 100px;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.hex-input {
+  width: 100%;
+}
 
 /* Icon selector */
 .icon-selector{
