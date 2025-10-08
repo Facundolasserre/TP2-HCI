@@ -2,16 +2,16 @@
   <header class="topbar" data-topbar-build="v3">
     <!-- botón con imagen (siempre a la izquierda) -->
     <button class="burger" @click="$emit('toggle-sidebar')" aria-label="Open menu">
-      <img src="@/assets/fonts/burgerIcon.png" alt="Menu" class="burger-img" />
+      <img src="@/assets/fonts/burgerIcon.png" alt="Menu" class="topbar-icon" />
     </button>
 
     <div class="topbar-content">
-      <div class="top-icons">
+      <div class="icon-group">
         <button class="round-btn" title="Filter" @click="$emit('filter')">
-          <img src="@/assets/fonts/filter.png" alt="Menu" class="burger-img"/>
+          <img src="@/assets/fonts/filter.png" alt="Menu" class="topbar-icon"/>
         </button>
         <button class="round-btn" title="Sort" @click="$emit('sort')">
-          <img src="@/assets/fonts/sort.png" alt="Menu" class="burger-img"/>
+          <img src="@/assets/fonts/sort.png" alt="Menu" class="topbar-icon"/>
         </button>
       </div>
 
@@ -23,9 +23,9 @@
         placeholder="Search"
       />
 
-      <div class="right-icons">
+      <div class="icon-group">
         <button class="star" title="Favorites" @click="$emit('favorites')">
-          <img src="@/assets/fonts/favIcon.png" alt="Menu" class="burger-img" />
+          <img src="@/assets/fonts/favIcon.png" alt="Menu" class="topbar-icon" />
         </button>
         <button class="plus special-plus" title="New" @click="$emit('new')">＋</button>
       </div>
@@ -60,7 +60,6 @@ defineEmits<{
 :root{
   --ink: #EDEAF6;
   --edge: #4B5CC7;
-  
 }
 
 /* ======= TOPBAR ======= */
@@ -95,7 +94,7 @@ defineEmits<{
   flex-shrink: 0;
 }
 
-.burger-img{
+.topbar-icon{
   width: 36px;                      /* +30% del ícono */
   height: 36px;
   object-fit: contain;
@@ -116,11 +115,11 @@ defineEmits<{
 }
 
 /* ======= ICONOS IZQUIERDA ======= */
-.top-icons{
+.icon-group{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 1.2vw, 12px);
+  gap: 10px;
 }
 
 /* ======= BOTONES REDONDOS ======= */
@@ -168,18 +167,12 @@ defineEmits<{
   color: rgba(255,255,255,0.6);
 }
 
-.right-icons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
+
 
 /* ======= RESPONSIVE ======= */
 /* no wrapping: mantener una sola fila; solo ajustamos gaps/ancho buscador en muy chico */
 @media (max-width: 520px){
   .topbar-content{ gap: 6px; }
-  .search-wrap{ max-width: 260px; }
 }
 
 /* user settings (derecha) */
