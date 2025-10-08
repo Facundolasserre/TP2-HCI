@@ -1,26 +1,27 @@
 <template>
-  <div class="page">
-    <!-- TOP BAR - Simple: Home | Title | Share -->
-    <header class="topbar">
-      <button class="icon-btn home-btn" @click="goHome" aria-label="Home">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </button>
+  <div class="page-wrapper">
+    <div class="page">
+      <!-- TOP BAR - Simple: Home | Title | Share -->
+      <header class="topbar">
+        <button class="icon-btn home-btn" @click="goHome" aria-label="Home">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </button>
 
-      <h1 class="main-title">{{ currentList?.name || 'List' }}</h1>
+        <h1 class="main-title">{{ currentList?.name || 'List' }}</h1>
 
-      <button class="icon-btn share-btn" @click="shareList" aria-label="Share" title="Share this list">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="18" cy="5" r="3"/>
-          <circle cx="6" cy="12" r="3"/>
-          <circle cx="18" cy="19" r="3"/>
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-        </svg>
-      </button>
-    </header>
+        <button class="icon-btn share-btn" @click="shareList" aria-label="Share" title="Share this list">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+      </header>
 
     <!-- TOOLBAR - Filter, Sort | Add -->
     <section class="toolbar">
@@ -95,6 +96,7 @@
       :list-name="currentList.name"
       @close="closeShareModal"
     />
+  </div>
   </div>
 </template>
 
@@ -217,34 +219,48 @@ const onProductAdded = () => {
 }
 </script>
 <style scoped>
+/* ===== WRAPPER - Override #app styles ===== */
+.page-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #23273A;
+  overflow: auto;
+}
+
 /* ===== PAGE LAYOUT - Desktop First ===== */
 .page {
   min-height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 32px 64px 48px;
+  padding: 40px 80px 60px;
   box-sizing: border-box;
   background: #23273A;
   color: #EDEAF6;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  gap: 28px;
 }
 
 /* ===== TOP BAR: Home | Title | Share ===== */
 .topbar {
   display: grid;
-  grid-template-columns: 64px 1fr 64px;
+  grid-template-columns: 80px 1fr 80px;
   align-items: center;
-  gap: 32px;
-  padding: 8px 0;
+  gap: 40px;
+  padding: 12px 0;
+  margin-bottom: 8px;
 }
 
 .icon-btn {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   border: none;
   background: #3C3A63;
@@ -254,25 +270,27 @@ const onProductAdded = () => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .icon-btn:hover {
   background: #4a4770;
   transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .icon-btn svg {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
 }
 
 .main-title {
   margin: 0;
   text-align: center;
-  font-size: 48px;
-  font-weight: 800;
+  font-size: 56px;
+  font-weight: 900;
   color: #EDEAF6;
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
 }
 
 /* ===== TOOLBAR: Filter/Sort | Add ===== */
@@ -281,20 +299,20 @@ const onProductAdded = () => {
   align-items: center;
   justify-content: space-between;
   background: #4B497C;
-  border-radius: 20px;
-  padding: 16px 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 24px;
+  padding: 20px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .toolbar-left {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 
 .tool-btn {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   border: none;
   background: #5B5990;
   cursor: pointer;
@@ -302,45 +320,47 @@ const onProductAdded = () => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .tool-btn:hover {
   background: #6a678f;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .tool-icon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   filter: brightness(0) invert(1);
   opacity: 0.9;
 }
 
 .add-btn {
-  height: 52px;
+  height: 60px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 28px;
-  border-radius: 14px;
+  gap: 14px;
+  padding: 0 36px;
+  border-radius: 16px;
   background: #6B7CFF;
   color: #fff;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 20px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 12px rgba(107, 124, 255, 0.3);
+  box-shadow: 0 3px 14px rgba(107, 124, 255, 0.35);
 }
 
 .add-btn:hover {
   background: #7F89FF;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(107, 124, 255, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(107, 124, 255, 0.45);
 }
 
 .plus-icon {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 900;
   line-height: 1;
 }
@@ -348,19 +368,19 @@ const onProductAdded = () => {
 /* ===== ITEMS CONTAINER ===== */
 .items-container {
   background: #4B497C;
-  border-radius: 24px;
+  border-radius: 28px;
   padding: 0;
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  min-height: 500px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  min-height: 600px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 120px 20px;
+  padding: 140px 20px;
   color: #B9B5D1;
   flex: 1;
   display: flex;
@@ -370,7 +390,7 @@ const onProductAdded = () => {
 
 .empty-state p {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   opacity: 0.8;
 }
 
@@ -378,21 +398,21 @@ const onProductAdded = () => {
 .items-list {
   overflow-y: auto;
   flex: 1;
-  padding: 8px 0;
+  padding: 12px 0;
 }
 
 .item-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 32px;
+  padding: 32px 40px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.2s ease;
-  min-height: 80px;
+  min-height: 100px;
 }
 
 .item-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .item-row:last-child {
@@ -403,25 +423,25 @@ const onProductAdded = () => {
 .item-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 28px;
   flex: 1;
 }
 
 .item-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .item-name {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   color: #EDEAF6;
   line-height: 1.3;
 }
 
 .item-meta {
-  font-size: 14px;
+  font-size: 16px;
   color: #B9B5D1;
   opacity: 0.85;
 }
@@ -430,22 +450,22 @@ const onProductAdded = () => {
 .item-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
 }
 
 .item-quantity {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   color: #EDEAF6;
-  min-width: 50px;
+  min-width: 70px;
   text-align: right;
 }
 
 /* ===== CUSTOM CHECKBOX - Larger ===== */
 .checkbox-wrapper {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -463,10 +483,10 @@ const onProductAdded = () => {
 }
 
 .checkbox-custom {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
   background: transparent;
   transition: all 0.2s ease;
   position: relative;
@@ -483,10 +503,10 @@ const onProductAdded = () => {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%) rotate(45deg);
-  width: 7px;
-  height: 13px;
+  width: 8px;
+  height: 15px;
   border: solid white;
-  border-width: 0 3px 3px 0;
+  border-width: 0 3.5px 3.5px 0;
 }
 
 .checkbox-wrapper:hover .checkbox-custom {

@@ -1,26 +1,44 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import authService, { type LoginCredentials, type RegisterData, type UserProfile } from '@/api/auth.service';
+import usersService from '@/api/users.service';
+import type {
+  Credentials,
+  RegistrationData,
+  GetUser,
+  UpdateUserProfile,
+  PasswordChange,
+  PasswordReset,
+  VerificationCode,
+  RegisteredUser,
+} from '@/api/users.service';
 
 /**
- * Store de autenticación
- * Maneja el estado del usuario, token JWT, login y logout
+ * Auth Store - Aligned with OpenAPI specification
+ * Manages user authentication state, JWT token, and user profile
  */
 export const useAuthStore = defineStore('auth', () => {
-  // Estado
+  // ===== STATE =====
   const token = ref<string | null>(localStorage.getItem('auth_token'));
-  const user = ref<UserProfile | null>(null);
+  const user = ref<GetUser | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const verificationToken = ref<string | null>(null); // Store verification token from registration
 
-  // Computed
+  // ===== COMPUTED =====
   const isAuthenticated = computed(() => !!token.value);
   const userFullName = computed(() => 
     user.value ? `${user.value.name} ${user.value.surname}` : ''
   );
+  const isVerified = computed(() => {
+    // User is verified if they can successfully login
+    // Backend requires isVerified = 1 to login
+    return isAuthenticated.value;
+  });
+
+  // ===== ACTIONS =====
 
   /**
-   * Guarda el token en localStorage y en el estado
+   * Save token to localStorage and state
    */
   function setToken(newToken: string) {
     token.value = newToken;
@@ -28,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Elimina el token de localStorage y del estado
+   * Clear token from localStorage and state
    */
   function clearToken() {
     token.value = null;
@@ -36,27 +54,28 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Inicia sesión
+   * Login user
+   * POST /api/users/login
    */
-  async function login(credentials: LoginCredentials): Promise<void> {
+  async function login(credentials: Credentials): Promise<void> {
     loading.value = true;
     error.value = null;
 
     try {
-      // Llamar a la API de login
-      const response = await authService.login(credentials);
+      // Call API to login
+      const response = await usersService.login(credentials);
       
-      // Guardar el token
+      // Save JWT token
       setToken(response.token);
 
-      // Obtener perfil del usuario (no lanzar error si falla)
+      // Try to fetch user profile (don't throw error if fails)
       try {
         await fetchCurrentUser();
       } catch (profileError) {
-        console.warn('No se pudo cargar perfil inmediatamente, continuando...', profileError);
+        console.warn('Could not fetch profile immediately, continuing...', profileError);
       }
 
-      console.log('✓ Login exitoso');
+      console.log('✓ Login successful');
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Error al iniciar sesión';
       clearToken();
@@ -68,31 +87,30 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Registra un nuevo usuario
+   * Register new user
+   * POST /api/users/register
+   * Returns RegisteredUser with verificationToken
    */
-  async function register(data: RegisterData): Promise<void> {
+  async function register(data: RegistrationData): Promise<RegisteredUser> {
     loading.value = true;
     error.value = null;
 
     try {
-      // Llamar a la API de registro
-      const response = await authService.register(data);
+      // Call API to register - returns RegisteredUser (user + verificationToken)
+      const response = await usersService.register(data);
       
-      // Guardar el token (la API devuelve token al registrarse)
-      setToken(response.token);
-
-      // Obtener perfil del usuario (no lanzar error si falla)
-      try {
-        await fetchCurrentUser();
-      } catch (profileError) {
-        console.warn('No se pudo cargar perfil inmediatamente, continuando...', profileError);
-      }
-
-      console.log('✓ Registro exitoso');
+      // Store verification token for later use
+      verificationToken.value = response.verificationToken;
+      
+      // Note: User is NOT logged in yet - must verify account first
+      // Backend returns verificationToken that must be used with verify-account endpoint
+      
+      console.log('✓ Registration successful, verification required');
+      console.log('Verification token:', response.verificationToken);
+      
+      return response;
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Error al registrarse';
-      clearToken();
-      user.value = null;
       throw err;
     } finally {
       loading.value = false;
@@ -100,7 +118,53 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Obtiene el perfil del usuario actual
+   * Verify account with code
+   * POST /api/users/verify-account
+   */
+  async function verifyAccount(code: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Call API to verify
+      await usersService.verifyAccount({ code });
+      
+      // Clear stored verification token
+      verificationToken.value = null;
+      
+      console.log('✓ Account verified successfully');
+      
+      // Note: User still needs to login after verification
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Error al verificar cuenta';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Send verification code to email
+   * POST /api/users/send-verification?email={email}
+   */
+  async function sendVerification(email: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await usersService.sendVerification(email);
+      console.log('✓ Verification code sent');
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Error al enviar código';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Get current user profile
+   * GET /api/users/profile
    */
   async function fetchCurrentUser(): Promise<void> {
     if (!token.value) {
@@ -112,13 +176,13 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null;
 
     try {
-      user.value = await authService.getCurrentUser();
-      console.log('✓ Perfil de usuario cargado:', user.value);
+      user.value = await usersService.getProfile();
+      console.log('✓ User profile loaded:', user.value);
     } catch (err: any) {
-      console.error('Error al obtener perfil:', err);
+      console.error('Error fetching profile:', err);
       error.value = err.response?.data?.message || err.message || 'Error al obtener perfil';
       
-      // NO hacer logout automáticamente aquí - dejar que el llamador decida
+      // Don't auto-logout here - let caller decide
       throw err;
     } finally {
       loading.value = false;
@@ -126,43 +190,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Cierra sesión
+   * Update user profile
+   * PUT /api/users/profile
    */
-  async function logout(): Promise<void> {
+  async function updateProfile(data: UpdateUserProfile): Promise<void> {
     loading.value = true;
     error.value = null;
 
     try {
-      // Intentar cerrar sesión en el backend
-      if (token.value) {
-        try {
-          await authService.logout();
-        } catch (err) {
-          // Ignorar errores al hacer logout en el backend
-          console.warn('Error al hacer logout en backend:', err);
-        }
-      }
-
-      // Limpiar estado local
-      clearToken();
-      user.value = null;
-
-      console.log('✓ Logout exitoso');
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  /**
-   * Actualiza el perfil del usuario
-   */
-  async function updateProfile(data: { name?: string; surname?: string; metadata?: Record<string, any> }): Promise<void> {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      user.value = await authService.updateProfile(data);
-      console.log('✓ Perfil actualizado');
+      user.value = await usersService.updateProfile(data);
+      console.log('✓ Profile updated');
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Error al actualizar perfil';
       throw err;
@@ -172,15 +209,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Cambia la contraseña del usuario
+   * Change password
+   * POST /api/users/change-password
    */
-  async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
     loading.value = true;
     error.value = null;
 
     try {
-      await authService.changePassword({ oldPassword, newPassword });
-      console.log('✓ Contraseña cambiada');
+      await usersService.changePassword({ currentPassword, newPassword });
+      console.log('✓ Password changed');
     } catch (err: any) {
       error.value = err.response?.data?.message || err.message || 'Error al cambiar contraseña';
       throw err;
@@ -190,15 +228,83 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Inicializa el store (cargar usuario si hay token)
+   * Send password recovery code
+   * POST /api/users/forgot-password?email={email}
+   */
+  async function sendPasswordRecovery(email: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await usersService.sendPasswordRecovery(email);
+      console.log('✓ Password recovery code sent');
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Error al enviar código';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Reset password with recovery code
+   * POST /api/users/reset-password
+   */
+  async function resetPassword(code: string, newPassword: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await usersService.resetPassword({ code, password: newPassword });
+      console.log('✓ Password reset successfully');
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || 'Error al resetear contraseña';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Logout user
+   * POST /api/users/logout
+   */
+  async function logout(): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Try to logout on backend
+      if (token.value) {
+        try {
+          await usersService.logout();
+        } catch (err) {
+          // Ignore backend logout errors
+          console.warn('Error logging out on backend:', err);
+        }
+      }
+
+      // Clear local state
+      clearToken();
+      user.value = null;
+      verificationToken.value = null;
+
+      console.log('✓ Logout successful');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Initialize store (load user if token exists)
    */
   async function initialize(): Promise<void> {
     if (token.value) {
       try {
         await fetchCurrentUser();
       } catch (err) {
-        // Si falla, limpiar token inválido
-        console.warn('Token inválido, limpiando...');
+        // If token is invalid, clear it
+        console.warn('Invalid token, clearing...');
         clearToken();
         user.value = null;
       }
@@ -206,25 +312,31 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    // Estado
+    // State
     token,
     user,
     loading,
     error,
+    verificationToken,
     
     // Computed
     isAuthenticated,
     userFullName,
+    isVerified,
     
-    // Acciones
+    // Actions
     login,
     register,
-    logout,
+    verifyAccount,
+    sendVerification,
     fetchCurrentUser,
     updateProfile,
     changePassword,
+    sendPasswordRecovery,
+    resetPassword,
+    logout,
     initialize,
     setToken,
-    clearToken
+    clearToken,
   };
 });

@@ -5,7 +5,7 @@
         <aside class="sidebar">
           <!-- ENCABEZADO CON 3 ICONOS -->
           <div class="sb-top">
-            <button class="top-icon" aria-label="Account">
+            <button class="top-icon" @click="goToProfile" aria-label="Account">
               <img src="@/assets/fonts/account.png" alt="Account" />
             </button>
             <button class="top-icon brand-logo" aria-label="Logo">
@@ -50,6 +50,22 @@
               </svg>
               <span>Shopping List History</span>
             </li>
+
+            <li
+              :class="{ active: active === 'pantries' }"
+              @click="goToPantries"
+            >
+              <img src="@/assets/warehouse.svg" alt="Pantries" class="ico-img" />
+              <span>Pantries</span>
+            </li>
+
+            <li
+              :class="{ active: active === 'products' }"
+              @click="goToProducts"
+            >
+              <img src="@/assets/shopping_cart.svg" alt="Products" class="ico-img" />
+              <span>Products</span>
+            </li>
           </ul>
 
           <!-- PIE -->
@@ -71,35 +87,56 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const props = defineProps<{
   open: boolean
-  active: 'home' | 'edit' | 'history'
+  active: 'home' | 'edit' | 'history' | 'pantries' | 'products'
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'update:active', v: 'home' | 'edit' | 'history'): void
+  (e: 'update:active', v: 'home' | 'edit' | 'history' | 'pantries' | 'products'): void
 }>()
 
 function emitClose() {
   emit('close')
 }
 
-function set(v: 'home' | 'edit' | 'history') {
+function set(v: 'home' | 'edit' | 'history' | 'pantries' | 'products') {
   emit('update:active', v)
   emitClose()
 }
 
-function logout() {
-  router.push('/login')  
+async function logout() {
+  await authStore.logout()
+  emitClose()
+  router.push('/login')
 }
 
 function goHome() {
   set('home')
   router.push('/Home')
+  emitClose()
+}
+
+function goToProfile() {
+  router.push('/profile')
+  emitClose()
+}
+
+function goToPantries() {
+  set('pantries')
+  router.push('/pantries')
+  emitClose()
+}
+
+function goToProducts() {
+  set('products')
+  router.push('/products')
   emitClose()
 }
 </script>
@@ -211,6 +248,14 @@ function goHome() {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+}
+
+.sb-menu .ico-img {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 /* ===== BOTTOM (LOG OUT) ===== */

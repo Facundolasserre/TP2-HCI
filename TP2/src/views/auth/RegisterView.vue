@@ -27,6 +27,11 @@
         {{ errorMessage }}
       </div>
 
+      <!-- Success message -->
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+
       <button class="btn" type="submit" :disabled="!isValid || isLoading">
         {{ isLoading ? 'Registering...' : 'Register' }}
       </button>
@@ -48,13 +53,17 @@ const email = ref('')
 const password = ref('')
 const password2 = ref('')
 const errorMessage = ref('')
+const successMessage = ref('')
+const verificationToken = ref('')
 const isLoading = ref(false)
 
 const isEmail = (v: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
 const isValid = computed(() =>
   name.value.trim().length > 0 &&
+  name.value.length <= 50 &&
   surname.value.trim().length > 0 &&
+  surname.value.length <= 50 &&
   isEmail(email.value) &&
   password.value.length >= 6 &&
   password.value === password2.value
@@ -68,21 +77,33 @@ async function onSubmit() {
   }
 
   errorMessage.value = ''
+  successMessage.value = ''
   isLoading.value = true
 
   try {
     // Llamar al store para registrar
-    await authStore.register({
+    const response = await authStore.register({
       name: name.value.trim(),
       surname: surname.value.trim(),
       email: email.value.trim(),
       password: password.value
     })
 
-    console.log('✓ Registro exitoso, redirigiendo a Home...')
+    // Mostrar token de verificación (el backend lo envía por email también)
+    verificationToken.value = response.verificationToken
+    successMessage.value = `✓ Registro exitoso! Revisa tu email para el código de verificación. Token: ${response.verificationToken}`
     
-    // Redirigir a Home
-    router.push('/Home')
+    console.log('✓ Registration successful')
+    console.log('Verification token:', response.verificationToken)
+    
+    // Redirigir a verificación después de 3 segundos
+    setTimeout(() => {
+      router.push({ 
+        name: 'verify-account',
+        query: { email: email.value }
+      })
+    }, 3000)
+    
   } catch (err: any) {
     console.error('Error en registro:', err)
     errorMessage.value = err.response?.data?.message || err.message || 'Error al registrarse. Por favor intenta de nuevo.'
@@ -134,6 +155,17 @@ async function onSubmit() {
   border-radius: 8px;
   text-align: center;
   margin-top: -10px;
+}
+
+.success-message {
+  color: #51cf66;
+  font-size: 14px;
+  padding: 10px;
+  background: rgba(81, 207, 102, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  margin-top: -10px;
+  word-break: break-all;
 }
 
 .links-row{ display:flex; justify-content:flex-end; }

@@ -33,7 +33,7 @@
 
     <!-- user settings (a la derecha del todo) -->
     <button class="user-settings-btn" @click="$emit('user-settings')" aria-label="Open settings">
-      <img src="@/assets/fonts/settings.png" alt="Settings" />
+      <img src="@/assets/fonts/account.png" alt="Settings" />
     </button>
   </header>
 </template>
@@ -159,12 +159,16 @@ defineEmits<{
   padding: 0 24px;
   outline: none;
   font-size: 18px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;                 /* negrita */
   min-width: 140px;
-  max-width: 350px; /* Ajustado */
-  text-align: center;
+  max-width: 350px;
+  text-align: left;                 /* alineado a la izquierda */
 }
 .search::placeholder{
   color: rgba(255,255,255,0.6);
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
 }
 
 

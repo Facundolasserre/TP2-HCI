@@ -16,9 +16,23 @@
         v-model.trim="email"
         type="email"
         autocomplete="email"
-        placeholder=""
+        placeholder="your@email.com"
+        required
       />
-      <button class="btn" type="submit" :disabled="!isEmail(email)">Reset</button>
+      
+      <!-- Error message -->
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Success message -->
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+      
+      <button class="btn" type="submit" :disabled="!isEmail(email) || isLoading">
+        {{ isLoading ? 'Sending...' : 'Reset' }}
+      </button>
     </form>
   </section>
 </template>
@@ -26,19 +40,47 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const email = ref('')
+const errorMessage = ref('')
+const successMessage = ref('')
+const isLoading = ref(false)
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
-async function onSubmit () {
-  if (!isEmail(email.value)) return
-  // Aquí iría tu llamada a API para enviar el mail de reseteo
-  console.log('reset password for', email.value)
+async function onSubmit() {
+  if (!isEmail(email.value)) {
+    errorMessage.value = 'Por favor ingresa un email válido'
+    return
+  }
+  
+  errorMessage.value = ''
+  successMessage.value = ''
+  isLoading.value = true
 
-  // Llevar al login (o a una pantalla de "check your inbox")
-  router.push('/login')
+  try {
+    // Send password recovery code
+    await authStore.sendPasswordRecovery(email.value.trim())
+    
+    successMessage.value = '✓ Código de recuperación enviado! Revisa tu email'
+    
+    // Redirect to reset password page after 2 seconds
+    setTimeout(() => {
+      router.push({
+        name: 'reset-password',
+        query: { email: email.value }
+      })
+    }, 2000)
+    
+  } catch (err: any) {
+    console.error('Error sending recovery code:', err)
+    errorMessage.value = err.response?.data?.message || err.message || 'Error al enviar código de recuperación'
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -82,6 +124,26 @@ async function onSubmit () {
   padding: 0 2px;
 }
 .input:focus{ border-bottom-color:#fff; }
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 14px;
+  padding: 10px;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  margin-top: -10px;
+}
+
+.success-message {
+  color: #51cf66;
+  font-size: 14px;
+  padding: 10px;
+  background: rgba(81, 207, 102, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  margin-top: -10px;
+}
 
 .btn{
   margin: 8px auto 0;
