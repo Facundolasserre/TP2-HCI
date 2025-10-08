@@ -3,7 +3,7 @@
     <!-- Overlay (oscuro + blur) -->
     <div class="overlay" @click.self="close" @keydown.esc="onEsc" tabindex="-1">
       <!-- Modal -->
-      <section class="modal" @click="closeColorPickerOnClickOutside">
+      <section class="modal">
         <header class="modal-head">
           <h2>Add List</h2>
           <button class="x" @click="close" aria-label="Close">✕</button>
@@ -56,18 +56,7 @@
                   @click="color = c"
                   aria-label="choose color"
                 />
-                <div class="custom-color-wrapper">
-                  <button
-                    type="button"
-                    class="swatch color-wheel"
-                    @click.stop="toggleCustomColorPicker"
-                    aria-label="choose custom color"
-                  ></button>
-                  <div v-if="showCustomColorPicker" class="custom-color-popover">
-                    <input type="color" v-model="color" @input="selectCustomColor" class="native-color-picker" />
-                    <input type="text" class="input hex-input" v-model="color" placeholder="#RRGGBB" />
-                  </div>
-                </div>
+                
               </div>
             </div>
           </div>
@@ -133,7 +122,6 @@ const color = ref('#6B7CFF')
 const visibility = ref<'private'|'shared'>('private')
 const touched = ref(false)
 const selectedIcon = ref('shopping_cart.svg') // icono por defecto
-const showCustomColorPicker = ref(false)
 
 
 
@@ -179,31 +167,12 @@ function onShareSave(payload: { members: string[], pending: string[], blocked: s
 /** ============ Colors ============ */
 const colors = ['#6B7CFF', '#5EC5A7', '#F0B429', '#E76F51', '#E91E63']
 
-function toggleCustomColorPicker() {
-  showCustomColorPicker.value = !showCustomColorPicker.value
-}
-
-function selectCustomColor(event: Event) {
-  color.value = (event.target as HTMLInputElement).value
-}
-
-function closeColorPickerOnClickOutside(event: MouseEvent) {
-  const el = event.target as HTMLElement
-  if (!el.closest('.custom-color-wrapper')) {
-    showCustomColorPicker.value = false
-  }
-}
-
 
 
 
 
 function onEsc() {
-  if (showCustomColorPicker.value) {
-    showCustomColorPicker.value = false
-  } else {
-    close()
-  }
+  close()
 }
 
 /** ============ Submit/Close ============ */
@@ -363,42 +332,7 @@ function submit(){
 
 .swatch.picked{ outline: 2px solid #fff; }
 
-.color-wheel {
-  background: conic-gradient(from 90deg at 50% 50%, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-  border: none; /* Remove border to ensure gradient fills */
-}
 
-.custom-color-wrapper {
-  position: relative;
-}
-
-.custom-color-popover {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 10;
-  background: #1b1b2a;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.45);
-  padding: 10px;
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.native-color-picker {
-  width: 100%;
-  height: 100px;
-  border: none;
-  padding: 0;
-  background: transparent;
-}
-
-.hex-input {
-  width: 100%;
-}
 
 /* Icon selector */
 .icon-selector{
