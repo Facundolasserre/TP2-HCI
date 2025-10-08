@@ -65,8 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useToast } from '@/composables/useToast'
 
@@ -74,6 +74,7 @@ import Topbar from '@/components/Topbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 
 const router = useRouter()
+const route = useRoute()
 const shoppingListsStore = useShoppingListsStore()
 const toast = useToast()
 
@@ -127,7 +128,7 @@ function shareText(list: string[]){
 }
 
 function openCard(card: { id: number; title: string; icon: string; color: string; sharedWith?: string[] }){
-  router.push(`/lists/${card.id}`)
+  router.push(`/List/${card.id}`)
 }
 
 /* === Eventos de Topbar === */
@@ -140,13 +141,33 @@ function onNew() {
   router.push('/AddList')  // llama AddListView
 }
 
-// Load lists from API on mount
-onMounted(async () => {
+// Load lists from API
+async function loadLists() {
   try {
     await shoppingListsStore.fetchLists({ page: 1, per_page: 50 })
+    console.log('✓ Lists loaded:', shoppingListsStore.items.length)
   } catch (error: any) {
     // Silently handle errors - store already shows mock data on network errors
-    console.log('Lists loaded (mock or real):', shoppingListsStore.items.length)
+    console.log('⚠️ Error loading lists, using fallback data')
+  }
+}
+
+// Load lists on mount
+onMounted(async () => {
+  await loadLists()
+})
+
+// Reload lists when navigating back to Home (but not on initial mount)
+// This ensures new lists appear after creating them
+let isFirstLoad = true
+watch(() => route.path, (newPath) => {
+  if (newPath === '/Home') {
+    if (isFirstLoad) {
+      isFirstLoad = false
+      return
+    }
+    console.log('🔄 Reloading lists after navigation...')
+    loadLists()
   }
 })
 

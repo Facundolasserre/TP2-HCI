@@ -1,70 +1,91 @@
 <template>
   <div class="page">
-    <!-- TOP BAR -->
+    <!-- TOP BAR - Simple: Home | Title | Share -->
     <header class="topbar">
-      <button class="home" @click="goHome" aria-label="Home">🏠</button>
+      <button class="icon-btn home-btn" @click="goHome" aria-label="Home">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
 
-      <div class="search-wrap">
-        <input v-model.trim="q" class="search" type="text" placeholder="Search product" />
-        <button class="search-ico" aria-label="Search">🔎</button>
-      </div>
+      <h1 class="main-title">{{ currentList?.name || 'List' }}</h1>
 
-      <div class="top-actions">
-        <button class="share" @click="shareList" aria-label="Share">🔗</button>
-      </div>
+      <button class="icon-btn share-btn" @click="shareList" aria-label="Share" title="Share this list">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/>
+          <circle cx="6" cy="12" r="3"/>
+          <circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      </button>
     </header>
 
-    <!-- TITLE BAR -->
-    <section class="titlebar">
-      <div class="left-actions">
-        <button class="round" title="Filter">🜜</button>
-        <button class="round" title="Sort">☰</button>
-      </div>
-
-      <h1 class="title">{{ currentList?.name || 'List' }}</h1>
-
-      <div class="right-actions">
-        <button class="round" title="Rename / Edit" @click="editList">✎</button>
-        <button class="add" @click="goToAddItem">
-          <span>Add</span>
-          <span class="plus">＋</span>
+    <!-- TOOLBAR - Filter, Sort | Add -->
+    <section class="toolbar">
+      <div class="toolbar-left">
+        <button class="tool-btn" @click="onFilter" aria-label="Filter">
+          <img src="@/assets/fonts/filter.png" alt="filter" class="tool-icon" />
+        </button>
+        <button class="tool-btn" @click="onSort" aria-label="Sort">
+          <img src="@/assets/fonts/sort.png" alt="sort" class="tool-icon" />
         </button>
       </div>
+
+      <button class="add-btn" @click="goToAddItem">
+        <span>Add</span>
+        <span class="plus-icon">+</span>
+      </button>
     </section>
 
-    <!-- LIST -->
-    <main class="sheet">
+    <!-- ITEMS LIST -->
+    <main class="items-container">
       <div v-if="!currentList" class="empty-state">
         <p>List not found</p>
       </div>
       <div v-else-if="filteredProducts.length === 0" class="empty-state">
-        <p>{{ q ? 'No products found' : 'No products yet. Add one!' }}</p>
+        <p>No products yet. Tap Add to get started!</p>
       </div>
-      <article
-        v-else
-        v-for="product in filteredProducts"
-        :key="product.id"
-        class="row"
-      >
-        <div class="left">
-          <div class="info">
-            <div class="name">{{ product.name }}</div>
-            <div class="hint">{{ product.unit }}</div>
-          </div>
-        </div>
+      <div v-else class="items-list">
+        <article
+          v-for="product in filteredProducts"
+          :key="product.id"
+          class="item-row"
+        >
+          <!-- Left: checkbox + info -->
+          <div class="item-left">
+            <label class="checkbox-wrapper">
+              <input 
+                type="checkbox" 
+                :checked="product.checked" 
+                @change="toggleCheck(product.id)"
+                class="checkbox-input"
+              />
+              <span class="checkbox-custom"></span>
+            </label>
 
-        <div class="right">
-          <div class="qty">x{{ product.amount }}</div>
-          <label class="box">
-            <input 
-              type="checkbox" 
-              :checked="product.checked" 
-              @change="toggleCheck(product.id)"
-            />
-            <span></span>
-          </label>
-        </div>
-      </article>
+            <div class="item-info">
+              <div class="item-name">{{ product.name }}</div>
+              <div class="item-meta">added by {{ product.addedBy || 'user' }}</div>
+            </div>
+          </div>
+
+          <!-- Right: quantity + checkbox -->
+          <div class="item-right">
+            <div class="item-quantity">x{{ product.amount }}</div>
+            <label class="checkbox-wrapper">
+              <input 
+                type="checkbox" 
+                :checked="product.checked" 
+                @change="toggleCheck(product.id)"
+                class="checkbox-input"
+              />
+              <span class="checkbox-custom"></span>
+            </label>
+          </div>
+        </article>
+      </div>
     </main>
 
     <!-- Share Modal -->
@@ -148,6 +169,14 @@ const goHome = () => {
   router.push('/Home')
 }
 
+const onFilter = () => {
+  toast.info('Filter feature coming soon!')
+}
+
+const onSort = () => {
+  toast.info('Sort feature coming soon!')
+}
+
 const editList = () => {
   if (listId.value) {
     router.push(`/lists/${listId.value}/edit`)
@@ -188,297 +217,375 @@ const onProductAdded = () => {
 }
 </script>
 <style scoped>
-html, body, #app {
-  height: 100%;
+/* ===== PAGE LAYOUT - Desktop First ===== */
+.page {
+  min-height: 100vh;
+  width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 32px 64px 48px;
+  box-sizing: border-box;
+  background: #23273A;
+  color: #EDEAF6;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* ===== Página a pantalla completa ===== */
-.page {
-  min-height: 100dvh;
-  width: 100vw;
-  margin: 0;
-  padding: 24px clamp(16px, 4vw, 48px);
-  box-sizing: border-box;
-  background: #1C1C30;
-  color: #EDEAF6;
+/* ===== TOP BAR: Home | Title | Share ===== */
+.topbar {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 64px 1fr 64px;
+  align-items: center;
+  gap: 32px;
+  padding: 8px 0;
+}
+
+.icon-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #3C3A63;
+  color: #EDEAF6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #4a4770;
+  transform: scale(1.08);
+}
+
+.icon-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.main-title {
+  margin: 0;
+  text-align: center;
+  font-size: 48px;
+  font-weight: 800;
+  color: #EDEAF6;
+  letter-spacing: -0.5px;
+}
+
+/* ===== TOOLBAR: Filter/Sort | Add ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #4B497C;
+  border-radius: 20px;
+  padding: 16px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-left {
+  display: flex;
   gap: 16px;
 }
 
-/* ===== Topbar (home / search / share) ===== */
-.topbar {
-  display: grid;
-  grid-template-columns: 48px 1fr 48px;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.home,
-.share {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+.tool-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   border: none;
-  background: #1A1930;
-  color: #fff;
+  background: #5B5990;
   cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.home:hover,
-.share:hover {
-  background: #252442;
-}
-
-/* ===== Search ===== */
-.search-wrap {
-  position: relative;
-  width: 100%;
-  margin: 0;
-}
-
-.search {
-  width: 100%;
-  height: 46px;
-  border-radius: 26px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  background: #201F34;
-  color: #EDEAF6;
-  padding: 0 44px 0 16px;
-  outline: none;
-  font-weight: 700;
-  box-sizing: border-box;
-}
-
-.search::placeholder {
-  color: #b9b5d1;
-}
-
-.search-ico {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border: none;
-  background: transparent;
-  color: #EDEAF6;
-  cursor: pointer;
-}
-
-/* ===== Titlebar ===== */
-.titlebar {
-  display: grid;
-  grid-template-columns: 180px 1fr 260px;
-  align-items: center;
-  background: #322D59;
-  border-radius: 18px;
-  padding: 14px 18px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  width: 100%;
-}
-
-.title {
-  margin: 0;
-  text-align: center;
-  font-size: 32px;
-  font-weight: 800;
-  color: #EDEAF6;
-}
-
-.left-actions,
-.right-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  justify-content: flex-start;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.right-actions {
-  justify-content: flex-end;
-}
-
-.round {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: none;
-  background: #2B2950;
-  color: #EDEAF6;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.round:hover {
-  background: #3a3868;
-}
-
-.add {
-  height: 40px;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #7F89FF, #6B7CFF);
-  color: #fff;
-  font-weight: 800;
-  font-size: 15px;
-  transition: transform 0.2s ease;
-}
-
-.add:hover {
+.tool-btn:hover {
+  background: #6a678f;
   transform: translateY(-2px);
 }
 
-.add .plus {
-  font-weight: 900;
-  font-size: 18px;
+.tool-icon {
+  width: 28px;
+  height: 28px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 
-/* ===== List sheet ===== */
-.sheet {
-  background: #322D59;
-  border-radius: 22px;
-  padding: 10px 0 18px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  width: 100%;
-  min-height: 0;
-  overflow-y: auto;
+.add-btn {
+  height: 52px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 28px;
+  border-radius: 14px;
+  background: #6B7CFF;
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(107, 124, 255, 0.3);
+}
+
+.add-btn:hover {
+  background: #7F89FF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(107, 124, 255, 0.4);
+}
+
+.plus-icon {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* ===== ITEMS CONTAINER ===== */
+.items-container {
+  background: #4B497C;
+  border-radius: 24px;
+  padding: 0;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  min-height: 500px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #CFC9E6;
-  opacity: 0.7;
+  padding: 120px 20px;
+  color: #B9B5D1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state p {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
+  opacity: 0.8;
 }
 
-/* ===== Filas ===== */
-.row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+/* ===== ITEMS LIST ===== */
+.items-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 0;
 }
 
-.row:first-child {
-  border-top: none;
-}
-
-.left {
+.item-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.bullet {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  background: #0E0F1A;
-  border-radius: 999px;
-  font-size: 18px;
-  border: none;
-  color: #EDEAF6;
-  cursor: pointer;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.2s ease;
+  min-height: 80px;
 }
 
-.bullet:hover {
-  background: #1a1b2e;
+.item-row:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.info .name {
-  font-weight: 800;
-  font-size: 18px;
-  color: #EDEAF6;
+.item-row:last-child {
+  border-bottom: none;
 }
 
-.info .hint {
-  font-size: 12px;
-  opacity: 0.65;
-  margin-top: 2px;
-  color: #CFC9E6;
-}
-
-.right {
+/* Left side: checkbox + info */
+.item-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
+  flex: 1;
 }
 
-.qty {
-  font-weight: 800;
-  opacity: 0.85;
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-name {
+  font-size: 20px;
+  font-weight: 700;
   color: #EDEAF6;
+  line-height: 1.3;
 }
 
-/* ===== Checkbox ===== */
-.box {
+.item-meta {
+  font-size: 14px;
+  color: #B9B5D1;
+  opacity: 0.85;
+}
+
+/* Right side: quantity + checkbox */
+.item-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.item-quantity {
+  font-size: 18px;
+  font-weight: 800;
+  color: #EDEAF6;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* ===== CUSTOM CHECKBOX - Larger ===== */
+.checkbox-wrapper {
   position: relative;
-  width: 22px;
-  height: 22px;
-  display: inline-grid;
-  place-items: center;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-.box input {
+.checkbox-input {
   position: absolute;
-  inset: 0;
   opacity: 0;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
+  z-index: 1;
 }
 
-.box span {
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  background: #0E0F1A;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+.checkbox-custom {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
   transition: all 0.2s ease;
+  position: relative;
 }
 
-.box input:checked + span {
+.checkbox-input:checked + .checkbox-custom {
   background: #6B7CFF;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0);
+  border-color: #6B7CFF;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 860px) {
-  .titlebar {
-    grid-template-columns: 120px 1fr 200px;
+.checkbox-input:checked + .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 7px;
+  height: 13px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+}
+
+.checkbox-wrapper:hover .checkbox-custom {
+  border-color: rgba(255, 255, 255, 0.55);
+  transform: scale(1.1);
+}
+
+.checkbox-input:checked + .checkbox-custom:hover {
+  background: #7F89FF;
+}
+
+/* ===== RESPONSIVE - Keep desktop feel ===== */
+@media (max-width: 1200px) {
+  .page {
+    padding: 28px 48px 40px;
   }
-  .title {
-    font-size: 26px;
+  
+  .main-title {
+    font-size: 42px;
   }
 }
 
-@media (max-width: 560px) {
-  .titlebar {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    text-align: center;
+@media (max-width: 900px) {
+  .page {
+    padding: 24px 32px 36px;
   }
-  .left-actions,
-  .right-actions {
-    justify-content: center;
+  
+  .topbar {
+    grid-template-columns: 52px 1fr 52px;
+    gap: 24px;
+  }
+  
+  .icon-btn {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .main-title {
+    font-size: 36px;
+  }
+  
+  .item-row {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 20px 32px;
+  }
+  
+  .topbar {
+    grid-template-columns: 48px 1fr 48px;
+    gap: 16px;
+  }
+  
+  .icon-btn {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .main-title {
+    font-size: 28px;
+  }
+  
+  .toolbar {
+    padding: 12px 16px;
+  }
+  
+  .tool-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .add-btn {
+    height: 44px;
+    padding: 0 20px;
+    font-size: 16px;
+  }
+  
+  .item-row {
+    padding: 16px 20px;
+    min-height: 68px;
+  }
+  
+  .item-left {
+    gap: 14px;
+  }
+  
+  .item-right {
+    gap: 16px;
+  }
+  
+  .item-name {
+    font-size: 18px;
+  }
+  
+  .item-quantity {
+    font-size: 16px;
   }
 }
 </style>

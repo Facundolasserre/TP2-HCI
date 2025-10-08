@@ -204,8 +204,8 @@ async function submit(){
       console.log('TODO: Share list with:', sharedMembers.value)
     }
     
-    // Redirect to the new list detail
-    router.push(`/lists/${newList.id}`)
+    // Redirect to Home so the new list appears in the grid
+    router.push('/Home')
   } catch (error: any) {
     console.error('Failed to create list:', error)
     
