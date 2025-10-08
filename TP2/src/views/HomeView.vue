@@ -40,7 +40,9 @@
     <!-- Empty state -->
     <div v-else class="empty-state">
       <div class="empty-content">
-        <div class="empty-icon">📝</div>
+        <div class="empty-icon">
+          <img src="@/assets/emptyLogo.png"/>
+        </div>
         <h2 class="empty-title">No lists yet</h2>
         <p class="empty-text">Create your first shopping list to get started</p>
         <button class="btn-create" @click="onNew">
@@ -154,11 +156,52 @@ function onNew() {
   position: relative;                /* para posicionar el botón settings */
 }
 
+/* ===== BOTÓN SETTINGS (arriba derecha) ===== */
+.user-settings{
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.user-settings:hover{ background: rgba(255,255,255,.07); }
+.user-settings img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ===== TOPBAR (alineado y centrado) ===== */
 .layout-topbar{ width: 100%; margin: 0 0 0; }
 .topbar-wrap{ width: 100%; }
 
-/* Nota: estilos de Topbar viven en src/components/Topbar.vue */
+/* Si el Topbar interno expone clases, las alineamos con :deep */
+/* todos los controles (botones e input) alineados al centro y misma altura */
+:deep(.topbar){
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+:deep(.topbar button),
+:deep(.topbar .search),
+:deep(.topbar input){
+  height: 44px;
+  display: inline-flex;
+  align-items: center;               /* centra verticalmente el contenido */
+}
+
+/* El pill de búsqueda alineado */
+:deep(.search-wrap){
+  display: inline-flex;
+  align-items: center;
+}
 
 /* ===== GRID ===== */
 .grid{
@@ -220,6 +263,11 @@ function onNew() {
   font-size: 80px;
   margin-bottom: 20px;
   opacity: 0.6;
+}
+.empty-icon img{
+  width: 350px;
+  height: 350px;
+  object-fit: contain;
 }
 .empty-title{
   font-size: 32px;
