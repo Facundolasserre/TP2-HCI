@@ -20,7 +20,7 @@ const createHttpClient = (): AxiosInstance => {
   client.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('auth_token')
-      if (token) {
+      if (token && token !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpZCI6MSwiZXhwIjoxOTk5OTk5OTk5fQ.mock') {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
@@ -66,10 +66,17 @@ const handleApiError = (error: AxiosError): ApiError => {
       }
     case 401:
       // Session expired - clear token and redirect to login
-      localStorage.removeItem('auth_token')
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+      // SOLO redirigir si NO estamos en una ruta de auth (login/register)
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+      const isAuthRoute = currentPath === '/login' || currentPath === '/register' || currentPath === '/'
+      
+      if (!isAuthRoute) {
+        localStorage.removeItem('auth_token')
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
+        }
       }
+      
       return {
         message: 'Sesión expirada. Iniciá sesión de nuevo.',
         code: 'UNAUTHORIZED',
@@ -146,6 +153,15 @@ export const put = async <T = any>(
   config?: AxiosRequestConfig
 ): Promise<T> => {
   const response = await httpClient.put<T>(url, data, config)
+  return response.data
+}
+
+export const patch = async <T = any>(
+  url: string,
+  data?: any,
+  config?: AxiosRequestConfig
+): Promise<T> => {
+  const response = await httpClient.patch<T>(url, data, config)
   return response.data
 }
 

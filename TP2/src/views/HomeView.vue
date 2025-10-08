@@ -65,15 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useListsStore } from '@/stores/lists'
+import { useShoppingListsStore } from '@/stores/shoppingLists'
+import { useToast } from '@/composables/useToast'
 
 import Topbar from '@/components/Topbar.vue'
 import Sidebar from '@/components/Sidebar.vue'
 
 const router = useRouter()
-const listsStore = useListsStore()
+const shoppingListsStore = useShoppingListsStore()
+const toast = useToast()
 
 const q = ref('')
 const active = ref<'home'|'edit'|'history'>('home')
@@ -94,18 +96,23 @@ const iconMap: Record<string, string> = {
   'liquor.svg': new URL('@/assets/liquor.svg', import.meta.url).href,
 }
 
+// Colors array for consistent color assignment
+const colors = ['#6B7CFF', '#FF6B9D', '#4CAF50', '#FF9800', '#9C27B0', '#00BCD4']
 
-
-// Convertir las listas del store a cards
+// Convertir las listas de la API a cards
 const cards = computed(() => {
-  return listsStore.allLists.map(list => {
-    const icon = iconMap[list.icon || 'shopping_cart.svg'] || new URL('@/assets/shopping_cart.svg', import.meta.url).href
+  return shoppingListsStore.items.map(list => {
+    // Extract icon and color from metadata
+    const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg'
+    const icon = iconMap[iconName] || iconMap['shopping_cart.svg']
+    const color = (list.metadata as any)?.color || colors[list.id % colors.length]
+    
     return {
       id: list.id,
-      title: list.title,
+      title: list.name,
       icon,
-      color: list.color || '#6B7CFF', // Fallback color
-      sharedWith: list.sharedWith || []
+      color,
+      sharedWith: list.sharedWith.map(u => `${u.name} ${u.surname}`)
     }
   })
 })
@@ -119,8 +126,8 @@ function shareText(list: string[]){
   return list.length === 1 ? list[0] : `${list.length} contacts`
 }
 
-function openCard(card: { id: string; title: string; icon: string; color: string; sharedWith?: string[] }){
-  router.push({ name: 'list', params: { name: encodeURIComponent(card.title) } })
+function openCard(card: { id: number; title: string; icon: string; color: string; sharedWith?: string[] }){
+  router.push(`/lists/${card.id}`)
 }
 
 /* === Eventos de Topbar === */
@@ -129,12 +136,19 @@ function onSort(){ console.log('sort') }
 function onFavs(){ console.log('favorites') }
 function onSearch(){ console.log('search', q.value) }
 
-
-
-
 function onNew() {
   router.push('/AddList')  // llama AddListView
 }
+
+// Load lists from API on mount
+onMounted(async () => {
+  try {
+    await shoppingListsStore.fetchLists({ page: 1, per_page: 50 })
+  } catch (error: any) {
+    // Silently handle errors - store already shows mock data on network errors
+    console.log('Lists loaded (mock or real):', shoppingListsStore.items.length)
+  }
+})
 
 </script>
 

@@ -109,11 +109,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useListsStore } from '@/stores/lists'
+import { useShoppingListsStore } from '@/stores/shoppingLists'
+import { useToast } from '@/composables/useToast'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
 const router = useRouter()
-const listsStore = useListsStore()
+const shoppingListsStore = useShoppingListsStore()
+const toast = useToast()
 
 const name = ref('')
 const notes = ref('')
@@ -176,30 +178,46 @@ function onEsc() {
 }
 
 /** ============ Submit/Close ============ */
-function close(){ router.back() }
-function submit(){
+function close(){ router.push('/Home') }
+
+async function submit(){
   touched.value = true
   if(!name.value) return
   
-  // Crear la nueva lista en el store
-  listsStore.createList({
-    title: name.value,
-    icon: selectedIcon.value,
-    color: color.value,
-    sharedWith: visibility.value === 'shared' ? sharedMembers.value : []
-  })
-  
-  console.log('CREATE LIST', {
-    name: name.value,
-    color: color.value,
-    visibility: visibility.value,
-    notes: notes.value,
-    icon: selectedIcon.value,
-    sharedWith: sharedMembers.value
-  })
-  
-  // Regresar al home
-  router.push('/')
+  try {
+    // Create list via API
+    const newList = await shoppingListsStore.createList({
+      name: name.value,
+      description: notes.value || undefined,
+      recurring: false,
+      metadata: {
+        icon: selectedIcon.value,
+        color: color.value
+      }
+    })
+    
+    toast.success('List created successfully!')
+    
+    // If shared, share with members (TODO: implement after list creation)
+    if (visibility.value === 'shared' && sharedMembers.value.length > 0) {
+      // This would require sharing logic with emails
+      console.log('TODO: Share list with:', sharedMembers.value)
+    }
+    
+    // Redirect to the new list detail
+    router.push(`/lists/${newList.id}`)
+  } catch (error: any) {
+    console.error('Failed to create list:', error)
+    
+    // If backend not available, simulate success and redirect to Home
+    if (error.status === 0 || error.code === 'ERR_NETWORK') {
+      console.warn('⚠️ Backend not available - simulating list creation')
+      toast.success('List created (mock mode - backend not available)')
+      router.push('/Home')
+    } else {
+      toast.error(error.message || 'Failed to create list')
+    }
+  }
 }
 </script>
 

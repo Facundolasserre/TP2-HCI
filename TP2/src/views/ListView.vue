@@ -21,11 +21,11 @@
         <button class="round" title="Sort">☰</button>
       </div>
 
-      <h1 class="title">{{ currentList?.title || 'List' }}</h1>
+      <h1 class="title">{{ currentList?.name || 'List' }}</h1>
 
       <div class="right-actions">
-        <button class="round" title="Rename / Edit">✎</button>
-        <button class="add" @click="showAddProduct = true">
+        <button class="round" title="Rename / Edit" @click="editList">✎</button>
+        <button class="add" @click="goToAddItem">
           <span>Add</span>
           <span class="plus">＋</span>
         </button>
@@ -47,10 +47,9 @@
         class="row"
       >
         <div class="left">
-          <button class="bullet" @click="openAddToListModal(product)">➕</button>
           <div class="info">
             <div class="name">{{ product.name }}</div>
-            <div class="hint">{{ product.addedBy ? `added by ${product.addedBy}` : '' }}</div>
+            <div class="hint">{{ product.unit }}</div>
           </div>
         </div>
 
@@ -68,19 +67,12 @@
       </article>
     </main>
 
-    <!-- Add Product Modal -->
-    <AddProductModal
-      v-model="showAddProduct"
-      :default-list-id="listId || undefined"
-      @product-added="onProductAdded"
-    />
-
-    <!-- Add To List Modal -->
-    <AddToListModal
-      v-model="showAddToList"
-      :product="selectedProduct"
-      :current-list-id="listId || undefined"
-      @product-added="onProductAdded"
+    <!-- Share Modal -->
+    <ShareMembersModal
+      v-if="showShareModal && currentList"
+      :list-id="listId!"
+      :list-name="currentList.name"
+      @close="closeShareModal"
     />
   </div>
 </template>
@@ -88,74 +80,111 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useListsStore } from '@/stores/lists'
+import { useShoppingListsStore } from '@/stores/shoppingLists'
+import { useListItemsStore } from '@/stores/listItems'
 import { useToast } from '@/composables/useToast'
-import AddProductModal from '@/components/AddProductModal.vue'
-import AddToListModal from '@/components/AddToListModal.vue'
-import type { Product } from '@/types/lists'
+import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
 const route = useRoute()
 const router = useRouter()
-const listsStore = useListsStore()
+const listsStore = useShoppingListsStore()
+const itemsStore = useListItemsStore()
 const toast = useToast()
 
 const q = ref('')
-const showAddProduct = ref(false)
-const showAddToList = ref(false)
-const selectedProduct = ref<Product | null>(null)
+const showShareModal = ref(false)
 
 // Get list ID from route
 const listId = computed(() => {
-  const name = route.params.name as string
-  if (!name) return null
-  
-  // Try to find by title
-  const list = listsStore.getListByTitle(decodeURIComponent(name))
-  return list?.id || null
+  const id = route.params.id
+  return id ? parseInt(id as string, 10) : null
 })
 
-const currentList = computed(() => {
-  if (!listId.value) return null
-  return listsStore.getListById(listId.value)
-})
+const currentList = computed(() => listsStore.currentList)
 
 const filteredProducts = computed(() => {
-  if (!currentList.value) return []
-  if (!q.value) return currentList.value.products
+  let items = itemsStore.items
   
-  const search = q.value.toLowerCase()
-  return currentList.value.products.filter(p => 
-    p.name.toLowerCase().includes(search)
-  )
+  if (q.value) {
+    const search = q.value.toLowerCase()
+    items = items.filter(item => 
+      item.product.name.toLowerCase().includes(search)
+    )
+  }
+  
+  return items.map(item => ({
+    id: item.id,
+    name: item.product.name,
+    amount: item.quantity,
+    unit: item.unit,
+    checked: item.purchased,
+    addedBy: '', // We don't track this in the API schema
+  }))
 })
 
-onMounted(() => {
-  if (!currentList.value) {
-    toast.error('List not found')
-    router.push('/Home')
+const loadData = async () => {
+  if (!listId.value) return
+  
+  try {
+    await listsStore.fetchListById(listId.value)
+    await itemsStore.fetchItems(listId.value)
+  } catch (error: any) {
+    // Silently handle errors - stores already provide mock data on network errors
+    console.log('List data loaded:', currentList.value?.name || 'Mock data')
+    
+    // Only redirect on 404 (not found), not on network errors
+    if (error.status === 404) {
+      toast.error('List not found')
+      router.push('/Home')
+    }
   }
+}
+
+onMounted(() => {
+  loadData()
 })
 
 const goHome = () => {
   router.push('/Home')
 }
 
+const editList = () => {
+  if (listId.value) {
+    router.push(`/lists/${listId.value}/edit`)
+  }
+}
+
+const goToAddItem = () => {
+  toast.info('Add item feature coming soon! Use the detail view at /lists/' + listId.value)
+}
+
 const shareList = () => {
-  toast.info('Share functionality coming soon!')
+  showShareModal.value = true
 }
 
-const toggleCheck = (productId: string) => {
+const closeShareModal = () => {
+  showShareModal.value = false
+  loadData() // Refresh to get updated shared users
+}
+
+const toggleCheck = async (productId: number) => {
   if (!listId.value) return
-  listsStore.toggleProductCheck(listId.value, productId)
-}
-
-const openAddToListModal = (product: Product) => {
-  selectedProduct.value = product
-  showAddToList.value = true
+  
+  const item = itemsStore.items.find(i => i.id === productId)
+  if (!item) return
+  
+  try {
+    await itemsStore.togglePurchased(listId.value, productId, !item.purchased)
+  } catch (error: any) {
+    toast.error(error.message || 'Failed to update item')
+  }
 }
 
 const onProductAdded = () => {
-  // Product added successfully - list will auto-update via store
+  // Reload items after adding a product
+  if (listId.value) {
+    itemsStore.fetchItems(listId.value)
+  }
 }
 </script>
 <style scoped>

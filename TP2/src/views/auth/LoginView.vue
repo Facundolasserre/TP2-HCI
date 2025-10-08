@@ -12,17 +12,24 @@
 
     <!-- Form -->
     <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Username</label>
-      <input class="input" v-model="username" type="text" autocomplete="username" />
+      <label class="label">Email</label>
+      <input class="input" v-model="email" type="email" autocomplete="email" required />
 
       <label class="label">Password</label>
-      <input class="input" v-model="password" type="password" autocomplete="current-password" />
+      <input class="input" v-model="password" type="password" autocomplete="current-password" required />
+
+      <!-- Error message -->
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
 
       <div class="links-row">
         <a class="link" href="#" @click.prevent="onForgot">Forgot Password?</a>
       </div>
 
-      <button class="btn" type="submit">Login</button>
+      <button class="btn" type="submit" :disabled="isLoading">
+        {{ isLoading ? 'Loading...' : 'Login' }}
+      </button>
 
       <div class="signup-row">
         <span>Don’t have an account?</span>
@@ -35,26 +42,48 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { setAuthToken, setAuthUser } from '@/services/auth.service'
+import { useAuthStore } from '@/stores/auth'
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
+const errorMessage = ref('')
+const isLoading = ref(false)
 const router = useRouter()
+const authStore = useAuthStore()
 
-function onSubmit() {
-  console.log('login', { username: username.value, password: password.value })
-  
-  // TODO: Replace with actual API call
-  // For now, simulate a successful login with a mock token
-  const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpZCI6MSwiZXhwIjoxOTk5OTk5OTk5fQ.mock'
-  setAuthToken(mockToken)
-  setAuthUser({ username: username.value })
-  
-  router.push('/Home')  // 👈 redirige después del login
+async function onSubmit() {
+  // Validación básica
+  if (!email.value.trim() || !password.value) {
+    errorMessage.value = 'Por favor complete todos los campos'
+    return
+  }
+
+  errorMessage.value = ''
+  isLoading.value = true
+
+  try {
+    // Llamar al store para hacer login
+    await authStore.login({
+      email: email.value.trim(),
+      password: password.value
+    })
+
+    console.log('✓ Login exitoso, redirigiendo a Home...')
+    
+    // Redirigir a Home
+    router.push('/Home')
+  } catch (err: any) {
+    console.error('Error en login:', err)
+    errorMessage.value = err.response?.data?.message || err.message || 'Error al iniciar sesión. Verifica tus credenciales.'
+  } finally {
+    isLoading.value = false
+  }
 }
+
 function onForgot() {
   router.push('/ForgotPassword')
 }
+
 function onSignUp() {
   router.push('/register')
 }
@@ -102,6 +131,16 @@ function onSignUp() {
 }
 .input:focus{ border-bottom-color: #fff; }
 
+.error-message {
+  color: #ff6b6b;
+  font-size: 14px;
+  padding: 10px;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  margin-top: -10px;
+}
+
 .links-row{ 
   display:flex; 
   justify-content:flex-end;
@@ -121,7 +160,18 @@ function onSignUp() {
   font-weight: 800;
   font-size: 18px;
   cursor: pointer;
+  transition: opacity 0.2s;
 }
+
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .signup-row {
   display: flex;
   gap: 6px;
