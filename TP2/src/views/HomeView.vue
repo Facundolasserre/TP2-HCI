@@ -10,7 +10,6 @@
         @favorites="onFavs"
         @new="onNew" 
         @search="onSearch"
-        @user-settings="goSettings"
       />
     </div>
   </div>
@@ -79,15 +78,11 @@ const shoppingListsStore = useShoppingListsStore()
 const toast = useToast()
 
 const q = ref('')
-const active = ref<'home'|'edit'|'history'>('home')
+const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('home')
 const sidebarOpen = ref(false)
 
 function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value }
 function closeSidebar(){ sidebarOpen.value = false }
-
-function goSettings(){
-  router.push('/settings')
-}
 
 // Mapa de iconos por defecto
 const iconMap: Record<string, string> = {
@@ -191,7 +186,7 @@ watch(() => route.path, (newPath) => {
   display:flex;
   flex-direction:column;
   padding: 22px 26px 32px;
-  position: relative;                /* para posicionar el botón settings */
+  position: relative;
 }
 
 /* ===== BOTÓN SETTINGS (arriba derecha) ===== */
@@ -217,8 +212,21 @@ watch(() => route.path, (newPath) => {
 }
 
 /* ===== TOPBAR (alineado y centrado) ===== */
-.layout-topbar{ width: 100%; margin: 0 0 0; }
+.layout-topbar{ 
+  width: 100%; 
+  margin: 0 0 0;
+  position: sticky;
+  top: 60px;  /* El margen que quieres mantener desde arriba */
+  z-index: 1000;
+  background: var(--bg);  /* Para que tape el contenido que pasa por debajo */
+}
 .topbar-wrap{ width: 100%; }
+
+/* ===== MARGEN ENTRE TOPBAR Y GRID ===== */
+.layout-grid{
+  margin-top: 60px;
+  width: 100%;
+}
 
 /* Si el Topbar interno expone clases, las alineamos con :deep */
 /* todos los controles (botones e input) alineados al centro y misma altura */

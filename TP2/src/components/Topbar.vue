@@ -30,11 +30,6 @@
         <button class="plus special-plus" title="New" @click="$emit('new')">＋</button>
       </div>
     </div>
-
-    <!-- user settings (a la derecha del todo) -->
-    <button class="user-settings-btn" @click="$emit('user-settings')" aria-label="Open settings">
-      <img src="@/assets/fonts/account.png" alt="Settings" />
-    </button>
   </header>
 </template>
 
@@ -47,7 +42,6 @@ defineEmits<{
   (e: 'favorites'): void
   (e: 'new'): void
   (e: 'search'): void
-  (e: 'user-settings'): void
   (e: 'update:query', v: string): void
 }>()
 
@@ -178,20 +172,4 @@ defineEmits<{
 @media (max-width: 520px){
   .topbar-content{ gap: 6px; }
 }
-
-/* user settings (derecha) */
-.user-settings-btn{
-  width: 52px;                      /* +30% */
-  height: 52px;                     /* +30% */
-  border-radius: 999px;
-  border: none;                     /* sin borde visible */
-  background: transparent;          /* sin fondo: solo icono visible */
-  display: flex;
-  align-items: center;
-  justify-content: center;          /* centra absolutamente el contenido */
-  line-height: 0;                   /* evita desalineo por línea */
-  overflow: hidden;
-  cursor: pointer;
-}
-.user-settings-btn img{ width: 32px; height: 32px; object-fit: contain; filter: brightness(0) invert(1); display:block; }
 </style>

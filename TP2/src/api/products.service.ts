@@ -9,6 +9,7 @@ import type {
 import {
   isValidProductName,
   isValidCategoryId,
+  isValidPantryId,
   isValidMetadata,
   isValidPagination,
   getValidationError,
@@ -39,6 +40,10 @@ const validateListParams = (params?: ProductsListParams): ProductsListParams => 
 
   if (params?.category_id && isValidCategoryId(params.category_id)) {
     validated.category_id = params.category_id
+  }
+
+  if (params?.pantry_id && isValidPantryId(params.pantry_id)) {
+    validated.pantry_id = params.pantry_id
   }
 
   return validated
@@ -80,6 +85,10 @@ export const listProducts = async (
   
   if (validatedParams.category_id) {
     queryParams.append('category_id', validatedParams.category_id.toString())
+  }
+  
+  if (validatedParams.pantry_id) {
+    queryParams.append('pantry_id', validatedParams.pantry_id.toString())
   }
   
   queryParams.append('page', validatedParams.page!.toString())

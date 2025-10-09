@@ -4,8 +4,14 @@
       <div class="detail-header">
         <button class="btn-back" @click="goBack">← Volver a la lista</button>
         <div class="header-actions">
-          <button class="btn-edit" @click="goToEdit">✏️ Editar</button>
-          <button class="btn-delete" @click="confirmDelete">🗑️ Eliminar</button>
+          <button class="btn-edit" @click="goToEdit">
+            <img :src="editIcon" alt="Editar" width="16" height="16" />
+            Editar
+          </button>
+          <button class="btn-delete" @click="confirmDelete">
+            <img :src="deleteIcon" alt="Eliminar" width="16" height="16" />
+            Eliminar
+          </button>
         </div>
       </div>
 
@@ -23,6 +29,11 @@
       <!-- Product Details -->
       <div v-else-if="product" class="detail-content">
         <h1 class="product-name">{{ product.name }}</h1>
+
+        <!-- Description Section -->
+        <div v-if="product.metadata?.description" class="description-section">
+          <p class="description-text">{{ product.metadata.description }}</p>
+        </div>
 
         <div class="details-grid">
           <!-- ID -->
@@ -101,6 +112,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useToast } from '@/composables/useToast'
+import editIcon from '@/assets/edit.svg'
+import deleteIcon from '@/assets/delete.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -237,6 +250,13 @@ const executeDelete = async () => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit img {
+  filter: brightness(0) invert(1);
 }
 
 .btn-edit {
@@ -254,8 +274,16 @@ const executeDelete = async () => {
   border: 1px solid rgba(244, 67, 54, 0.4);
 }
 
+.btn-delete img {
+  filter: brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(2530%) hue-rotate(334deg) brightness(97%) contrast(94%);
+}
+
 .btn-delete:hover {
   background: rgba(244, 67, 54, 0.3);
+}
+
+.btn-delete:hover img {
+  filter: brightness(0) saturate(100%) invert(42%) sepia(84%) saturate(2449%) hue-rotate(343deg) brightness(101%) contrast(92%);
 }
 
 .loading,
@@ -295,8 +323,23 @@ const executeDelete = async () => {
 .product-name {
   font-size: 36px;
   font-weight: 800;
-  margin: 0 0 32px;
+  margin: 0 0 16px;
   color: #EDEAF6;
+}
+
+.description-section {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #5B5DD9;
+}
+
+.description-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #CFC9E6;
 }
 
 .details-grid {

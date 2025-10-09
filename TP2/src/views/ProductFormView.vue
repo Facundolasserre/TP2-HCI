@@ -59,6 +59,27 @@
           </div>
         </div>
 
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description" class="label">
+            Descripción
+          </label>
+          <textarea
+            id="description"
+            v-model="formData.description"
+            class="textarea"
+            :class="{ 'input-error': errors.description }"
+            placeholder="Descripción del producto..."
+            rows="4"
+            maxlength="500"
+            @input="clearError('description')"
+          />
+          <div class="field-info">
+            <span v-if="errors.description" class="error-text">{{ errors.description }}</span>
+            <span v-else class="char-count">{{ formData.description.length }}/500</span>
+          </div>
+        </div>
+
         <!-- Metadata Field -->
         <div class="form-group">
           <label for="metadata" class="label">
@@ -112,6 +133,7 @@ const toast = useToast()
 const formData = ref({
   name: '',
   categoryId: undefined as number | undefined,
+  description: '',
 })
 
 const metadataText = ref('')
@@ -144,10 +166,14 @@ const loadProduct = async () => {
     const product = await store.fetchProductById(productId.value)
     formData.value.name = product.name
     formData.value.categoryId = product.category?.id
+    formData.value.description = product.metadata?.description || ''
     
-    // Format metadata for display
+    // Format metadata for display (excluding description as it has its own field)
     if (product.metadata) {
-      metadataText.value = JSON.stringify(product.metadata, null, 2)
+      const { description, ...restMetadata } = product.metadata
+      if (Object.keys(restMetadata).length > 0) {
+        metadataText.value = JSON.stringify(restMetadata, null, 2)
+      }
     }
   } catch (error: any) {
     toast.error(error.message || 'Error al cargar producto')
@@ -167,6 +193,12 @@ const validateForm = (): boolean => {
     isValid = false
   } else if (formData.value.name.length > 50) {
     errors.value.name = 'El nombre no puede exceder los 50 caracteres'
+    isValid = false
+  }
+
+  // Validate description length
+  if (formData.value.description.length > 500) {
+    errors.value.description = 'La descripción no puede exceder los 500 caracteres'
     isValid = false
   }
 
@@ -197,7 +229,7 @@ const handleSubmit = async () => {
 
   try {
     // Parse metadata if provided
-    let metadata: any = undefined
+    let metadata: any = {}
     if (metadataText.value.trim()) {
       try {
         metadata = JSON.parse(metadataText.value)
@@ -206,10 +238,15 @@ const handleSubmit = async () => {
       }
     }
 
+    // Add description to metadata if provided
+    if (formData.value.description.trim()) {
+      metadata.description = formData.value.description.trim()
+    }
+
     // Build data object
     const data: ProductRegistrationData = {
       name: formData.value.name.trim(),
-      metadata,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     }
 
     // Add category if selected

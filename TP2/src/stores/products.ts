@@ -23,6 +23,7 @@ export const useProductsStore = defineStore('products', () => {
   const filters = ref<ProductsListParams>({
     name: undefined,
     category_id: undefined,
+    pantry_id: undefined,
     page: 1,
     per_page: 10,
     order: 'ASC',
@@ -204,6 +205,7 @@ export const useProductsStore = defineStore('products', () => {
     filters.value = {
       name: undefined,
       category_id: undefined,
+      pantry_id: undefined,
       page: 1,
       per_page: 10,
       order: 'ASC',

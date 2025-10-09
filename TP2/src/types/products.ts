@@ -51,6 +51,7 @@ export interface ArrayOfProducts {
 export interface ProductsListParams {
   name?: string // Filter by product name
   category_id?: number // Filter by category ID
+  pantry_id?: number // Filter by pantry ID (products in specific pantry)
   page?: number // Default: 1
   per_page?: number // Default: 10
   order?: 'ASC' | 'DESC' // Default: ASC
@@ -89,6 +90,16 @@ export const isValidCategoryId = (categoryId?: number): boolean => {
     return true // Optional field
   }
   return Number.isInteger(categoryId) && categoryId > 0
+}
+
+/**
+ * Validate pantry ID
+ */
+export const isValidPantryId = (pantryId?: number): boolean => {
+  if (pantryId === undefined || pantryId === null) {
+    return true // Optional field
+  }
+  return Number.isInteger(pantryId) && pantryId > 0
 }
 
 /**
