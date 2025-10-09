@@ -81,7 +81,7 @@ async function onSubmit() {
 }
 
 function onForgot() {
-  router.push('/ForgotPassword')
+  router.push('/forgot-password')
 }
 
 function onSignUp() {
