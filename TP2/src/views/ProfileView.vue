@@ -1,145 +1,216 @@
 <template>
-  <div class="profile-page">
-    <div class="profile-card">
-      <h1 class="title">My Profile</h1>
+  <div class="settings-wrap" v-if="!isLoading">
+    <header class="topbar">
+      <button class="home-btn" @click="goBack" aria-label="Go home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </button>
+      <h1>Settings</h1>
+    </header>
 
-      <div v-if="isLoading" class="loading">Loading...</div>
+    <section class="user-profile-header">
+      <img v-if="photoUrl" :src="photoUrl" :alt="name" class="profile-avatar" />
+      <div v-else class="profile-avatar-placeholder">
+        <span>{{ name ? name.charAt(0) : '?' }}</span>
+      </div>
+      <h2 class="profile-name">Welcome, {{ name }}!</h2>
+      <p class="profile-description">
+       Manage your information and privacy and security options to make BagIt more relevant to you
+      </p>
+    </section>
+    
+    <section class="card">
+      <h2>Profile</h2>
 
-      <form v-else class="form" @submit.prevent="onSave">
-        <div class="field-group">
-          <label class="label">Name</label>
-          <input
-            class="input"
-            v-model.trim="name"
-            type="text"
-            maxlength="50"
-            required
-          />
+      <div class="form-grid">
+        <div>
+         <div class="grid">
+          <div class="col">
+            <label for="name">Name</label>
+            <input id="name" type="text" v-model="name" placeholder="Your name" />
+          </div>
+          <div class="col">
+            <label for="username">Username</label>
+            <input id="username" type="text" v-model="username" placeholder="Your username" />
+          </div>
+</div>
         </div>
 
-        <div class="field-group">
-          <label class="label">Surname</label>
-          <input
-            class="input"
-            v-model.trim="surname"
-            type="text"
-            maxlength="50"
-            required
-          />
+        <div class="col full">
+          <label for="photoUrl">Photo (URL)</label>
+          <input id="photoUrl" type="url" v-model="photoUrl" placeholder="https://..." />
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn primary" @click="handleProfileUpdate" :disabled="isSaving">
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+
+      <p v-if="profileMessage.text" class="msg" :class="profileMessage.type">
+        {{ profileMessage.text }}
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Account Security</h2>
+      <div class="form-grid">
+        <div class="col full">
+          <label for="email">Email</label>
+          <input id="email" type="email" v-model="email" disabled />
         </div>
 
-        <div class="field-group">
-          <label class="label">Email</label>
-          <input
-            class="input"
-            v-model="email"
-            type="email"
-            disabled
-            title="Email cannot be changed"
-          />
+        <div class="grid">
+          <div class="col">
+            <label for="newPassword">New Password</label>
+            <input id="newPassword" type="password" v-model="newPassword" placeholder="••••••••" />
+          </div>
+          <div class="col">
+            <label for="confirmPassword">Repeat Password</label>
+            <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="••••••••" />
+          </div>
         </div>
+      </div>
 
-        <!-- Error message -->
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
+      <div class="actions">
+        <button class="btn primary" @click="handleChangePassword" :disabled="isChangingPassword">
+          {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
+        </button>
+      </div>
+       <p v-if="passwordMessage.text" class="msg" :class="passwordMessage.type">
+        {{ passwordMessage.text }}
+      </p>
+    </section>
 
-        <!-- Success message -->
-        <div v-if="successMessage" class="success-message">
-          {{ successMessage }}
-        </div>
-
-        <div class="button-group">
-          <button class="btn btn-primary" type="submit" :disabled="!isValid || isSaving">
-            {{ isSaving ? 'Saving...' : 'Save Changes' }}
-          </button>
-
-          <button class="btn btn-secondary" type="button" @click="goToChangePassword">
-            Change Password
-          </button>
-
-          <button class="btn btn-danger" type="button" @click="onLogout">
-            Logout
-          </button>
-
-          <button class="btn btn-ghost" type="button" @click="goBack">
-            Back to Home
-          </button>
-        </div>
-      </form>
-    </div>
+    <section class="card">
+      <h2>Privacy & Data</h2>
+      <div class="col full">
+        <label>Delete Account</label>
+        <p class="description">Once you delete your account, there is no going back. Please be certain.</p>
+        <button class="btn danger" @click="deleteAccount">
+          Delete permanently
+        </button>
+      </div>
+    </section>
   </div>
+
+  <div v-else class="loading">Loading…</div>
 </template>
 
+
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+// --- State References ---
 const name = ref('')
-const surname = ref('')
+const username = ref('')
+const photoUrl = ref('')
 const email = ref('')
-const errorMessage = ref('')
-const successMessage = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+
 const isLoading = ref(true)
 const isSaving = ref(false)
+const isChangingPassword = ref(false)
 
-const isValid = computed(() => {
+// Use reactive objects for messages to keep them grouped
+const profileMessage = reactive({ text: '', type: '' })
+const passwordMessage = reactive({ text: '', type: '' })
+
+// --- Computed Properties ---
+const isProfileFormValid = computed(() => {
   return (
     name.value.trim().length > 0 &&
     name.value.length <= 50 &&
-    surname.value.trim().length > 0 &&
-    surname.value.length <= 50
+    username.value.trim().length > 0 &&
+    username.value.length <= 50
   )
 })
 
+// --- Lifecycle Hooks ---
 onMounted(async () => {
   try {
-    // Load user profile
     await authStore.fetchCurrentUser()
-    
     if (authStore.user) {
       name.value = authStore.user.name
-      surname.value = authStore.user.surname
+      username.value = authStore.user.surname
       email.value = authStore.user.email
+      // @ts-ignore - Assuming photoUrl might exist on the user object
+      photoUrl.value = authStore.user.photoUrl || ''
     }
   } catch (err: any) {
-    errorMessage.value = 'Error loading profile'
+    profileMessage.text = 'Error loading profile.'
+    profileMessage.type = 'error'
     console.error(err)
   } finally {
     isLoading.value = false
   }
 })
 
-async function onSave() {
-  if (!isValid.value) {
-    errorMessage.value = 'Por favor complete todos los campos correctamente'
+// --- Methods ---
+async function handleProfileUpdate() {
+  profileMessage.text = ''
+  if (!isProfileFormValid.value) {
+    profileMessage.text = 'Please fill in your name and username correctly.'
+    profileMessage.type = 'error'
     return
   }
-
-  errorMessage.value = ''
-  successMessage.value = ''
   isSaving.value = true
-
   try {
     await authStore.updateProfile({
       name: name.value.trim(),
-      surname: surname.value.trim(),
+      surname: username.value.trim(),
+      // photoUrl: photoUrl.value.trim() 
     })
-
-    successMessage.value = '✓ Profile updated successfully!'
+    profileMessage.text = '✓ Profile updated successfully!'
+    profileMessage.type = 'ok'
   } catch (err: any) {
-    errorMessage.value = err.response?.data?.message || err.message || 'Error updating profile'
+    profileMessage.text = err.response?.data?.message || 'Error updating profile.'
+    profileMessage.type = 'error'
   } finally {
     isSaving.value = false
   }
 }
 
-function goToChangePassword() {
-  router.push('/change-password')
+async function handleChangePassword() {
+  passwordMessage.text = ''
+  if (!newPassword.value || !confirmPassword.value) {
+    passwordMessage.text = 'Please fill in both password fields.'
+    passwordMessage.type = 'error'
+    return
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    passwordMessage.text = 'Passwords do not match.'
+    passwordMessage.type = 'error'
+    return
+  }
+  if (newPassword.value.length < 8) {
+     passwordMessage.text = 'Password must be at least 8 characters long.'
+     passwordMessage.type = 'error'
+     return
+  }
+  isChangingPassword.value = true
+  try {
+    // @ts-ignore
+    await authStore.changePassword(newPassword.value)
+    passwordMessage.text = '✓ Password changed successfully!'
+    passwordMessage.type = 'ok'
+    newPassword.value = ''
+    confirmPassword.value = ''
+  } catch (err: any) {
+    passwordMessage.text = err.response?.data?.message || 'Error changing password.'
+    passwordMessage.type = 'error'
+  } finally {
+    isChangingPassword.value = false
+  }
 }
 
 async function onLogout() {
@@ -151,163 +222,320 @@ async function onLogout() {
   }
 }
 
+async function deleteAccount() {
+  if (confirm('This action is permanent. Are you sure?')) {
+    try {
+        // @ts-ignore
+        if (typeof authStore.deleteAccount === 'function') {
+            // @ts-ignore
+            await authStore.deleteAccount()
+            await onLogout()
+        } else {
+            alert('Delete functionality is not available.')
+        }
+    } catch (e) {
+        alert('Could not delete the account.')
+        console.error(e)
+    }
+  }
+}
+
 function goBack() {
-  router.push('/Home')
+  router.push('/home')
 }
 </script>
 
 <style scoped>
-.profile-page {
-  min-height: 100vh;
-  width: 100%;
+/* ====== Base & Layout ====== */
+.settings-wrap {
+  width: min(800px, 92vw);
+  margin: 0 auto 64px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0 20px;
+}
+
+.topbar h1 {
+  font-size: 28px;
+  margin: 0;
+  font-weight: 600;
+  color: #edeaf6;
+}
+
+.home-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #26234a;
+  color: #bdb7e3;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.home-btn:hover {
+  background: #312e5a;
+  border-color: transparent;
+}
+
+/* ====== User Profile Header ====== */
+.user-profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 30px 0 50px;
+  padding: 20px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #3a3768;
+  margin-bottom: 20px;
+  background-color: #3a3768; /* Fallback color */
+}
+
+.profile-avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #3a3768;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: #23273A;
-}
-
-.profile-card {
-  width: 100%;
-  max-width: 500px;
-  background: #322D59;
-  color: #EDEAF6;
-  border-radius: 20px;
-  padding: 40px 48px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
-}
-
-.title {
-  text-align: center;
-  font-size: 40px;
-  font-weight: 800;
-  margin: 0 0 32px;
-  color: #EDEAF6;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #CFC9E6;
-  font-size: 18px;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.label {
-  font-size: 14px;
-  color: #CFC9E6;
+  color: #edeaf6;
+  font-size: 50px;
   font-weight: 600;
+  margin-bottom: 20px;
+}
+.profile-avatar-placeholder span {
+  text-transform: uppercase;
 }
 
-.input {
-  background: transparent;
-  color: #EDEAF6;
-  border: none;
-  border-bottom: 2px solid rgba(255,255,255,.35);
-  height: 40px;
-  outline: none;
-  padding: 0 4px;
+.profile-name {
+  font-size: 32px;
+  font-weight: 500;
+  color: #edeaf6;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.5px;
+}
+
+.profile-description {
+    font-size: 16px;
+    color: #bdb7e3;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ====== Cards ====== */
+.card {
+  background: #26234a;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  text-align: left;
+}
+.card h2 {
   font-size: 16px;
-  transition: border-color 0.2s;
+  font-weight: 600;
+  margin: 0 0 20px;
+  color: #edeaf6;
+  opacity: .95;
 }
 
-.input:focus {
-  border-bottom-color: #fff;
+/* ====== Forms ====== */
+label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #bdb7e3;
+  display: block;
+  margin-bottom: 8px;
 }
 
-.input:disabled {
-  opacity: 0.5;
+/* NEW: A parent grid for all form rows inside a card */
+.form-grid {
+  display: grid;
+  gap: 20px; /* This now controls all vertical spacing */
+}
+
+input {
+  width: 100%;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #3a3768;
+  background: #1f1d3b;
+  color: #edeaf6;
+  padding: 0 14px;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box; /* MODIFIED: Ensures padding/border don't affect width */
+}
+input:focus {
+  outline: none;
+  border-color: #6a6cf7;
+  box-shadow: 0 0 0 3px rgba(106, 108, 247, 0.3);
+}
+input:disabled {
+  background: #2a2745;
+  color: #8a85a3;
   cursor: not-allowed;
 }
-
-.error-message {
-  color: #ff6b6b;
-  font-size: 14px;
-  padding: 12px;
-  background: rgba(255, 107, 107, 0.1);
-  border-radius: 8px;
-  text-align: center;
+input::placeholder {
+    color: #6a6685;
 }
 
-.success-message {
-  color: #51cf66;
-  font-size: 14px;
-  padding: 12px;
-  background: rgba(81, 207, 102, 0.1);
+.input-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #1f1d3b;
+  border: 1px solid #3a3768;
   border-radius: 8px;
-  text-align: center;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box; /* MODIFIED: Ensures padding/border don't affect width */
+}
+.input-group:focus-within {
+  border-color: #6a6cf7;
+  box-shadow: 0 0 0 3px rgba(106, 108, 247, 0.3);
+}
+.input-group input {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+.input-group input:focus {
+  box-shadow: none;
+  outline: none;
 }
 
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
+.input-group input:first-child {
+  border-right: 1px solid #3a3768;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  /* REMOVED: margin-bottom is no longer needed */
+}
+
+/* REMOVED: The .row class is replaced by the parent .form-grid gap */
+
+.col.full { 
+  grid-column: 1 / -1; 
+}
+.description {
+  font-size: 14px;
+  color: #8a85a3;
+  margin: -4px 0 12px 0;
+  line-height: 1.6;
+}
+/* ====== Buttons & Actions ====== */
+.actions { 
+  margin-top: 20px;
+  text-align: left; /* MODIFIED: Default alignment for all action containers is now left */
 }
 
 .btn {
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
   border: none;
-  font-weight: 700;
-  font-size: 16px;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-block; /* MODIFIED: Ensures buttons align correctly */
+  text-align: center;
 }
 
 .btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.btn-primary {
-  background: #6B7CFF;
-  color: #fff;
+.btn.primary {
+  background: #6a6cf7;
+  min-width: 160px; /* Optional: A minimum width for primary buttons */
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #7F89FF;
-  transform: translateY(-2px);
+.btn.primary:hover:not(:disabled) {
+  background: #535bf2;
 }
 
-.btn-secondary {
-  background: #4B497C;
-  color: #EDEAF6;
+.btn.danger {
+    background: #e53e3e;
 }
 
-.btn-secondary:hover {
-  background: #5B5990;
+.btn.danger:hover:not(:disabled) {
+    background: #c53030;
 }
 
-.btn-danger {
-  background: #ff6b6b;
-  color: #fff;
+/* REMOVED: The complex, overriding rules for centering and right-aligning buttons are no longer needed. 
+   The simpler code above now handles all cases consistently. */
+/* ====== Messages ====== */
+.msg { 
+  margin-top: 16px; 
+  font-size: 14px;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+.msg.ok { 
+  color: #48bb78; 
+  background-color: rgba(72, 187, 120, 0.1);
+}
+.msg.error { 
+  color: #f56565; 
+  background-color: rgba(245, 101, 101, 0.1);
+}
+.card:first-of-type .msg {
+  text-align: right;
+  background-color: transparent;
+  padding-right: 0;
+  margin-bottom: 0;
 }
 
-.btn-danger:hover {
-  background: #ff5252;
+/* ====== Loading State ====== */
+.loading { 
+  width: 100%; 
+  text-align: center; 
+  padding: 40px 0; 
+  color: #bdb7e3; 
 }
 
-.btn-ghost {
-  background: transparent;
-  color: #CFC9E6;
-  border: 1px solid rgba(255,255,255,.25);
-}
-
-.btn-ghost:hover {
-  background: rgba(255,255,255,.05);
-  border-color: rgba(255,255,255,.4);
+/* ====== Responsive Design ====== */
+@media (max-width: 720px) {
+  .grid, .input-group { 
+    grid-template-columns: 1fr; 
+  }
+  .input-group .col:first-child {
+    border-right: none;
+    border-bottom: 1px solid #3a3768;
+  }
+  .card {
+    padding: 16px;
+  }
+  .card .actions,
+  .card:first-of-type .actions {
+    text-align: center;
+  }
+  .card .actions .btn.primary,
+  .card:first-of-type .actions .btn.primary {
+    width: 100%;
+    max-width: none;
+  }
 }
 </style>
