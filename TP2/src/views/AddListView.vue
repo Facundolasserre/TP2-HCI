@@ -204,9 +204,9 @@ async function submit(){
     router.push('/Home');
   } catch (error: any) {
     console.error('Failed to create list:', error);
-    
-    // If backend not available, simulate success and redirect to Home
-    if (error.status === 0 || error.code === 'ERR_NETWORK') {
+    if (error.response?.status === 409) {
+      toast.error('Ya existe una lista con este nombre.');
+    } else if (error.status === 0 || error.code === 'ERR_NETWORK') {
       console.warn('⚠️ Backend not available - simulating list creation');
       toast.success('List created (mock mode - backend not available)');
       router.push('/Home');

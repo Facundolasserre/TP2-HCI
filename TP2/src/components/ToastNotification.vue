@@ -99,6 +99,7 @@ const { toasts, remove } = useToast()
 
 .toast-close {
   width: 24px;
+  min-width: 24px;
   height: 24px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
@@ -111,6 +112,8 @@ const { toasts, remove } = useToast()
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.2s ease;
+  padding: 0;
+  line-height: 1;
 }
 
 .toast-close:hover {

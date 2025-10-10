@@ -145,16 +145,11 @@ onMounted(async () => {
   await loadLists();
 });
 
-let isFirstLoad = true;
-watch(() => route.path, (newPath) => {
-  if (newPath === '/Home') {
-    if (isFirstLoad) {
-      isFirstLoad = false;
-      return;
-    }
-    loadLists();
-  }
+watch(cards, (newCards) => {
+  console.log('Cards updated in HomeView:', newCards);
 });
+
+
 </script>
 
 <style scoped>

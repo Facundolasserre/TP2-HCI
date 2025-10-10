@@ -77,7 +77,10 @@ async function onSubmit() {
 
     router.push('/Home');
   } catch (err: any) {
-    const message = err.response?.data?.message || err.message || t('login.error_credentials');
+    let message = err.response?.data?.message || err.message || t('login.error_credentials');
+    if (message === 'Invalid credentials') {
+      message = t('login.error_credentials');
+    }
     errorMessage.value = message;
     if (message.toLowerCase().includes('verified') || message.toLowerCase().includes('verificado')) {
       router.push({ name: 'verify-account', query: { email: email.value } });

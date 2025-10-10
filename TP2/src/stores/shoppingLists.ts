@@ -34,60 +34,31 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
    * Fetch shopping lists with filters
    */
   const fetchLists = async (params?: ListShoppingListsParams) => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const lists = await shoppingListsService.listLists(params)
-      items.value = lists
+      console.log('Fetching lists with params:', params);
+      const response = await shoppingListsService.listLists(params);
+      console.log('API response:', JSON.stringify(response, null, 2));
       
-      // Update pagination state
-      if (params?.page) currentPage.value = params.page
-      if (params?.per_page) perPage.value = params.per_page
+      // The API returns the list in a 'data' property
+      const lists = response.data || [];
+      console.log('Processed lists:', lists);
+
+      items.value = lists;
       
-      return lists
+      if (params?.page) currentPage.value = params.page;
+      if (params?.per_page) perPage.value = params.per_page;
+      
+      return lists;
     } catch (err: any) {
-      error.value = err as ApiError
-      
-      // If it's a network error (status 0), use mock data for development
-      if (err.status === 0 || err.code === 'ERR_NETWORK') {
-        console.warn('⚠️ Backend not available - using mock data for development')
-        
-        // Mock data for development
-        items.value = [
-          {
-            id: 1,
-            name: 'Weekly Groceries',
-            description: 'Supermarket shopping list',
-            recurring: true,
-            metadata: { icon: 'shopping_cart.svg', color: '#6B7CFF' },
-            owner: { id: 1, email: 'user@example.com', name: 'John', surname: 'Doe' },
-            sharedWith: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            name: 'Party Supplies',
-            description: 'Items for weekend party',
-            recurring: false,
-            metadata: { icon: 'family.svg', color: '#FF6B9D' },
-            owner: { id: 1, email: 'user@example.com', name: 'John', surname: 'Doe' },
-            sharedWith: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ] as ShoppingList[]
-        
-        // Clear error since we're using mock data
-        error.value = null
-        
-        return items.value
-      }
-      
-      throw err
+      console.error('Error fetching lists:', err);
+      error.value = err as ApiError;
+      items.value = []; // Clear items on error
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -137,21 +108,21 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
    * Create a new shopping list
    */
   const createList = async (data: ShoppingListCreate) => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-      const newList = await shoppingListsService.createList(data)
-      
-      // Add to local state
-      items.value.unshift(newList)
-      
-      return newList
+      const newList = await shoppingListsService.createList(data);
+      console.log('New list created:', newList);
+      console.log('Re-fetching lists...');
+      await fetchLists(); // Re-fetch the lists to get the updated data
+      console.log('Lists re-fetched. Items in store:', items.value);
+      return newList;
     } catch (err) {
-      error.value = err as ApiError
-      throw err
+      error.value = err as ApiError;
+      throw err;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
