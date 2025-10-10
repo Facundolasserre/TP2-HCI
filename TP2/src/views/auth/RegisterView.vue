@@ -1,5 +1,6 @@
 <template>
-  <section class="card">
+  <div class="auth-wrapper">
+    <section class="card">
     <div class="logo-wrap">
       <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
@@ -7,20 +8,15 @@
     <h1 class="title">Welcome to BagIt</h1>
 
     <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Name</label>
-      <input class="input" v-model.trim="name" type="text" autocomplete="given-name" required />
+      <input class="input" v-model.trim="name" type="text" autocomplete="given-name" required placeholder="Name" />
 
-      <label class="label">Surname</label>
-      <input class="input" v-model.trim="surname" type="text" autocomplete="family-name" required />
+      <input class="input" v-model.trim="surname" type="text" autocomplete="family-name" required placeholder="Surname" />
 
-      <label class="label">Email</label>
-      <input class="input" v-model.trim="email" type="email" autocomplete="email" required />
+      <input class="input" v-model.trim="email" type="email" autocomplete="email" required placeholder="Email" />
 
-      <label class="label">Password</label>
-      <input class="input" v-model="password" type="password" autocomplete="new-password" required />
+      <input class="input" v-model="password" type="password" autocomplete="new-password" required placeholder="Password" />
 
-      <label class="label">Rewrite password</label>
-      <input class="input" v-model="password2" type="password" autocomplete="new-password" required />
+      <input class="input" v-model="password2" type="password" autocomplete="new-password" required placeholder="Rewrite password" />
 
       <!-- Error message -->
       <div v-if="errorMessage" class="error-message">
@@ -37,6 +33,7 @@
       </button>
     </form>
   </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -114,6 +111,14 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1C1C30;
+}
+
 .card{
   width: 460px;
   background: #322D59;
@@ -135,7 +140,10 @@ async function onSubmit() {
 }
 
 .form{ display:flex; flex-direction:column; gap:20px; }
-.label{ font-size:14px; color:#CFC9E6; text-align:left; margin-left:0; }
+
+.input::placeholder {
+  color: rgba(237, 234, 246, 0.5);
+}
 .input{
   background: transparent;
   color: #EDEAF6;

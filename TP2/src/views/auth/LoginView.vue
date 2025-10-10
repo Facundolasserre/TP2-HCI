@@ -1,5 +1,6 @@
 <template>
-  <section class="card">
+  <div class="auth-wrapper">
+    <section class="card">
     <!-- Logo -->
     <div class="logo-wrap">
       <div class="logo-circle">
@@ -12,11 +13,9 @@
 
     <!-- Form -->
     <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Email</label>
-      <input class="input" v-model="email" type="email" autocomplete="email" required />
+      <input class="input" v-model="email" type="email" autocomplete="email" required placeholder="Email" />
 
-      <label class="label">Password</label>
-      <input class="input" v-model="password" type="password" autocomplete="current-password" required />
+      <input class="input" v-model="password" type="password" autocomplete="current-password" required placeholder="Password" />
 
       <!-- Error message -->
       <div v-if="errorMessage" class="error-message">
@@ -37,6 +36,7 @@
       </div>
     </form>
   </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -90,6 +90,14 @@ function onSignUp() {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1C1C30;
+}
+
 .card{
   width: 460px;
   background: #322D59;
@@ -111,14 +119,10 @@ function onSignUp() {
 
 .form{ display:flex; flex-direction:column; gap:20px; }
 
-
-.label{ 
-  font-size:14px;
-  color:#CFC9E6; 
-  text-align:left; 
-  margin-left:0; 
-
+.input::placeholder {
+  color: rgba(237, 234, 246, 0.5);
 }
+
 .input{
   background: transparent;
   color: #EDEAF6;
