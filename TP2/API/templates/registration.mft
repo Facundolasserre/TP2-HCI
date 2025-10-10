@@ -1,0 +1,8 @@
+<div style="text-align: center;">
+    <h1>
+        <strong>Welcome <%FIRST_NAME%></strong>
+    </h1>
+    <h3>
+        <strong>Your verification code is <span style="color: #fc987e;"><%VERIFICATION_CODE%></span></strong>
+    </h3>
+</div>

@@ -1,0 +1,14 @@
+/node_modules
+/db/exercise.sqlite3
+package-lock.json
+build
+.idea
+.env
+
+docs/offline
+docs/distribution
+docs/*.zip
+docs/*.tar.gz
+docs/*.html
+
+src/db/*.sqlite

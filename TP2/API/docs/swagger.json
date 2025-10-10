@@ -1,0 +1,1092 @@
+{
+  "definition": {
+    "openapi": "3.0.0",
+    "info": {
+      "title": "HCI -- Grocery Manager REST API documentation",
+      "version": "1.0.0",
+      "description": "REST API to serve client applications for HCI assignment."
+    },
+    "servers": [
+      {
+        "url": "http://localhost:8080"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Not Found: Requested entity does not exist or doesn't belong to the current user"
+      },
+      "BadRequest": {
+        "description": "Bad Request: Request or data is invalid or a constraint wasn't met"
+      },
+      "Conflict": {
+        "description": "Conflict: Resource already exists or operation conflicts with current state"
+      },
+      "Unauthorized": {
+        "description": "Unauthorized: Authorization information is missing or invalid"
+      },
+      "Forbidden": {
+        "description": "Forbidden: Request failed due to insufficient permissions"
+      },
+      "ServerError": {
+        "description": "Internal Server Error: Unexpected error"
+      },
+      "ShoppingListCreate": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 100 },
+          "description": { "type": "string" },
+          "recurring": { "type": "boolean" },
+          "metadata": { "type": "object"},
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "updatedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" }
+        },
+        "example": {
+          "id": 1,
+          "name": "Supermarket",
+          "description": "Monthly groceries",
+          "recurring": true,
+          "metadata": {},
+          "createdAt": "2025-09-01 10:30:00",
+          "updatedAt": "2025-09-05 14:45:00"
+        }
+      }
+    },
+    "definitions": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "surname": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "surname",
+          "password"
+        ],
+        "example": {
+          "id": 1,
+          "name": "John",
+          "surname": "Doe",
+          "password": "1234567890",
+          "email": "johndoe@email.com",
+          "updatedAt": "2025-10-10 15:30:00",
+          "createdAt": "2025-10-09 09:15:00",
+          "metadata": {}
+        }
+      },
+      "NewUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "surname": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          }
+        },
+        "example": {
+          "id": 1,
+          "name": "John",
+          "surname": "Doe",
+          "email": "johndoe@email.com",
+          "metadata": {},
+          "updatedAt": "2025-10-04 19:51:54",
+          "createdAt": "2025-10-04 19:51:54"
+        }
+      },
+      "RegisteredUser": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 50
+              },
+              "surname": {
+                "type": "string",
+                "maxLength": 50
+              },
+              "metadata": {
+                "type": "object"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "YYYY-mm-dd HH:MM:SS"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "YYYY-mm-dd HH:MM:SS"
+              }
+            }
+          },
+          "verificationToken": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "user": {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "email": "johndoe@email.com",
+            "metadata": {},
+            "updatedAt": "2025-10-04 19:51:54",
+            "createdAt": "2025-10-04 19:51:54"
+          },
+          "verificationToken": "a50c9cad6073f6f2"
+        }
+      },
+      "GetUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "example": {
+          "id": 1,
+          "name": "John",
+          "surname": "Doe",
+          "email": "johndoe@email.com",
+          "metadata": {},
+          "updatedAt": "2025-10-10 15:30:00",
+          "createdAt": "2025-10-09 09:15:00"
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "example": {
+          "email": "johndoe@email.com",
+          "password": "1234567890"
+        }
+      },
+      "RegistrationData": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "surname": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name",
+          "surname"
+        ],
+        "example": {
+          "name": "John",
+          "surname": "Doe",
+          "email": "johndoe@email.com",
+          "password": "1234567890",
+          "metadata": {}
+        }
+      },
+      "AuthenticationToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "example": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImlhdCI6MTYwMjU2Mjc3MTM4NiwiZXhwIjoxNjAyNTY1MzYzMzg2fQ.ilDzvJ1b77Vyi40g3Sy5mo5iyDj3T6MOhCHsH6jEfDk"
+        }
+      },
+      "VerificationCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "example": {
+          "code": "08e8cc040b7ce56c"
+        }
+      },
+      "PasswordRecovery": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "example": {
+          "email": "johndoe@email.com"
+        }
+      },
+      "PasswordReset": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "code",
+          "password"
+        ],
+        "example": {
+          "code": "08e8cc040b7ce56c",
+          "password": "1234567890"
+        }
+      },
+      "CategoryRegistrationData": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "example": {
+          "name": "Bakery",
+          "metadata": {}
+        }
+      },
+      "GetCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          }
+        },
+        "example": {
+          "id": 1,
+          "name": "Bakery",
+          "metadata": {},
+          "updatedAt": "2025-10-10 11:20:00",
+          "createdAt": "2025-10-09 08:00:00"
+        }
+      },
+      "ArrayOfCategories": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          }
+        },
+        "example": [
+          {
+            "id": 1,
+            "name": "Bakery",
+            "metadata": {},
+            "updatedAt": "2025-10-10 11:20:00",
+            "createdAt": "2025-10-09 08:00:00"
+          },
+          {
+            "id": 2,
+            "name": "Dairy",
+            "metadata": {},
+            "updatedAt": "2025-10-15 16:45:00",
+            "createdAt": "2025-10-12 10:30:00"
+          }
+        ]
+      },
+      "UpdateCategoryProfile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "example": {
+          "name": "Bakery",
+          "metadata": {}
+        }
+      },
+      "UpdateUserProfile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "surname": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "metadata": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "surname"
+        ],
+        "example": {
+          "name": "John",
+          "surname": "Doe",
+          "metadata": {}
+        }
+      },
+      "PasswordChange": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 6
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 6
+          }
+        },
+        "required": ["currentPassword", "newPassword"],
+        "example": {
+          "currentPassword": "123456",
+          "newPassword": "654321"
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 50 },
+          "metadata": { "type": "object" },
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "updatedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "category": { "$ref": "#/definitions/GetCategory" }
+        },
+        "example": {
+          "id": 2,
+          "name": "Milk",
+          "metadata": {},
+          "createdAt": "2025-08-01 09:00:00",
+          "updatedAt": "2025-09-02 14:30:00",
+          "category": {
+            "id": 1,
+            "name": "Dairy",
+            "metadata": {},
+            "createdAt": "2025-07-01 10:00:00",
+            "updatedAt": "2025-08-01 12:00:00"
+          }
+        }
+      },
+      "GetProduct": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 50 },
+          "metadata": { "type": "object" },
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "updatedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "category": { "$ref": "#/definitions/GetCategory" }
+        },
+        "example": {
+          "id": 2,
+          "name": "Milk",
+          "metadata": {},
+          "createdAt": "2025-08-01 09:00:00",
+          "updatedAt": "2025-09-02 14:30:00",
+          "category": {
+            "id": 1,
+            "name": "Dairy",
+            "metadata": {},
+            "createdAt": "2025-07-01 10:00:00",
+            "updatedAt": "2025-08-01 12:00:00"
+          }
+        }
+      },
+      "ProductCreationData": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 50 },
+          "category": { 
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "format": "int64" }
+            }
+          },
+          "metadata": { "type": "object" }
+        },
+        "required": ["name"],
+        "example": {
+          "name": "Milk",
+          "category": { "id": 1 },
+          "metadata": {}
+        }
+      },
+      "ProductRegistrationData": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 50 },
+          "category": { 
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "format": "int64" }
+            }
+          },
+          "metadata": { "type": "object" }
+        },
+        "required": ["name"],
+        "example": {
+          "name": "Milk",
+          "category": { "id": 1 },
+          "metadata": {}
+        }
+      },
+      "ArrayOfProducts": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/Product" },
+        "example": [
+          {
+            "id": 2,
+            "name": "Milk",
+            "metadata": {},
+            "createdAt": "2025-08-01 09:00:00",
+            "updatedAt": "2025-09-02 14:30:00",
+            "category": {
+              "id": 1,
+              "name": "Dairy",
+              "metadata": {},
+              "createdAt": "2025-07-01 10:00:00",
+              "updatedAt": "2025-08-01 12:00:00"
+            }
+          }
+        ]
+      },
+      "ShoppingList": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 100 },
+          "description": { "type": "string" },
+          "recurring": { "type": "boolean" },
+          "metadata": { "type": "object"},
+          "owner": { "$ref": "#/definitions/User" },
+          "sharedWith": [],
+          "lastPurchasedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS", "nullable": true },
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "updatedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" }
+        },
+        "example": {
+          "id": 1,
+          "name": "Supermarket",
+          "description": "Monthly groceries",
+          "recurring": true,
+          "metadata": {},
+          "owner": {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "email": "johndoe@email.com",
+            "metadata": {},
+            "createdAt": "2025-10-09 09:15:00",
+            "updatedAt": "2025-10-10 15:30:00"
+          },
+          "sharedWith": [],
+          "lastPurchasedAt": "2025-09-05 18:00:00",
+          "createdAt": "2025-09-01 10:30:00",
+          "updatedAt": "2025-09-05 14:45:00"
+        }
+      },
+
+      "ShoppingListsArray": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/ShoppingList" },
+        "owner": { "$ref": "#/definitions/User" },
+        "example": [
+          {
+            "id": 1,
+            "name": "Supermarket",
+            "description": "Monthly groceries",
+            "recurring": true,
+            "metadata": {},
+            "owner": {
+              "id": 1,
+              "name": "John",
+              "surname": "Doe",
+              "email": "johndoe@email.com",
+              "metadata": {},
+              "createdAt": "2025-10-09 09:15:00",
+              "updatedAt": "2025-10-10 15:30:00"
+            },
+            "sharedWith": [],
+            "lastPurchasedAt": "2025-09-05 18:00:00",
+            "createdAt": "2025-09-01 10:30:00",
+            "updatedAt": "2025-09-05 14:45:00"
+          }
+        ]
+      },
+
+      "ShoppingListCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 100 },
+          "description": { "type": "string" },
+          "recurring": { "type": "boolean" },
+          "metadata": { "type": "object" }
+        },
+        "required": ["name"],
+        "example": {
+          "name": "Supermarket",
+          "description": "Monthly groceries",
+          "recurring": true,
+          "metadata": {}
+        }
+      },
+
+      "ShoppingListUpdate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 100 },
+          "description": { "type": "string" },
+          "recurring": { "type": "boolean" },
+          "metadata": { "type": "object" }
+        },
+        "example": {
+          "name": "Supermarket",
+          "description": "Monthly groceries",
+          "recurring": false,
+          "metadata": { "notes": "Bring coupons" }
+        }
+      },
+      "ListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true
+          },
+          "purchased": {
+            "type": "boolean"
+          },
+          "lastPurchasedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "product": {
+            "$ref": "#/definitions/Product"
+          }
+        },
+        "example": {
+          "id": 2,
+          "quantity": 4,
+          "unit": "l",
+          "metadata": {},
+          "purchased": false,
+          "lastPurchasedAt": null,
+          "createdAt": "2025-09-16 11:00:00",
+          "updatedAt": "2025-09-16 11:00:00",
+          "product": {
+            "id": 2,
+            "name": "Milk",
+            "metadata": {},
+            "createdAt": "2025-09-11 10:30:00",
+            "updatedAt": "2025-09-11 10:30:00",
+            "category": {
+              "id": 2,
+              "name": "Bakery",
+              "metadata": {},
+              "createdAt": "2025-09-08 09:00:00",
+              "updatedAt": "2025-09-08 09:00:00"
+            },
+            "pantry": null
+          }
+        }
+      },
+      "ListItemArray": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/ListItem" },
+        "example": [
+          {
+            "id": 2,
+            "quantity": 4,
+            "unit": "l",
+            "metadata": {},
+            "purchased": false,
+            "lastPurchasedAt": null,
+            "createdAt": "2025-09-16 11:00:00",
+            "updatedAt": "2025-09-16 11:00:00",
+            "product": {
+              "id": 2,
+              "name": "Milk",
+              "metadata": {
+                "barcode": "2222222222"
+              },
+              "createdAt": "2025-09-11 10:30:00",
+              "updatedAt": "2025-09-11 10:30:00",
+              "category": {
+                "id": 2,
+                "name": "Bakery",
+                "metadata": {},
+                "createdAt": "2025-09-08 09:00:00",
+                "updatedAt": "2025-09-08 09:00:00"
+              },
+              "pantry": null
+            }
+          }
+        ]
+      },
+
+      "ListItemCreate": {
+        "type": "object",
+        "properties": {
+          "product": { 
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "format": "int64" }
+            }
+          },
+          "quantity": { "type": "number", "default": 1 },
+          "unit": { "type": "string", "default": "kg" },
+          "metadata": { "type": "object", "nullable": true }
+        },
+        "required": ["product", "quantity", "unit"],
+        "example": {
+          "product": { "id": 1 },
+          "quantity": 2,
+          "unit": "kg",
+          "metadata": {}
+        }
+      },
+      "ListItemUpdate": {
+        "type": "object",
+        "properties": {
+          "quantity": { "type": "number", "default": 1 },
+          "unit": { "type": "string", "default": "kg" },
+          "metadata": { "type": "object", "nullable": true }
+        }
+      },
+      "Pantry": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "name": { "type": "string", "maxLength": 50 },
+          "metadata": { "type": "object", "nullable": true },
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "updatedAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" },
+          "owner": { "$ref": "#/definitions/User" },
+          "sharedWith": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/User" },
+            "nullable": true
+          }
+        },
+        "example": {
+          "id": 4,
+          "name": "Fridge",
+          "metadata": {},
+          "createdAt": "2025-09-02 08:00:00",
+          "updatedAt": "2025-09-02 08:00:00",
+          "owner": {
+            "id": 1,
+            "name": "John",
+            "surname": "Doe",
+            "email": "johndoe@email.com",
+            "metadata": {},
+            "createdAt": "2025-10-09 09:15:00",
+            "updatedAt": "2025-10-10 15:30:00"
+          },
+          "sharedWith": [
+            {
+              "id": 2,
+              "name": "Jane",
+              "surname": "Doe",
+              "email": "janedoe@email.com",
+              "metadata": {},
+              "createdAt": "2025-10-09 10:00:00",
+              "updatedAt": "2025-10-10 16:00:00"
+            }
+          ]
+        }
+      },
+      "PantryItem": {
+        "type": "array",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/definitions/Product"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "YYYY-mm-dd HH:MM:SS"
+          }
+        },
+        "example": {
+          "id": 1,
+          "quantity": 2,
+          "unit": "l",
+          "metadata": {},
+          "product": {
+            "id": 1,
+            "name": "Milk",
+            "metadata": {},
+            "createdAt": "2025-09-11 10:30:00",
+            "updatedAt": "2025-09-11 10:30:00",
+            "category": {
+              "id": 2,
+              "name": "Dairy",
+              "metadata": {},
+              "createdAt": "2025-09-08 09:00:00",
+              "updatedAt": "2025-09-08 09:00:00"
+            }
+          },
+          "createdAt": "2025-09-16 12:00:00",
+          "updatedAt": "2025-09-16 12:00:00"
+        }
+      },
+      "PantryItemArray": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/PantryItem" },
+        "example": [
+          {
+            "id": 1,
+            "quantity": 4,
+            "unit": "l",
+            "metadata": {},
+            "product": {
+              "id": 1,
+              "name": "Milk",
+              "metadata": {},
+              "createdAt": "2025-09-11 10:30:00",
+              "updatedAt": "2025-09-11 10:30:00",
+              "category": {
+                "id": 2,
+                "name": "Dairy",
+                "metadata": {},
+                "createdAt": "2025-09-08 09:00:00",
+                "updatedAt": "2025-09-08 09:00:00"
+              }
+            },
+            "createdAt": "2025-09-16 12:00:00",
+            "updatedAt": "2025-09-16 12:00:00"
+          }
+        ]
+      },
+      "PantryCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 50 },
+          "metadata": { "type": "object", "nullable": true }
+        },
+        "required": ["name"],
+        "example": {
+          "name": "Fridge",
+          "metadata": { "color": "white" }
+        }
+      },
+      "PantryUpdate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 50 },
+          "metadata": { "type": "object", "nullable": true }
+        },
+        "example": {
+          "name": "Cupboard",
+          "metadata": { "color": "brown" }
+        }
+      },
+      "ArrayOfPantries": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/Pantry" },
+        "example": [
+          {
+            "id": 4,
+            "name": "Fridge",
+            "metadata": null,
+            "createdAt": "2025-09-02 08:00:00",
+            "updatedAt": "2025-09-02 08:00:00",
+            "owner": {
+              "id": 1,
+              "name": "John",
+              "surname": "Doe",
+              "email": "john@email.com"
+            },
+            "sharedWith": []
+          }
+        ]
+      },
+      "Purchase": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "metadata": { "type": "object", "nullable": true },
+          "owner": { "type": "string", "maxLength": 3 },
+          "list": { "$ref": "#/definitions/ShoppingList" },
+          "listItemArray": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/ListItemArray" }
+          },
+          "createdAt": { "type": "string", "format": "YYYY-mm-dd HH:MM:SS" }
+        },
+        "example": {
+            "id": 1,
+            "metadata": {},
+            "owner": {
+              "id": 2,
+              "name": "Juan",
+              "surname": "Doe",
+              "email": "juan@example.com",
+              "metadata": {},
+              "createdAt": "2023-10-09 08:30:00",
+              "updatedAt": "2023-10-10 14:00:00"
+            },
+            "list": {
+              "id": 1,
+              "name": "Supermarket",
+              "description": "Monthly groceries",
+              "recurring": true,
+              "metadata": {},
+              "owner": {
+                "id": 1,
+                "name": "John",
+                "surname": "Doe",
+                "email": "johndoe@email.com",
+                "metadata": {},
+                "createdAt": "2025-10-09 09:15:00",
+                "updatedAt": "2025-10-10 15:30:00"
+              },
+              "sharedWith": [],
+              "lastPurchasedAt": "2025-09-05 18:00:00",
+              "createdAt": "2025-09-01 10:30:00",
+              "updatedAt": "2025-09-05 14:45:00"
+            },
+          "listItemArray": [
+            {
+              "id": 2,
+              "quantity": 4,
+              "unit": "l",
+              "metadata": {},
+              "purchased": false,
+              "lastPurchasedAt": null,
+              "createdAt": "2025-09-16 11:00:00",
+              "updatedAt": "2025-09-16 11:00:00",
+              "product": {
+                "id": 2,
+                "name": "Milk",
+                "metadata": {
+                  "barcode": "2222222222"
+                },
+                "createdAt": "2025-09-11 10:30:00",
+                "updatedAt": "2025-09-11 10:30:00",
+                "category": {
+                  "id": 2,
+                  "name": "Bakery",
+                  "metadata": {},
+                  "createdAt": "2025-09-08 09:00:00",
+                  "updatedAt": "2025-09-08 09:00:00"
+                },
+                "pantry": null
+              }
+            }
+          ]
+        }
+      }
+    },
+    "security": [{ "bearerAuth": [] }]
+  },
+  "apis": [
+    "./src/routes/*.ts"
+  ]
+}

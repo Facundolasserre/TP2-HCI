@@ -1,0 +1,14 @@
+<div style="text-align: center;">
+    <h1>
+        <strong>Shopping List Shared with You</strong>
+    </h1>
+    <p>
+        <strong>Hello <%RECIPIENT_NAME%>!</strong>
+    </p>
+    <p>
+        <strong><%OWNER_NAME%></strong> has shared the shopping list <strong>"<%LIST_NAME%>"</strong> with you.
+    </p>
+    <p>
+        You can now view and manage items in this shopping list.
+    </p>
+</div>
