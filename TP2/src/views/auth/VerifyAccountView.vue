@@ -1,108 +1,101 @@
 <template>
   <div class="auth-wrapper">
     <section class="card">
-    <!-- Logo -->
-    <div class="logo-wrap">
-      <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
-    </div>
-
-    <!-- Título -->
-    <h1 class="title">Verificar Cuenta</h1>
-    <p class="subtitle">Ingresá el código de verificación enviado a {{ email }}</p>
-
-    <!-- Form -->
-    <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Código de Verificación</label>
-      <input
-        class="input"
-        v-model.trim="code"
-        type="text"
-        placeholder="Ingresá el código de 16 caracteres"
-        maxlength="16"
-        required
-      />
-
-      <!-- Error message -->
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
+      <!-- Logo -->
+      <div class="logo-wrap">
+        <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
       </div>
 
-      <!-- Success message -->
-      <div v-if="successMessage" class="success-message">
-        {{ successMessage }}
-      </div>
+      <!-- Título -->
+      <h1 class="title">{{ t('verify.title') }}</h1>
+      <p class="subtitle">{{ t('verify.subtitle') }} {{ email }}</p>
 
-      <button class="btn" type="submit" :disabled="!code || isLoading">
-        {{ isLoading ? 'Verificando...' : 'Verificar' }}
-      </button>
+      <!-- Form -->
+      <form class="form" @submit.prevent="onSubmit">
+        <label class="label">{{ t('verify.code_label') }}</label>
+        <input
+          class="input"
+          v-model.trim="code"
+          type="text"
+          :placeholder="t('verify.code_placeholder')"
+          maxlength="16"
+          required
+        />
 
-      <div class="links-row">
-        <a class="link" href="#" @click.prevent="resendCode">Reenviar código</a>
-        <span class="separator">|</span>
-        <a class="link" href="#" @click.prevent="goToLogin">Volver al login</a>
-      </div>
-    </form>
-  </section>
+        <!-- Error message -->
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Success message -->
+        <div v-if="successMessage" class="success-message">
+          {{ successMessage }}
+        </div>
+
+        <button class="btn" type="submit" :disabled="!code || isLoading">
+          {{ isLoading ? t('verify.verifying') : t('verify.verify_button') }}
+        </button>
+
+        <div class="links-row">
+          <a class="link" href="#" @click.prevent="resendCode">{{ t('verify.resend_code') }}</a>
+          <span class="separator">|</span>
+          <a class="link" href="#" @click.prevent="goToLogin">{{ t('verify.back_to_login') }}</a>
+        </div>
+      </form>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { useI18n } from '@/composables/useI18n';
 
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
+const { t } = useI18n();
 
-const code = ref('')
-const email = ref('')
-const errorMessage = ref('')
-const successMessage = ref('')
-const isLoading = ref(false)
+const code = ref('');
+const email = ref('');
+const errorMessage = ref('');
+const successMessage = ref('');
+const isLoading = ref(false);
 
 onMounted(() => {
-  // Get email from query params
-  email.value = (route.query.email as string) || ''
-  
-  // Auto-fill code if available from store (from registration)
+  email.value = (route.query.email as string) || '';
   if (authStore.verificationToken) {
-    code.value = authStore.verificationToken
+    code.value = authStore.verificationToken;
   }
-})
+});
 
 async function onSubmit() {
   if (!code.value.trim()) {
-    errorMessage.value = 'Por favor ingresa el código de verificación'
-    return
+    errorMessage.value = t('verify.error_enter_code');
+    return;
   }
 
-  errorMessage.value = ''
-  successMessage.value = ''
-  isLoading.value = true
+  errorMessage.value = '';
+  successMessage.value = '';
+  isLoading.value = true;
 
   try {
-    // Verify account
-    await authStore.verifyAccount(code.value.trim())
-
-    successMessage.value = '✓ Cuenta verificada! Redirigiendo al login...'
-    
-    // Redirect to login after 2 seconds
+    await authStore.verifyAccount(code.value.trim());
+    successMessage.value = t('verify.success_message');
     setTimeout(() => {
-      router.push('/login')
-    }, 2000)
-    
+      router.push('/login');
+    }, 2000);
   } catch (err: any) {
-    console.error('Error verifying account:', err)
-    errorMessage.value = err.response?.data?.message || err.message || 'Código inválido o expirado'
+    errorMessage.value = err.response?.data?.message || err.message || t('verify.error_invalid_code');
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
 async function resendCode() {
   if (!email.value) {
-    errorMessage.value = 'No se encontró el email para reenviar el código.';
+    errorMessage.value = t('verify.error_no_email');
     return;
   }
 
@@ -112,17 +105,17 @@ async function resendCode() {
 
   try {
     await authStore.sendVerification(email.value);
-    successMessage.value = '✓ Código reenviado! Revisa tu email.';
+    successMessage.value = t('verify.resend_success');
   } catch (err: any) {
-    console.error('Error reenviando el código:', err);
-    errorMessage.value = err.response?.data?.message || err.message || 'Error al reenviar el código.';
+    console.error('Error resending code:', err);
+    errorMessage.value = err.response?.data?.message || err.message || t('verify.error_resend');
   } finally {
     isLoading.value = false;
   }
 }
 
 function goToLogin() {
-  router.push('/login')
+  router.push('/login');
 }
 </script>
 
@@ -141,7 +134,7 @@ function goToLogin() {
   color: #EDEAF6;
   border-radius: 20px;
   padding: 40px 48px 28px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 .logo-wrap {
@@ -188,7 +181,7 @@ function goToLogin() {
   background: transparent;
   color: #EDEAF6;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
   height: 36px;
   outline: none;
   padding-left: 0;

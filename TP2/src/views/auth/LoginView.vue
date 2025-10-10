@@ -1,95 +1,103 @@
 <template>
   <div class="auth-wrapper">
     <section class="card">
-    <!-- Logo -->
-    <div class="logo-wrap">
-      <div class="logo-circle">
-        <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
+      <div class="language-switcher">
+        <button @click="toggleLanguage">
+          <img src="@/assets/fonts/language.png" alt="Language" />
+        </button>
       </div>
-    </div>
-
-    <!-- Título -->
-    <h1 class="title">BagIt</h1>
-
-    <!-- Form -->
-    <form class="form" @submit.prevent="onSubmit">
-      <input class="input" v-model="email" type="email" autocomplete="email" required placeholder="Email" />
-
-      <input class="input" v-model="password" type="password" autocomplete="current-password" required placeholder="Password" />
-
-      <!-- Error message -->
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
+      <!-- Logo -->
+      <div class="logo-wrap">
+        <div class="logo-circle">
+          <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
+        </div>
       </div>
 
-      <div class="links-row">
-        <a class="link" href="#" @click.prevent="onForgot">¿Olvidaste tu contraseña?</a>
-      </div>
+      <!-- Título -->
+      <h1 class="title">{{ t('login.title') }}</h1>
 
-      <button class="btn" type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Cargando...' : 'Iniciar Sesión' }}
-      </button>
+      <!-- Form -->
+      <form class="form" @submit.prevent="onSubmit">
+        <input class="input" v-model="email" type="email" autocomplete="email" required :placeholder="t('login.email_placeholder')" />
 
-      <div class="signup-row">
-        <span>¿No tenés una cuenta?</span>
-        <a class="link" href="#" @click.prevent="onSignUp">Registrate</a>
-      </div>
-    </form>
-  </section>
+        <input class="input" v-model="password" type="password" autocomplete="current-password" required :placeholder="t('login.password_placeholder')" />
+
+        <!-- Error message -->
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <div class="links-row">
+          <a class="link" href="#" @click.prevent="onForgot">{{ t('login.forgot_password') }}</a>
+        </div>
+
+        <button class="btn" type="submit" :disabled="isLoading">
+          {{ isLoading ? t('login.loading') : t('login.login_button') }}
+        </button>
+
+        <div class="signup-row">
+          <span>{{ t('login.no_account') }}</span>
+          <a class="link" href="#" @click.prevent="onSignUp">{{ t('login.signup') }}</a>
+        </div>
+      </form>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { useI18n } from '@/composables/useI18n';
+import { useLanguageStore } from '@/stores/language';
 
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
-const isLoading = ref(false)
-const router = useRouter()
-const authStore = useAuthStore()
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+const isLoading = ref(false);
+const router = useRouter();
+const authStore = useAuthStore();
+const { t } = useI18n();
+const languageStore = useLanguageStore();
 
 async function onSubmit() {
-  // Validación básica
   if (!email.value.trim() || !password.value) {
-    errorMessage.value = 'Por favor complete todos los campos'
-    return
+    errorMessage.value = t('login.error_fill_fields');
+    return;
   }
 
-  errorMessage.value = ''
-  isLoading.value = true
+  errorMessage.value = '';
+  isLoading.value = true;
 
   try {
-    // Llamar al store para hacer login
     await authStore.login({
       email: email.value.trim(),
-      password: password.value
-    })
+      password: password.value,
+    });
 
-    console.log('✓ Login exitoso, redirigiendo a Home...')
-    
-    // Redirigir a Home
-    router.push('/Home')
+    router.push('/Home');
   } catch (err: any) {
-    console.error('Error en login:', err);
-    const message = err.response?.data?.message || err.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+    const message = err.response?.data?.message || err.message || t('login.error_credentials');
     errorMessage.value = message;
     if (message.toLowerCase().includes('verified') || message.toLowerCase().includes('verificado')) {
       router.push({ name: 'verify-account', query: { email: email.value } });
     }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
 function onForgot() {
-  router.push('/forgot-password')
+  router.push('/forgot-password');
 }
 
 function onSignUp() {
-  router.push('/register')
+  router.push('/register');
+}
+
+function toggleLanguage() {
+  const newLang = languageStore.language === 'es' ? 'en' : 'es';
+  languageStore.setLanguage(newLang);
 }
 </script>
 
@@ -102,42 +110,61 @@ function onSignUp() {
   background-color: #1C1C30;
 }
 
-.card{
+.card {
+  position: relative;
   width: 460px;
   background: #322D59;
   color: #EDEAF6;
   border-radius: 20px;
   padding: 40px 48px 28px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
-.logo-wrap{ display:flex; justify-content:center; margin-top:-56px; margin-bottom:6px; }
+
+.language-switcher {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.language-switcher button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.language-switcher img {
+  width: 24px;
+  height: 24px;
+}
+
+.logo-wrap { display: flex; justify-content: center; margin-top: -56px; margin-bottom: 6px; }
 
 .logo-img { width: 200px; height: auto; object-fit: contain; }
 
-.title{
-  text-align:center;
+.title {
+  text-align: center;
   font-size: 40px;
   font-weight: 800;
   margin: 10px 0 24px;
 }
 
-.form{ display:flex; flex-direction:column; gap:20px; }
+.form { display: flex; flex-direction: column; gap: 20px; }
 
 .input::placeholder {
   color: rgba(237, 234, 246, 0.5);
 }
 
-.input{
+.input {
   background: transparent;
   color: #EDEAF6;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
   height: 36px;
   outline: none;
   padding-left: 0;
-
 }
-.input:focus{ border-bottom-color: #fff; }
+
+.input:focus { border-bottom-color: #fff; }
 
 .error-message {
   color: #ff6b6b;
@@ -149,15 +176,15 @@ function onSignUp() {
   margin-top: -10px;
 }
 
-.links-row{ 
-  display:flex; 
-  justify-content:flex-end;
+.links-row { 
+  display: flex; 
+  justify-content: flex-end;
   text-decoration: underline;
-
 }
-.link{ color: #DAD4FF; font-size: 14px; cursor:pointer; }
 
-.btn{
+.link { color: #DAD4FF; font-size: 14px; cursor: pointer; }
+
+.btn {
   margin: 12px auto 10px;
   width: 304px;
   height: 40px;
@@ -183,7 +210,7 @@ function onSignUp() {
 .signup-row {
   display: flex;
   gap: 6px;
-  justify-content: flex-start; /* antes estaba center */
+  justify-content: flex-start;
   color: #CFC9E6;
   font-size: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -193,11 +220,11 @@ function onSignUp() {
 
 .signup-row a {
   color: #CFC9E6;
-  text-decoration: underline;   /* subraya el texto */
-  font-weight: 600;             /* opcional, para hacerlo más visible */
+  text-decoration: underline;
+  font-weight: 600;
 }
 
 .signup-row a:hover {
-  color: #ffffff;               /* opcional: cambia de color al pasar el mouse */
+  color: #ffffff;
 }
 </style>

@@ -1,7 +1,6 @@
 <template>
   <!-- WRAPPER TOPBAR -->
   <div class="layout-topbar">
-    <div class="topbar-wrap">
     <Topbar
         v-model:query="q"
         @toggle-sidebar="toggleSidebar"
@@ -11,7 +10,6 @@
         @new="onNew" 
         @search="onSearch"
       />
-    </div>
   </div>
 
   <!-- WRAPPER GRID -->
@@ -32,9 +30,9 @@
           </div>
           <p class="card-sub">
             <em v-if="card.sharedWith?.length">
-              shared with {{ shareText(card.sharedWith) }}
+              {{ t('home.shared_with') }} {{ shareText(card.sharedWith) }}
             </em>
-            <em v-else>no shares</em>
+            <em v-else>{{ t('home.no_shares') }}</em>
           </p>
         </article>
       </main>
@@ -45,11 +43,11 @@
           <div class="empty-icon">
             <img src="@/assets/emptyLogo.png"/>
           </div>
-          <h2 class="empty-title">No lists yet</h2>
-          <p class="empty-text">Create your first shopping list to get started</p>
+          <h2 class="empty-title">{{ t('home.empty_title') }}</h2>
+          <p class="empty-text">{{ t('home.empty_text') }}</p>
           <button class="btn-create" @click="onNew">
             <span class="plus-icon">+</span>
-            Create List
+            {{ t('home.create_list') }}
           </button>
         </div>
       </div>
@@ -66,108 +64,97 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useShoppingListsStore } from '@/stores/shoppingLists'
-import { useToast } from '@/composables/useToast'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useShoppingListsStore } from '@/stores/shoppingLists';
+import { useToast } from '@/composables/useToast';
+import { useI18n } from '@/composables/useI18n';
 
-import Topbar from '@/components/Topbar.vue'
-import Sidebar from '@/components/Sidebar.vue'
+import Topbar from '@/components/Topbar.vue';
+import Sidebar from '@/components/Sidebar.vue';
 
-const router = useRouter()
-const route = useRoute()
-const shoppingListsStore = useShoppingListsStore()
-const toast = useToast()
+const router = useRouter();
+const route = useRoute();
+const shoppingListsStore = useShoppingListsStore();
+const toast = useToast();
+const { t } = useI18n();
 
-const q = ref('')
-const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('home')
-const sidebarOpen = ref(false)
+const q = ref('');
+const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('home');
+const sidebarOpen = ref(false);
 
-function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value }
-function closeSidebar(){ sidebarOpen.value = false }
+function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value; }
+function closeSidebar(){ sidebarOpen.value = false; }
 
-// Mapa de iconos por defecto
 const iconMap: Record<string, string> = {
   'shopping_cart.svg': new URL('@/assets/shopping_cart.svg', import.meta.url).href,
   'family.svg': new URL('@/assets/family.svg', import.meta.url).href,
   'travel.svg': new URL('@/assets/travel.svg', import.meta.url).href,
   'liquor.svg': new URL('@/assets/liquor.svg', import.meta.url).href,
-}
+};
 
-// Colors array for consistent color assignment
-const colors = ['#6B7CFF', '#FF6B9D', '#4CAF50', '#FF9800', '#9C27B0', '#00BCD4']
+const colors = ['#6B7CFF', '#FF6B9D', '#4CAF50', '#FF9800', '#9C27B0', '#00BCD4'];
 
-// Convertir las listas de la API a cards
 const cards = computed(() => {
   return shoppingListsStore.items.map(list => {
-    // Extract icon and color from metadata
-    const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg'
-    const icon = iconMap[iconName] || iconMap['shopping_cart.svg']
-    const color = (list.metadata as any)?.color || colors[list.id % colors.length]
+    const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg';
+    const icon = iconMap[iconName] || iconMap['shopping_cart.svg'];
+    const color = (list.metadata as any)?.color || colors[list.id % colors.length];
     
     return {
       id: list.id,
       title: list.name,
       icon,
       color,
-      sharedWith: list.sharedWith.map(u => `${u.name} ${u.surname}`)
-    }
-  })
-})
+      sharedWith: list.sharedWith.map(u => `${u.name} ${u.surname}`),
+    };
+  });
+});
 
 const filtered = computed(() => {
-  const t = q.value.trim().toLowerCase()
-  return t ? cards.value.filter(c => c.title.toLowerCase().includes(t)) : cards.value
-})
+  const t = q.value.trim().toLowerCase();
+  return t ? cards.value.filter(c => c.title.toLowerCase().includes(t)) : cards.value;
+});
 
 function shareText(list: string[]){ 
-  return list.length === 1 ? list[0] : `${list.length} contacts`
+  return list.length === 1 ? list[0] : `${list.length} ${t('home.contacts')}`;
 }
 
 function openCard(card: { id: number; title: string; icon: string; color: string; sharedWith?: string[] }){
-  router.push(`/List/${card.id}`)
+  router.push(`/List/${card.id}`);
 }
 
-/* === Eventos de Topbar === */
-function onFilter(){ console.log('filter') }
-function onSort(){ console.log('sort') }
-function onFavs(){ console.log('favorites') }
-function onSearch(){ console.log('search', q.value) }
+function onFilter(){ console.log('filter'); }
+function onSort(){ console.log('sort'); }
+function onFavs(){ console.log('favorites'); }
+function onSearch(){ console.log('search', q.value); }
 
 function onNew() {
-  router.push('/AddList')  // llama AddListView
+  router.push('/AddList');
 }
 
-// Load lists from API
 async function loadLists() {
   try {
-    await shoppingListsStore.fetchLists({ page: 1, per_page: 50 })
-    console.log('✓ Lists loaded:', shoppingListsStore.items.length)
+    await shoppingListsStore.fetchLists({ page: 1, per_page: 50 });
   } catch (error: any) {
-    // Silently handle errors - store already shows mock data on network errors
-    console.log('⚠️ Error loading lists, using fallback data')
+    console.log('⚠️ Error loading lists, using fallback data');
   }
 }
 
-// Load lists on mount
 onMounted(async () => {
-  await loadLists()
-})
+  await loadLists();
+});
 
-// Reload lists when navigating back to Home (but not on initial mount)
-// This ensures new lists appear after creating them
-let isFirstLoad = true
+let isFirstLoad = true;
 watch(() => route.path, (newPath) => {
   if (newPath === '/Home') {
     if (isFirstLoad) {
-      isFirstLoad = false
-      return
+      isFirstLoad = false;
+      return;
     }
-    console.log('🔄 Reloading lists after navigation...')
-    loadLists()
+    loadLists();
   }
-})
-
+});
 </script>
 
 <style scoped>
@@ -180,7 +167,6 @@ watch(() => route.path, (newPath) => {
   --edge:#4B5CC7;
 }
 
-/* ===== LAYOUT GENERAL ===== */
 .layout{
   min-height:100vh;
   background: var(--bg);
@@ -191,7 +177,6 @@ watch(() => route.path, (newPath) => {
   position: relative;
 }
 
-/* ===== BOTÓN SETTINGS (arriba derecha) ===== */
 .user-settings{
   position: absolute;
   top: 10px;
@@ -213,18 +198,14 @@ watch(() => route.path, (newPath) => {
   object-fit: cover;
 }
 
-/* ===== TOPBAR (alineado y centrado) ===== */
 .layout-topbar{ 
-  width: 100%; 
-  margin: 0 0 0;
   position: sticky;
-  top: 60px;  /* El margen que quieres mantener desde arriba */
+  top: 0;
   z-index: 1000;
-  background: var(--bg);  /* Para que tape el contenido que pasa por debajo */
+  background: var(--bg);
+  padding: 10px 0;
 }
-.topbar-wrap{ width: 100%; }
 
-/* ===== MARGEN ENTRE TOPBAR Y GRID ===== */
 .layout-grid{
   margin-top: 60px;
   width: 100%;
@@ -232,15 +213,12 @@ watch(() => route.path, (newPath) => {
   justify-content: center;
 }
 
-/* Contenedor centrado para las cards */
 .grid-container{
   max-width: 1280px;
   width: 100%;
   padding: 0 26px;
 }
 
-/* Si el Topbar interno expone clases, las alineamos con :deep */
-/* todos los controles (botones e input) alineados al centro y misma altura */
 :deep(.topbar){
   display: flex;
   align-items: center;
@@ -251,16 +229,14 @@ watch(() => route.path, (newPath) => {
 :deep(.topbar input){
   height: 44px;
   display: inline-flex;
-  align-items: center;               /* centra verticalmente el contenido */
+  align-items: center;
 }
 
-/* El pill de búsqueda alineado */
 :deep(.search-wrap){
   display: inline-flex;
   align-items: center;
 }
 
-/* ===== GRID ===== */
 .grid{
   display:grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -271,7 +247,6 @@ watch(() => route.path, (newPath) => {
   .grid{ grid-template-columns: 1fr; }
 }
 
-/* ===== CARD ===== */
 .card{
   background:#0E0F1A;
   width: 580px;
@@ -280,12 +255,12 @@ watch(() => route.path, (newPath) => {
   min-height: 260px;
   display:flex;
   flex-direction:column;
-  align-items:stretch; /* Stretch children */
-  justify-content:space-between; /* Push content to top and bottom */
+  align-items:stretch;
+  justify-content:space-between;
   box-shadow: 0 10px 24px rgba(0,0,0,.35);
   transition: transform .08s ease;
   cursor:pointer;
-  overflow: hidden; /* Ensure title wrapper corners are rounded */
+  overflow: hidden;
 }
 .card:hover{ transform: translateY(-2px); }
 
@@ -316,7 +291,6 @@ watch(() => route.path, (newPath) => {
 .card-title{ margin:0; font-weight:800; color:#fff; font-size: 24px; }
 .card-sub{ margin:0; color:#fff; font-size:12px; padding: 20px; text-align: center; }
 
-/* ===== EMPTY STATE ===== */
 .empty-state{
   display: grid;
   place-items: center;

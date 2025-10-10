@@ -11,7 +11,7 @@
             <button class="top-icon brand-logo" aria-label="Logo">
               <img src="@/assets/LogoHCI.png" alt="Logo" />
             </button>
-            <button class="top-icon" @click="emitClose" aria-label="Language">
+            <button class="top-icon" @click="toggleLanguage" aria-label="Language">
               <img src="@/assets/fonts/language.png" alt="Language" />
             </button>
           </div>
@@ -26,7 +26,7 @@
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
-              <span>Home</span>
+              <span>{{ t('sidebar.home') }}</span>
             </li>
 
             <li
@@ -37,7 +37,7 @@
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
-              <span>Edit Lists</span>
+              <span>{{ t('sidebar.edit_lists') }}</span>
             </li>
 
             <li
@@ -48,7 +48,7 @@
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12 6 12 12 16 14"/>
               </svg>
-              <span>Shopping List History</span>
+              <span>{{ t('sidebar.history') }}</span>
             </li>
 
             <li
@@ -56,7 +56,7 @@
               @click="goToPantries"
             >
               <img src="@/assets/warehouse.svg" alt="Pantries" class="ico-img" />
-              <span>Pantries</span>
+              <span>{{ t('sidebar.pantries') }}</span>
             </li>
 
             <li
@@ -64,14 +64,14 @@
               @click="goToProducts"
             >
               <img src="@/assets/shopping_cart.svg" alt="Products" class="ico-img" />
-              <span>Products</span>
+              <span>{{ t('sidebar.products') }}</span>
             </li>
           </ul>
 
           <!-- PIE -->
           <div class="sb-bottom">
             <button class="logout" @click="logout">
-              <span>Log out</span>
+              <span>{{ t('sidebar.logout') }}</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
@@ -86,58 +86,67 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { useI18n } from '@/composables/useI18n';
+import { useLanguageStore } from '@/stores/language';
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const { t } = useI18n();
+const languageStore = useLanguageStore();
 
 const props = defineProps<{
-  open: boolean
-  active: 'home' | 'edit' | 'history' | 'pantries' | 'products'
-}>()
+  open: boolean;
+  active: 'home' | 'edit' | 'history' | 'pantries' | 'products';
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'update:active', v: 'home' | 'edit' | 'history' | 'pantries' | 'products'): void
-}>()
+  (e: 'close'): void;
+  (e: 'update:active', v: 'home' | 'edit' | 'history' | 'pantries' | 'products'): void;
+}>();
 
 function emitClose() {
-  emit('close')
+  emit('close');
 }
 
 function set(v: 'home' | 'edit' | 'history' | 'pantries' | 'products') {
-  emit('update:active', v)
-  emitClose()
+  emit('update:active', v);
+  emitClose();
 }
 
 async function logout() {
-  await authStore.logout()
-  emitClose()
-  router.push('/login')
+  await authStore.logout();
+  emitClose();
+  router.push('/login');
 }
 
 function goHome() {
-  set('home')
-  router.push('/Home')
-  emitClose()
+  set('home');
+  router.push('/Home');
+  emitClose();
 }
 
 function goToProfile() {
-  router.push('/profile')
-  emitClose()
+  router.push('/profile');
+  emitClose();
 }
 
 function goToPantries() {
-  set('pantries')
-  router.push('/pantries')
-  emitClose()
+  set('pantries');
+  router.push('/pantries');
+  emitClose();
 }
 
 function goToProducts() {
-  set('products')
-  router.push('/products')
-  emitClose()
+  set('products');
+  router.push('/products');
+  emitClose();
+}
+
+function toggleLanguage() {
+  const newLang = languageStore.language === 'es' ? 'en' : 'es';
+  languageStore.setLanguage(newLang);
 }
 </script>
 

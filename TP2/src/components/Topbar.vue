@@ -7,10 +7,10 @@
 
     <div class="topbar-content">
       <div class="icon-group">
-        <button class="round-btn" title="Filter" @click="$emit('filter')">
+        <button class="round-btn" :title="t('topbar.filter')" @click="$emit('filter')">
           <img src="@/assets/fonts/filter.png" alt="Menu" class="topbar-icon"/>
         </button>
-        <button class="round-btn" title="Sort" @click="$emit('sort')">
+        <button class="round-btn" :title="t('topbar.sort')" @click="$emit('sort')">
           <img src="@/assets/fonts/sort.png" alt="Menu" class="topbar-icon"/>
         </button>
       </div>
@@ -20,33 +20,34 @@
         @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
         class="search"
         type="text"
-        placeholder="Search"
+        :placeholder="t('topbar.search')"
       />
 
       <div class="icon-group">
-        <button class="star" title="Favorites" @click="$emit('favorites')">
+        <button class="star" :title="t('topbar.favorites')" @click="$emit('favorites')">
           <img src="@/assets/fonts/favIcon.png" alt="Menu" class="topbar-icon" />
         </button>
-        <button class="plus special-plus" title="New" @click="$emit('new')">＋</button>
+        <button class="plus special-plus" :title="t('topbar.new')" @click="$emit('new')">＋</button>
       </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-defineProps<{ query: string }>()
+import { useI18n } from '@/composables/useI18n';
+
+defineProps<{ query: string }>();
 defineEmits<{
-  (e: 'toggle-sidebar'): void
-  (e: 'filter'): void
-  (e: 'sort'): void
-  (e: 'favorites'): void
-  (e: 'new'): void
-  (e: 'search'): void
-  (e: 'update:query', v: string): void
-}>()
+  (e: 'toggle-sidebar'): void;
+  (e: 'filter'): void;
+  (e: 'sort'): void;
+  (e: 'favorites'): void;
+  (e: 'new'): void;
+  (e: 'search'): void;
+  (e: 'update:query', v: string): void;
+}>();
 
-
-
+const { t } = useI18n();
 </script>
 
 
@@ -58,19 +59,12 @@ defineEmits<{
 
 /* ======= TOPBAR ======= */
 .topbar{
-  position: fixed;                  /* ocupa todo el ancho de la ventana */
-  top: 10px;                        /* baja apenas la barra */
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  width: 100vw;
-  margin: 0;
-  height: 72px;                     /* botones +30% requieren algo más de alto */
+  width: 100%;
+  height: 72px;
   display: flex;
   align-items: center;
-  justify-content: space-between;   /* left burger, center content, right settings */
-  background: transparent;
-  padding: 0 40px;                        /* extremos reales */
+  justify-content: space-between;
+  padding: 0 40px;
   box-sizing: border-box;
 }
 
