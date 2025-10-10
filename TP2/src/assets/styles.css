@@ -24,11 +24,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #1C1C30; /* <-- agregá esto */
+  background-color: #1C1C30;
 }
 
 h1 {
@@ -60,10 +58,8 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
 }
 
 @media (prefers-color-scheme: light) {

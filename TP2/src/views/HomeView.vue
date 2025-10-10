@@ -16,40 +16,42 @@
 
   <!-- WRAPPER GRID -->
   <div class="layout-grid">
-    <main v-if="filtered.length > 0" class="grid">
-      <article
-        v-for="card in filtered"
-        :key="card.id"
-        class="card"
-        @click="openCard(card)"
-      >
-        <div class="card-title-wrapper" :style="{ backgroundColor: card.color }">
-          <div class="card-ico">
-            <img :src="card.icon" :alt="card.title" />
+    <div class="grid-container">
+      <main v-if="filtered.length > 0" class="grid">
+        <article
+          v-for="card in filtered"
+          :key="card.id"
+          class="card"
+          @click="openCard(card)"
+        >
+          <div class="card-title-wrapper" :style="{ backgroundColor: card.color }">
+            <div class="card-ico">
+              <img :src="card.icon" :alt="card.title" />
+            </div>
+            <h3 class="card-title">{{ card.title }}</h3>
           </div>
-          <h3 class="card-title">{{ card.title }}</h3>
+          <p class="card-sub">
+            <em v-if="card.sharedWith?.length">
+              shared with {{ shareText(card.sharedWith) }}
+            </em>
+            <em v-else>no shares</em>
+          </p>
+        </article>
+      </main>
+      
+      <!-- Empty state -->
+      <div v-else class="empty-state">
+        <div class="empty-content">
+          <div class="empty-icon">
+            <img src="@/assets/emptyLogo.png"/>
+          </div>
+          <h2 class="empty-title">No lists yet</h2>
+          <p class="empty-text">Create your first shopping list to get started</p>
+          <button class="btn-create" @click="onNew">
+            <span class="plus-icon">+</span>
+            Create List
+          </button>
         </div>
-        <p class="card-sub">
-          <em v-if="card.sharedWith?.length">
-            shared with {{ shareText(card.sharedWith) }}
-          </em>
-          <em v-else>no shares</em>
-        </p>
-      </article>
-    </main>
-    
-    <!-- Empty state -->
-    <div v-else class="empty-state">
-      <div class="empty-content">
-        <div class="empty-icon">
-          <img src="@/assets/emptyLogo.png"/>
-        </div>
-        <h2 class="empty-title">No lists yet</h2>
-        <p class="empty-text">Create your first shopping list to get started</p>
-        <button class="btn-create" @click="onNew">
-          <span class="plus-icon">+</span>
-          Create List
-        </button>
       </div>
     </div>
   </div>
@@ -226,6 +228,15 @@ watch(() => route.path, (newPath) => {
 .layout-grid{
   margin-top: 60px;
   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Contenedor centrado para las cards */
+.grid-container{
+  max-width: 1280px;
+  width: 100%;
+  padding: 0 26px;
 }
 
 /* Si el Topbar interno expone clases, las alineamos con :deep */

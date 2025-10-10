@@ -15,7 +15,6 @@ import ProfileView from '@/views/ProfileView.vue'
 import ChangePasswordView from '@/views/ChangePasswordView.vue'
 import AddListView from '@/views/AddListView.vue'
 import ListView from '@/views/ListView.vue'
-import Product from '@/views/Product.vue'
 import Products from '@/views/products.vue'
 
 // Categories
@@ -32,11 +31,6 @@ import ShoppingListDetailView from '@/views/ShoppingListDetailView.vue'
 import PantriesListView from '@/views/PantriesListView.vue'
 import PantryFormView from '@/views/PantryFormView.vue'
 import PantryDetailView from '@/views/PantryDetailView.vue'
-
-// Products
-import ProductsListView from '@/views/ProductsListView.vue'
-import ProductFormView from '@/views/ProductFormView.vue'
-import ProductDetailView from '@/views/ProductDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -191,32 +185,6 @@ const router = createRouter({
       path: '/pantries/:id/edit', 
       name: 'pantry-edit', 
       component: PantryFormView,
-      meta: { requiresAuth: true }
-    },
-
-    // Products routes (protected)
-    { 
-      path: '/products', 
-      name: 'products-list', 
-      component: ProductsListView,
-      meta: { requiresAuth: true }
-    },
-    { 
-      path: '/products/new', 
-      name: 'product-create', 
-      component: ProductFormView,
-      meta: { requiresAuth: true }
-    },
-    { 
-      path: '/products/:id', 
-      name: 'product-detail', 
-      component: ProductDetailView,
-      meta: { requiresAuth: true }
-    },
-    { 
-      path: '/products/:id/edit', 
-      name: 'product-edit', 
-      component: ProductFormView,
       meta: { requiresAuth: true }
     },
   ],
