@@ -5,22 +5,22 @@
       <!-- Modal -->
       <section class="modal">
         <header class="modal-head">
-          <h2>Add List</h2>
+          <h2>{{ t('add_list.title') }}</h2>
           <button class="x" @click="close" aria-label="Close">✕</button>
         </header>
 
         <form class="modal-body" @submit.prevent="submit">
           <!-- List name -->
           <div class="block">
-            <label class="label">List name</label>
-            <input class="input" v-model.trim="name" placeholder="e.g. Supermarket" />
-            <p v-if="touched && !name" class="error">Name is required</p>
+            <label class="label">{{ t('add_list.list_name_label') }}</label>
+            <input class="input" v-model.trim="name" :placeholder="t('add_list.list_name_placeholder')" />
+            <p v-if="touched && !name" class="error">{{ t('add_list.name_required') }}</p>
           </div>
 
           <!-- Icon selector -->
           <hr class="separator">
           <div class="block">
-            <label class="label">Icon</label>
+            <label class="label">{{ t('add_list.icon_label') }}</label>
             <div class="icon-selector">
               <button
                 v-for="iconOption in availableIcons"
@@ -44,7 +44,7 @@
 
             <!-- Colores -->
             <div class="col">
-              <label class="label">Color</label>
+              <label class="label">{{ t('add_list.color_label') }}</label>
               <div class="colors">
                 <button
                   v-for="c in colors"
@@ -63,14 +63,14 @@
 
           <!-- Visibility -->
           <div class="block">
-            <label class="label">Visibility</label>
+            <label class="label">{{ t('add_list.visibility_label') }}</label>
             <div class="segmented">
               <button
                 type="button"
                 class="seg"
                 :class="{ on: visibility === 'private' }"
                 @click="visibility = 'private'"
-              >Private</button>
+              >{{ t('add_list.private') }}</button>
 
               <!-- Abre modal de miembros -->
               <button
@@ -78,20 +78,20 @@
                 class="seg"
                 :class="{ on: visibility === 'shared' }"
                 @click="setShared()"
-              >Shared</button>
+              >{{ t('add_list.shared') }}</button>
             </div>
           </div>
 
           <!-- Notes -->
           <div class="block">
-            <label class="label">Notes</label>
-            <textarea class="textarea" v-model.trim="notes" placeholder="Brief notes…"></textarea>
+            <label class="label">{{ t('add_list.notes_label') }}</label>
+            <textarea class="textarea" v-model.trim="notes" :placeholder="t('add_list.notes_placeholder')"></textarea>
           </div>
 
           <!-- Footer actions -->
           <footer class="actions">
-            <button type="button" class="btn ghost" @click="close">Cancel</button>
-            <button type="submit" class="btn primary" :disabled="!name">Create List</button>
+            <button type="button" class="btn ghost" @click="close">{{ t('add_list.cancel_button') }}</button>
+            <button type="submit" class="btn primary" :disabled="!name">{{ t('add_list.create_button') }}</button>
           </footer>
         </form>
       </section>
@@ -107,29 +107,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useShoppingListsStore } from '@/stores/shoppingLists'
-import { useToast } from '@/composables/useToast'
-import ShareMembersModal from '@/components/ShareMembersModal.vue'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useShoppingListsStore } from '@/stores/shoppingLists';
+import { useToast } from '@/composables/useToast';
+import { useI18n } from '@/composables/useI18n';
+import ShareMembersModal from '@/components/ShareMembersModal.vue';
 
-const router = useRouter()
-const shoppingListsStore = useShoppingListsStore()
-const toast = useToast()
+const router = useRouter();
+const shoppingListsStore = useShoppingListsStore();
+const toast = useToast();
+const { t } = useI18n();
 
-const name = ref('')
-const notes = ref('')
-const color = ref('#6B7CFF')
+const name = ref('');
+const notes = ref('');
+const color = ref('#6B7CFF');
 
-const visibility = ref<'private'|'shared'>('private')
-const touched = ref(false)
-const selectedIcon = ref('shopping_cart.svg') // icono por defecto
-
-
+const visibility = ref<'private'|'shared'>('private');
+const touched = ref(false);
+const selectedIcon = ref('shopping_cart.svg'); // icono por defecto
 
 /** ============ Share modal state ============ */
-const showShare = ref(false)
-const sharedMembers = ref<string[]>([])
+const showShare = ref(false);
+const sharedMembers = ref<string[]>([]);
 
 // Iconos disponibles para seleccionar
 const availableIcons = [
@@ -153,36 +153,32 @@ const availableIcons = [
     name: 'Drinks',
     src: new URL('@/assets/liquor.svg', import.meta.url).href
   },
-]
+];
 
 function setShared(){
-  visibility.value = 'shared'
-  showShare.value = true
+  visibility.value = 'shared';
+  showShare.value = true;
 }
-function onShareClose(){ showShare.value = false }
+function onShareClose(){ showShare.value = false; }
 function onShareSave(payload: { members: string[], pending: string[], blocked: string[] }){
-  console.log('SHARE SETTINGS', payload)
-  sharedMembers.value = payload.members
-  showShare.value = false
+  console.log('SHARE SETTINGS', payload);
+  sharedMembers.value = payload.members;
+  showShare.value = false;
 }
 
 /** ============ Colors ============ */
-const colors = ['#6B7CFF', '#5EC5A7', '#F0B429', '#E76F51', '#E91E63']
-
-
-
-
+const colors = ['#6B7CFF', '#5EC5A7', '#F0B429', '#E76F51', '#E91E63'];
 
 function onEsc() {
-  close()
+  close();
 }
 
 /** ============ Submit/Close ============ */
-function close(){ router.push('/Home') }
+function close(){ router.push('/Home'); }
 
 async function submit(){
-  touched.value = true
-  if(!name.value) return
+  touched.value = true;
+  if(!name.value) return;
   
   try {
     // Create list via API
@@ -194,28 +190,28 @@ async function submit(){
         icon: selectedIcon.value,
         color: color.value
       }
-    })
+    });
     
-    toast.success('List created successfully!')
+    toast.success('List created successfully!');
     
     // If shared, share with members (TODO: implement after list creation)
     if (visibility.value === 'shared' && sharedMembers.value.length > 0) {
       // This would require sharing logic with emails
-      console.log('TODO: Share list with:', sharedMembers.value)
+      console.log('TODO: Share list with:', sharedMembers.value);
     }
     
     // Redirect to Home so the new list appears in the grid
-    router.push('/Home')
+    router.push('/Home');
   } catch (error: any) {
-    console.error('Failed to create list:', error)
+    console.error('Failed to create list:', error);
     
     // If backend not available, simulate success and redirect to Home
     if (error.status === 0 || error.code === 'ERR_NETWORK') {
-      console.warn('⚠️ Backend not available - simulating list creation')
-      toast.success('List created (mock mode - backend not available)')
-      router.push('/Home')
+      console.warn('⚠️ Backend not available - simulating list creation');
+      toast.success('List created (mock mode - backend not available)');
+      router.push('/Home');
     } else {
-      toast.error(error.message || 'Failed to create list')
+      toast.error(error.message || 'Failed to create list');
     }
   }
 }
