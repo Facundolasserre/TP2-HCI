@@ -23,16 +23,16 @@
       </div>
 
       <div class="links-row">
-        <a class="link" href="#" @click.prevent="onForgot">Forgot Password?</a>
+        <a class="link" href="#" @click.prevent="onForgot">¿Olvidaste tu contraseña?</a>
       </div>
 
       <button class="btn" type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Loading...' : 'Login' }}
+        {{ isLoading ? 'Cargando...' : 'Iniciar Sesión' }}
       </button>
 
       <div class="signup-row">
-        <span>Don’t have an account?</span>
-        <a class="link" href="#" @click.prevent="onSignUp">Sign Up</a>
+        <span>¿No tenés una cuenta?</span>
+        <a class="link" href="#" @click.prevent="onSignUp">Registrate</a>
       </div>
     </form>
   </section>
@@ -73,8 +73,12 @@ async function onSubmit() {
     // Redirigir a Home
     router.push('/Home')
   } catch (err: any) {
-    console.error('Error en login:', err)
-    errorMessage.value = err.response?.data?.message || err.message || 'Error al iniciar sesión. Verifica tus credenciales.'
+    console.error('Error en login:', err);
+    const message = err.response?.data?.message || err.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+    errorMessage.value = message;
+    if (message.toLowerCase().includes('verified') || message.toLowerCase().includes('verificado')) {
+      router.push({ name: 'verify-account', query: { email: email.value } });
+    }
   } finally {
     isLoading.value = false
   }

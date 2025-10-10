@@ -5,18 +5,18 @@
       <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
-    <h1 class="title">Welcome to BagIt</h1>
+    <h1 class="title">Bienvenido a BagIt</h1>
 
     <form class="form" @submit.prevent="onSubmit">
-      <input class="input" v-model.trim="name" type="text" autocomplete="given-name" required placeholder="Name" />
+      <input class="input" v-model.trim="name" type="text" autocomplete="given-name" required placeholder="Nombre" />
 
-      <input class="input" v-model.trim="surname" type="text" autocomplete="family-name" required placeholder="Surname" />
+      <input class="input" v-model.trim="surname" type="text" autocomplete="family-name" required placeholder="Apellido" />
 
       <input class="input" v-model.trim="email" type="email" autocomplete="email" required placeholder="Email" />
 
-      <input class="input" v-model="password" type="password" autocomplete="new-password" required placeholder="Password" />
+      <input class="input" v-model="password" type="password" autocomplete="new-password" required placeholder="Contraseña" />
 
-      <input class="input" v-model="password2" type="password" autocomplete="new-password" required placeholder="Rewrite password" />
+      <input class="input" v-model="password2" type="password" autocomplete="new-password" required placeholder="Repetir contraseña" />
 
       <!-- Error message -->
       <div v-if="errorMessage" class="error-message">
@@ -29,7 +29,7 @@
       </div>
 
       <button class="btn" type="submit" :disabled="!isValid || isLoading">
-        {{ isLoading ? 'Registering...' : 'Register' }}
+        {{ isLoading ? 'Registrando...' : 'Registrarse' }}
       </button>
     </form>
   </section>
@@ -88,7 +88,7 @@ async function onSubmit() {
 
     // Mostrar token de verificación (el backend lo envía por email también)
     verificationToken.value = response.verificationToken
-    successMessage.value = `✓ Registro exitoso! Revisa tu email para el código de verificación. Token: ${response.verificationToken}`
+    successMessage.value = `✓ ¡Registro exitoso! Revisa tu email para el código de verificación.`
     
     console.log('✓ Registration successful')
     console.log('Verification token:', response.verificationToken)

@@ -1,22 +1,23 @@
 <template>
-  <section class="card">
+  <div class="auth-wrapper">
+    <section class="card">
     <!-- Logo -->
     <div class="logo-wrap">
       <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
     <!-- Título -->
-    <h1 class="title">Verify Account</h1>
-    <p class="subtitle">Enter the verification code sent to {{ email }}</p>
+    <h1 class="title">Verificar Cuenta</h1>
+    <p class="subtitle">Ingresá el código de verificación enviado a {{ email }}</p>
 
     <!-- Form -->
     <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Verification Code</label>
+      <label class="label">Código de Verificación</label>
       <input
         class="input"
         v-model.trim="code"
         type="text"
-        placeholder="Enter 16-character code"
+        placeholder="Ingresá el código de 16 caracteres"
         maxlength="16"
         required
       />
@@ -32,16 +33,17 @@
       </div>
 
       <button class="btn" type="submit" :disabled="!code || isLoading">
-        {{ isLoading ? 'Verifying...' : 'Verify' }}
+        {{ isLoading ? 'Verificando...' : 'Verificar' }}
       </button>
 
       <div class="links-row">
-        <a class="link" href="#" @click.prevent="resendCode">Resend code</a>
+        <a class="link" href="#" @click.prevent="resendCode">Reenviar código</a>
         <span class="separator">|</span>
-        <a class="link" href="#" @click.prevent="goToLogin">Back to login</a>
+        <a class="link" href="#" @click.prevent="goToLogin">Volver al login</a>
       </div>
     </form>
   </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -100,21 +102,22 @@ async function onSubmit() {
 
 async function resendCode() {
   if (!email.value) {
-    errorMessage.value = 'No se encontró el email'
-    return
+    errorMessage.value = 'No se encontró el email para reenviar el código.';
+    return;
   }
 
-  errorMessage.value = ''
-  successMessage.value = ''
-  isLoading.value = true
+  errorMessage.value = '';
+  successMessage.value = '';
+  isLoading.value = true;
 
   try {
-    await authStore.sendVerification(email.value)
-    successMessage.value = '✓ Código reenviado! Revisa tu email'
+    await authStore.sendVerification(email.value);
+    successMessage.value = '✓ Código reenviado! Revisa tu email.';
   } catch (err: any) {
-    errorMessage.value = err.response?.data?.message || err.message || 'Error al reenviar código'
+    console.error('Error reenviando el código:', err);
+    errorMessage.value = err.response?.data?.message || err.message || 'Error al reenviar el código.';
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
@@ -124,6 +127,14 @@ function goToLogin() {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1C1C30;
+}
+
 .card {
   width: 460px;
   background: #322D59;
