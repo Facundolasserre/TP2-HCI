@@ -27,10 +27,10 @@
     <section class="toolbar">
       <div class="toolbar-left">
         <button class="tool-btn" @click="onFilter" :aria-label="t('listView.toolbar.filter')">
-          <img src="@/assets/fonts/filter.png" :alt="t('listView.toolbar.filter')" class="tool-icon" />
+          <img src="../../assets/fonts/filter.png" :alt="t('listView.toolbar.filter')" class="tool-icon" />
         </button>
         <button class="tool-btn" @click="onSort" :aria-label="t('listView.toolbar.sort')">
-          <img src="@/assets/fonts/sort.png" :alt="t('listView.toolbar.sort')" class="tool-icon" />
+          <img src="../../assets/fonts/sort.png" :alt="t('listView.toolbar.sort')" class="tool-icon" />
         </button>
       </div>
 

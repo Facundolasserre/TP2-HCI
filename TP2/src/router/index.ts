@@ -11,26 +11,31 @@ import ResetPasswordView from '@/views/auth/ResetPasswordView.vue'
 
 // Protected views
 import HomeView from '@/views/HomeView.vue'
-import ProfileView from '@/views/ProfileView.vue'
-import ChangePasswordView from '@/views/ChangePasswordView.vue'
-import AddListView from '@/views/AddListView.vue'
-import ListView from '@/views/ListView.vue'
-import Products from '@/views/products.vue'
+import ProfileView from '@/views/profile/ProfileView.vue'
+import ChangePasswordView from '@/views/auth/ChangePasswordView.vue'
+import AddListView from '@/views/shopping-lists/AddListView.vue'
+import ListView from '@/views/shared/ListView.vue'
+import Products from '@/views/products/products.vue'
 
 // Categories
-import CategoriesListView from '@/views/CategoriesListView.vue'
-import CategoryFormView from '@/views/CategoryFormView.vue'
-import CategoryDetailView from '@/views/CategoryDetailView.vue'
+import CategoriesListView from '@/views/categories/CategoriesListView.vue'
+import CategoryFormView from '@/views/categories/CategoryFormView.vue'
+import CategoryDetailView from '@/views/categories/CategoryDetailView.vue'
 
 // Shopping Lists
-import ShoppingListsView from '@/views/ShoppingListsView.vue'
-import ShoppingListFormView from '@/views/ShoppingListFormView.vue'
-import ShoppingListDetailView from '@/views/ShoppingListDetailView.vue'
+import ShoppingListsView from '@/views/shopping-lists/ShoppingListsView.vue'
+import ShoppingListFormView from '@/views/shopping-lists/ShoppingListFormView.vue'
+import ShoppingListDetailView from '@/views/shopping-lists/ShoppingListDetailView.vue'
 
+import PurchaseHistoryView from "@/views/PurchaseHistoryView.vue";
 // Pantries
-import PantriesListView from '@/views/PantriesListView.vue'
-import PantryFormView from '@/views/PantryFormView.vue'
-import PantryDetailView from '@/views/PantryDetailView.vue'
+import PantriesListView from '@/views/pantries/PantriesListView.vue'
+import PantryFormView from '@/views/pantries/PantryFormView.vue'
+import PantryDetailView from '@/views/pantries/PantryDetailView.vue'
+
+
+// Settings
+import Settings from '@/views/settings/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -187,6 +192,8 @@ const router = createRouter({
       component: PantryFormView,
       meta: { requiresAuth: true }
     },
+      { path: '/settings', name: 'settings', component: Settings, meta: { requiresAuth: true } },
+      { path: '/purchase-history', name: 'purchase-history', component: PurchaseHistoryView, meta: { requiresAuth: true }}
   ],
 })
 

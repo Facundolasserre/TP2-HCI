@@ -6,7 +6,7 @@
           <!-- ENCABEZADO CON 3 ICONOS -->
           <div class="sb-top">
             <button class="top-icon" @click="goToProfile" :aria-label="t('sidebar.account')">
-              <img src="@/assets/fonts/account.png" :alt="t('sidebar.account_icon')" />
+              <img src="@/assets/fonts/settings.png" :alt="t('sidebar.account_icon')" />
             </button>
             <button class="top-icon brand-logo" :aria-label="t('sidebar.logo')">
               <img src="@/assets/LogoHCI.png" :alt="t('sidebar.logo_icon')" />
@@ -42,7 +42,7 @@
 
             <li
               :class="{ active: active === 'history' }"
-              @click="set('history')"
+              @click="goToHistory"
             >
               <svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -128,7 +128,7 @@ function goHome() {
 }
 
 function goToProfile() {
-  router.push('/profile');
+  router.push('/settings');
   emitClose();
 }
 
@@ -147,6 +147,12 @@ function goToProducts() {
 function toggleLanguage() {
   const newLang = languageStore.language === 'es' ? 'en' : 'es';
   languageStore.setLanguage(newLang);
+}
+
+function goToHistory(){
+  set('purchase-history');
+  router.push('/purchase-history');
+  emitClose();
 }
 </script>
 
@@ -194,8 +200,8 @@ function toggleLanguage() {
 }
 
 .top-icon {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -213,14 +219,14 @@ function toggleLanguage() {
 }
 
 .top-icon img {
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
 .brand-logo img {
-  width: 56px;
-  height: 56px;
+  width: 32px;
+  height: 32px;
 }
 
 /* ===== MENÚ ===== */

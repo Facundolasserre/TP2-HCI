@@ -1,6 +1,5 @@
 <template>
-  <div class="pantries-view">
-    <!-- Top Navigation Bar - Full Width -->
+  <div class="pantries-view"><!-- Top Navigation Bar - Full Width -->
     <nav class="top-nav">
       <div class="nav-left">
         <button
@@ -18,17 +17,13 @@
           <h1>{{ t('pantries.title') }}</h1>
           <span class="nav-subtitle">{{ t('pantries.subtitle') }}</span>
         </div>
-      </div>
 
-      <div class="nav-right">
-        <button class="btn-primary" @click="openCreateModal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          {{ t('pantries.new_button') }}
+        <!-- Profile Button -->
+        <button class="profile-btn" @click="goProfile">
+          <img src="@/assets/fonts/account.png" alt="Profile" />
         </button>
       </div>
+
     </nav>
 
     <!-- Main Content Area - Full Width -->
@@ -116,21 +111,26 @@
             </button>
           </div>
 
-          <!-- Search -->
-          <div class="search-box">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="text"
-              :placeholder="t('pantries.search_placeholder')"
-              class="search-input"
-            />
+          <!-- Search & Create Pantry -->
+          <div class="toolbar-center">
+            <div class="search-box">
+              <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="t('pantries.search_placeholder')"
+                class="search-input"
+              />
+            </div>
+            <button class="btn-primary" @click="openCreateModal">
+              {{ t('pantries.new_button') }}
+            </button>
+
           </div>
         </div>
-
         <div class="toolbar-right">
           <!-- View Toggle -->
           <div class="view-toggle">
@@ -471,6 +471,10 @@ const toast = useToast()
 const { t } = useI18n()
 const languageStore = useLanguageStore()
 
+
+function goProfile() {
+  router.push('/profile');
+}
 // State
 const sidebarOpen = ref(false)
 const searchQuery = ref('')
@@ -583,6 +587,10 @@ const goToEdit = (id: number) => {
   router.push(`/pantries/${id}/edit`)
 }
 
+const goToProfile = () => {
+  router.push('/profile')
+}
+
 // Modal methods
 const openCreateModal = () => {
   editingPantry.value = null
@@ -674,6 +682,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+
+
+.search-bar {
+  width: 320px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.btn-primary {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--brand, #8b7cff);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.btn-primary:hover {
+  background-color: #6e61ff;
+}
 /* ============================================
    FULL-SCREEN WEB LAYOUT - NO MOBILE PADDING
    ============================================ */
@@ -858,14 +890,27 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex: 1;
-  min-width: 400px;
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+.toolbar-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .toolbar-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: flex-end;
 }
 
 /* Filter Tabs */
@@ -904,7 +949,7 @@ onMounted(() => {
 /* Search Box */
 .search-box {
   position: relative;
-  flex: 1;
+  flex-shrink: 1;
   max-width: 400px;
 }
 
@@ -1480,12 +1525,24 @@ onMounted(() => {
     flex-direction: column;
   }
 
+  .toolbar-center {
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 12px;
+  }
+
   .toolbar-right {
     justify-content: space-between;
   }
 
-  .search-box {
-    max-width: none;
+  .search-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .create-pantry-btn {
+    margin-left: 0;
   }
 
   .pantries-grid {
@@ -1543,4 +1600,55 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+
+.profile-btn {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.profile-btn img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.profile-btn:hover {
+  opacity: 0.8;
+  transform: scale(1.07);
+}
+@media (max-width: 600px) {
+  .profile-btn {
+    top: 12px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+  }
+}
+.layout-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg);
+  padding: 10px 0;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+
 </style>

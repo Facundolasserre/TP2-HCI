@@ -6,7 +6,7 @@
         <div class="topbar">
           <!-- Burger menu -->
           <button class="btn-icon" @click="toggleSidebar" :aria-label="t('topbar.open_menu')">
-            <img src="@/assets/fonts/burgerIcon.png" :alt="t('topbar.menu_icon')" />
+            <img src="../../assets/fonts/burgerIcon.png" :alt="t('topbar.menu_icon')" />
           </button>
 
           <!-- Search -->
@@ -22,12 +22,12 @@
 
           <!-- Filter button -->
           <button class="btn-icon" @click="toggleFilters" :aria-label="t('topbar.filter')">
-            <img src="@/assets/fonts/filter.png" :alt="t('topbar.filter_icon')" />
+            <img src="../../assets/fonts/filter.png" :alt="t('topbar.filter_icon')" />
           </button>
 
           <!-- Sort button -->
           <button class="btn-icon" @click="toggleSort" :aria-label="t('topbar.sort')">
-            <img src="@/assets/fonts/sort.png" :alt="t('topbar.sort_icon')" />
+            <img src="../../assets/fonts/sort.png" :alt="t('topbar.sort_icon')" />
           </button>
 
           <!-- New list button -->
@@ -38,7 +38,7 @@
 
           <!-- Settings -->
           <button class="btn-icon" @click="goSettings" :aria-label="t('common.settings')">
-            <img src="@/assets/fonts/settings.png" :alt="t('common.settings')" />
+            <img src="../../assets/fonts/settings.png" :alt="t('common.settings')" />
           </button>
         </div>
 
@@ -89,7 +89,7 @@
       <div v-else-if="!store.hasLists" class="empty-state">
         <div class="empty-content">
           <div class="empty-icon">
-            <img src="@/assets/shopping_cart.svg" alt="Empty" />
+            <img src="../../assets/shopping_cart.svg" alt="Empty" />
           </div>
           <h2 class="empty-title">{{ t('shoppingLists.empty.title') }}</h2>
           <p class="empty-text">{{ t('shoppingLists.empty.text') }}</p>

@@ -40,3 +40,21 @@ dist-ssr/
 /Informe-TP1-G6+.pdf
 /Primera Entrega (Desarrollo Web) - Grupo 06 - Observaciones Prototipos (1).pdf
 /API/
+# JetBrains / WebStorm
+.idea/
+!.idea/codeStyles
+!.idea/runConfigurations
+!.idea/fileTemplates
+!.idea/icon.svg
+!.idea/inspectionProfiles
+!.idea/dictionaries
+!.idea/modules.xml
+!.idea/*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/vcs.xml
+.idea/copilot.*
+
+.idea/workspace.xml

@@ -20,13 +20,15 @@
             <p class="subtitle">{{ t('products.subtitle') }}</p>
           </div>
         </div>
-        <button class="btn-primary" @click="openCreateModal">
+        <!-- Reemplaza el botón en el template -->
+        <button class="btn-primary" @click="$router.push({ name: 'profileView' })">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 15c2.5 0 4.5-2 4.5-4.5S14.5 6 12 6 7.5 8 7.5 10.5 9.5 15 12 15z"/>
           </svg>
-          {{ t('products.create_button') }}
+          {{ t('profile.button') }}
         </button>
+
       </div>
     </div>
 

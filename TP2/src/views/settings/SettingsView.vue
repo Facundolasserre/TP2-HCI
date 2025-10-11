@@ -17,25 +17,25 @@
       </div>
       <h2 class="profile-name">Welcome, {{ name }}!</h2>
       <p class="profile-description">
-       Manage your information and privacy and security options to make BagIt more relevant to you
+        Manage your information and privacy and security options to make BagIt more relevant to you
       </p>
     </section>
-    
+
     <section class="card">
       <h2>Profile</h2>
 
       <div class="form-grid">
         <div>
-         <div class="grid">
-          <div class="col">
-            <label for="name">Name</label>
-            <input id="name" type="text" v-model="name" placeholder="Your name" />
+          <div class="grid">
+            <div class="col">
+              <label for="name">Name</label>
+              <input id="name" type="text" v-model="name" placeholder="Your name" />
+            </div>
+            <div class="col">
+              <label for="username">Username</label>
+              <input id="username" type="text" v-model="username" placeholder="Your username" />
+            </div>
           </div>
-          <div class="col">
-            <label for="username">Username</label>
-            <input id="username" type="text" v-model="username" placeholder="Your username" />
-          </div>
-</div>
         </div>
 
         <div class="col full">
@@ -43,7 +43,7 @@
           <input id="photoUrl" type="url" v-model="photoUrl" placeholder="https://..." />
         </div>
       </div>
-      
+
       <div class="actions">
         <button class="btn primary" @click="handleProfileUpdate" :disabled="isSaving">
           {{ isSaving ? 'Saving...' : 'Save Changes' }}
@@ -80,7 +80,7 @@
           {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
         </button>
       </div>
-       <p v-if="passwordMessage.text" class="msg" :class="passwordMessage.type">
+      <p v-if="passwordMessage.text" class="msg" :class="passwordMessage.type">
         {{ passwordMessage.text }}
       </p>
     </section>
@@ -128,10 +128,10 @@ const passwordMessage = reactive({ text: '', type: '' })
 // --- Computed Properties ---
 const isProfileFormValid = computed(() => {
   return (
-    name.value.trim().length > 0 &&
-    name.value.length <= 50 &&
-    username.value.trim().length > 0 &&
-    username.value.length <= 50
+      name.value.trim().length > 0 &&
+      name.value.length <= 50 &&
+      username.value.trim().length > 0 &&
+      username.value.length <= 50
   )
 })
 
@@ -168,7 +168,7 @@ async function handleProfileUpdate() {
     await authStore.updateProfile({
       name: name.value.trim(),
       surname: username.value.trim(),
-      // photoUrl: photoUrl.value.trim() 
+      // photoUrl: photoUrl.value.trim()
     })
     profileMessage.text = '✓ Profile updated successfully!'
     profileMessage.type = 'ok'
@@ -193,9 +193,9 @@ async function handleChangePassword() {
     return
   }
   if (newPassword.value.length < 8) {
-     passwordMessage.text = 'Password must be at least 8 characters long.'
-     passwordMessage.type = 'error'
-     return
+    passwordMessage.text = 'Password must be at least 8 characters long.'
+    passwordMessage.type = 'error'
+    return
   }
   isChangingPassword.value = true
   try {
@@ -225,17 +225,17 @@ async function onLogout() {
 async function deleteAccount() {
   if (confirm('This action is permanent. Are you sure?')) {
     try {
+      // @ts-ignore
+      if (typeof authStore.deleteAccount === 'function') {
         // @ts-ignore
-        if (typeof authStore.deleteAccount === 'function') {
-            // @ts-ignore
-            await authStore.deleteAccount()
-            await onLogout()
-        } else {
-            alert('Delete functionality is not available.')
-        }
+        await authStore.deleteAccount()
+        await onLogout()
+      } else {
+        alert('Delete functionality is not available.')
+      }
     } catch (e) {
-        alert('Could not delete the account.')
-        console.error(e)
+      alert('Could not delete the account.')
+      console.error(e)
     }
   }
 }
@@ -330,11 +330,11 @@ function goBack() {
 }
 
 .profile-description {
-    font-size: 16px;
-    color: #bdb7e3;
-    line-height: 1.5;
-    max-width: 500px;
-    margin: 0 auto;
+  font-size: 16px;
+  color: #bdb7e3;
+  line-height: 1.5;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 /* ====== Cards ====== */
@@ -392,7 +392,7 @@ input:disabled {
   cursor: not-allowed;
 }
 input::placeholder {
-    color: #6a6685;
+  color: #6a6685;
 }
 
 .input-group {
@@ -432,8 +432,8 @@ input::placeholder {
 
 /* REMOVED: The .row class is replaced by the parent .form-grid gap */
 
-.col.full { 
-  grid-column: 1 / -1; 
+.col.full {
+  grid-column: 1 / -1;
 }
 .description {
   font-size: 14px;
@@ -442,7 +442,7 @@ input::placeholder {
   line-height: 1.6;
 }
 /* ====== Buttons & Actions ====== */
-.actions { 
+.actions {
   margin-top: 20px;
   text-align: left; /* MODIFIED: Default alignment for all action containers is now left */
 }
@@ -462,8 +462,8 @@ input::placeholder {
 }
 
 .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn.primary {
@@ -476,29 +476,29 @@ input::placeholder {
 }
 
 .btn.danger {
-    background: #e53e3e;
+  background: #e53e3e;
 }
 
 .btn.danger:hover:not(:disabled) {
-    background: #c53030;
+  background: #c53030;
 }
 
-/* REMOVED: The complex, overriding rules for centering and right-aligning buttons are no longer needed. 
+/* REMOVED: The complex, overriding rules for centering and right-aligning buttons are no longer needed.
    The simpler code above now handles all cases consistently. */
 /* ====== Messages ====== */
-.msg { 
-  margin-top: 16px; 
+.msg {
+  margin-top: 16px;
   font-size: 14px;
   text-align: center;
   padding: 8px;
   border-radius: 6px;
 }
-.msg.ok { 
-  color: #48bb78; 
+.msg.ok {
+  color: #48bb78;
   background-color: rgba(72, 187, 120, 0.1);
 }
-.msg.error { 
-  color: #f56565; 
+.msg.error {
+  color: #f56565;
   background-color: rgba(245, 101, 101, 0.1);
 }
 .card:first-of-type .msg {
@@ -509,17 +509,17 @@ input::placeholder {
 }
 
 /* ====== Loading State ====== */
-.loading { 
-  width: 100%; 
-  text-align: center; 
-  padding: 40px 0; 
-  color: #bdb7e3; 
+.loading {
+  width: 100%;
+  text-align: center;
+  padding: 40px 0;
+  color: #bdb7e3;
 }
 
 /* ====== Responsive Design ====== */
 @media (max-width: 720px) {
-  .grid, .input-group { 
-    grid-template-columns: 1fr; 
+  .grid, .input-group {
+    grid-template-columns: 1fr;
   }
   .input-group .col:first-child {
     border-right: none;

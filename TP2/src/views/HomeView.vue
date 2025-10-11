@@ -10,6 +10,10 @@
         @new="onNew" 
         @search="onSearch"
       />
+    <!-- Profile Button -->
+    <button class="profile-btn" @click="goProfile">
+      <img src="@/assets/fonts/account.png" alt="Profile" />
+    </button>
   </div>
 
   <!-- WRAPPER GRID -->
@@ -133,6 +137,10 @@ function onNew() {
   router.push('/AddList');
 }
 
+function goProfile() {
+  router.push('/profile');
+}
+
 async function loadLists() {
   try {
     await shoppingListsStore.fetchLists({ page: 1, per_page: 50 });
@@ -160,6 +168,54 @@ watch(cards, (newCards) => {
   --muted:#CFC9E6;
   --tile:#0E0F1A;
   --edge:#4B5CC7;
+}
+
+.profile-btn {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.profile-btn img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.profile-btn:hover {
+  opacity: 0.8;
+  transform: scale(1.07);
+}
+@media (max-width: 600px) {
+  .profile-btn {
+    top: 12px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+  }
+}
+.layout-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg);
+  padding: 10px 0;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
 .layout{
