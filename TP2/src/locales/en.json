@@ -43,6 +43,12 @@
   "home.empty_title": "No lists yet",
   "home.empty_text": "Create your first shopping list to get started",
   "home.create_list": "Create List",
+  "home.add_favorite": "Add to favorites",
+  "home.remove_favorite": "Remove from favorites",
+  "home.favorite_added": "List added to favorites",
+  "home.favorite_removed": "List removed from favorites",
+  "home.showing_favorites": "Showing favorites only",
+  "home.showing_all": "Showing all lists",
 
   "topbar.filter": "Filter",
   "topbar.sort": "Sort",

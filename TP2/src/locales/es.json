@@ -43,6 +43,12 @@
   "home.empty_title": "No hay listas todavía",
   "home.empty_text": "Crea tu primera lista de compras para empezar",
   "home.create_list": "Crear Lista",
+  "home.add_favorite": "Agregar a favoritos",
+  "home.remove_favorite": "Quitar de favoritos",
+  "home.favorite_added": "Lista agregada a favoritos",
+  "home.favorite_removed": "Lista quitada de favoritos",
+  "home.showing_favorites": "Mostrando solo favoritos",
+  "home.showing_all": "Mostrando todas las listas",
 
   "topbar.filter": "Filtrar",
   "topbar.sort": "Ordenar",

@@ -3,6 +3,7 @@
   <div class="layout-topbar">
     <Topbar
         v-model:query="q"
+        :favorites-active="showFavoritesOnly"
         @toggle-sidebar="toggleSidebar"
         @filter="onFilter"
         @sort="onSort"
@@ -38,6 +39,14 @@
               <em v-else>{{ t('home.no_shares') }}</em>
             </p>
           </div>
+          <button 
+            class="favorite-btn" 
+            :class="{ active: isFavorite(card.id) }"
+            @click.stop="toggleFavorite(card.id)"
+            :title="isFavorite(card.id) ? t('home.remove_favorite') : t('home.add_favorite')"
+          >
+            <img :src="IconStar" alt="Favorite" class="star-icon" />
+          </button>
         </article>
       </main>
       
@@ -76,6 +85,7 @@ import { useI18n } from '@/composables/useI18n';
 
 import Topbar from '@/components/Topbar.vue';
 import Sidebar from '@/components/Sidebar.vue';
+import IconStar from '@/assets/star.svg';
 
 const router = useRouter();
 const route = useRoute();
@@ -86,6 +96,8 @@ const { t } = useI18n();
 const q = ref('');
 const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('home');
 const sidebarOpen = ref(false);
+const favorites = ref<Set<number>>(new Set());
+const showFavoritesOnly = ref(false);
 
 function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value; }
 function closeSidebar(){ sidebarOpen.value = false; }
@@ -116,8 +128,20 @@ const cards = computed(() => {
 });
 
 const filtered = computed(() => {
-  const t = q.value.trim().toLowerCase();
-  return t ? cards.value.filter(c => c.title.toLowerCase().includes(t)) : cards.value;
+  let result = cards.value;
+  
+  // Apply favorites filter if active
+  if (showFavoritesOnly.value) {
+    result = result.filter(c => favorites.value.has(c.id));
+  }
+  
+  // Apply search filter
+  const searchTerm = q.value.trim().toLowerCase();
+  if (searchTerm) {
+    result = result.filter(c => c.title.toLowerCase().includes(searchTerm));
+  }
+  
+  return result;
 });
 
 function shareText(list: string[]){ 
@@ -128,9 +152,48 @@ function openCard(card: { id: number; title: string; icon: string; color: string
   router.push(`/List/${card.id}`);
 }
 
+function isFavorite(id: number): boolean {
+  return favorites.value.has(id);
+}
+
+function toggleFavorite(id: number) {
+  if (favorites.value.has(id)) {
+    favorites.value.delete(id);
+    toast.info(t('home.favorite_removed'));
+  } else {
+    favorites.value.add(id);
+    toast.success(t('home.favorite_added'));
+  }
+  // Save to localStorage
+  saveFavorites();
+}
+
+function saveFavorites() {
+  localStorage.setItem('shoppingListFavorites', JSON.stringify(Array.from(favorites.value)));
+}
+
+function loadFavorites() {
+  const saved = localStorage.getItem('shoppingListFavorites');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      favorites.value = new Set(parsed);
+    } catch (e) {
+      console.error('Error loading favorites:', e);
+    }
+  }
+}
+
 function onFilter(){ console.log('filter'); }
 function onSort(){ console.log('sort'); }
-function onFavs(){ console.log('favorites'); }
+function onFavs(){ 
+  showFavoritesOnly.value = !showFavoritesOnly.value;
+  if (showFavoritesOnly.value) {
+    toast.info(t('home.showing_favorites'));
+  } else {
+    toast.info(t('home.showing_all'));
+  }
+}
 function onSearch(){ console.log('search', q.value); }
 
 function onNew() {
@@ -150,6 +213,7 @@ async function loadLists() {
 }
 
 onMounted(async () => {
+  loadFavorites();
   await loadLists();
 });
 
@@ -308,6 +372,7 @@ watch(cards, (newCards) => {
   box-shadow: 0 10px 24px rgba(0,0,0,.35);
   transition: transform .08s ease;
   cursor:pointer;
+  position: relative;
 }
 .card:hover{ transform: translateY(-2px); }
 
@@ -334,6 +399,46 @@ watch(cards, (newCards) => {
 
 .card-title{ margin:0; font-weight:800; color:#fff; font-size: 20px; text-align: left; }
 .card-sub{ margin:4px 0 0; color:#CFC9E6; font-size:14px; text-align: left; }
+
+/* Favorite Button */
+.favorite-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  padding: 0;
+}
+
+.favorite-btn .star-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(670%) hue-rotate(201deg) brightness(98%) contrast(91%);
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.favorite-btn:hover .star-icon {
+  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
+  transform: scale(1.15);
+}
+
+.favorite-btn.active .star-icon {
+  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
+  transform: scale(1.1);
+}
+
+.favorite-btn.active:hover .star-icon {
+  transform: scale(1.2);
+}
 
 .empty-state{
   display: grid;

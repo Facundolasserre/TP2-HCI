@@ -40,11 +40,18 @@
       />
 
       <div class="icon-group">
-        <button class="star" :title="t('topbar.favorites')" @click="$emit('favorites')">
+        <button 
+          class="star" 
+          :class="{ active: favoritesActive }"
+          :title="t('topbar.favorites')" 
+          @click="$emit('favorites')"
+        >
           <img
-              src="@/assets/fonts/favIcon.png"
+              :src="IconStar"
               :alt="t('topbar.favorites_icon')"
-              class="topbar-icon"
+              class="topbar-icon star-icon"
+              width="24"
+              height="24"
           />
         </button>
         <button class="plus special-plus" :title="t('topbar.new')" @click="$emit('new')">
@@ -57,8 +64,12 @@
 
 <script setup lang="ts">
 import { useI18n } from '@/composables/useI18n';
+import IconStar from '@/assets/star.svg';
 
-defineProps<{ query: string }>();
+defineProps<{ 
+  query: string;
+  favoritesActive?: boolean;
+}>();
 defineEmits<{
   (e: 'toggle-sidebar'): void;
   (e: 'filter'): void;
@@ -145,7 +156,12 @@ const { t } = useI18n();
   background: #080A14;
   color: #fff;
   font-size: 24px;                  /* +33% aprox para matching visual */
-  transition:  0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.star .star-icon {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
 
 .round-btn:hover,
@@ -153,6 +169,23 @@ const { t } = useI18n();
 .star:hover,
 .plus:hover{
   background: #101223;
+}
+
+.star:hover .star-icon {
+  transform: scale(1.1);
+}
+
+.star.active {
+  background: #101223;
+}
+
+.star.active .star-icon {
+  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
+  transform: scale(1.05);
+}
+
+.star.active:hover .star-icon {
+  transform: scale(1.15);
 }
 
 /* ======= SEARCH BAR ======= */

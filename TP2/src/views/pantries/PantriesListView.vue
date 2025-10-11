@@ -7,11 +7,7 @@
           @click="toggleSidebar"
           :aria-label="t('topbar.open_menu')"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <img :src="IconMenu" alt="Menu" width="24" height="24" />
         </button>
         <div class="nav-title">
           <h1>{{ t('pantries.title') }}</h1>
@@ -139,26 +135,14 @@
               @click="viewMode = 'table'"
               :title="t('pantries.view.table')"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"/>
-                <line x1="8" y1="12" x2="21" y2="12"/>
-                <line x1="8" y1="18" x2="21" y2="18"/>
-                <line x1="3" y1="6" x2="3.01" y2="6"/>
-                <line x1="3" y1="12" x2="3.01" y2="12"/>
-                <line x1="3" y1="18" x2="3.01" y2="18"/>
-              </svg>
+              <img :src="IconLists" alt="Table view" width="18" height="18" />
             </button>
             <button 
               :class="['view-btn', { active: viewMode === 'grid' }]"
               @click="viewMode = 'grid'"
               :title="t('pantries.view.grid')"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-              </svg>
+              <img :src="IconGridView" alt="Grid view" width="18" height="18" />
             </button>
           </div>
 
@@ -266,34 +250,18 @@
           <template #actions="{ item }">
             <div class="table-actions">
               <button 
-                class="btn-icon-sm"
-                @click.stop="goToDetail(item.id)"
-                :title="t('pantries.actions.view')"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-              <button 
               class="btn-icon-sm"
               @click.stop="goToEdit(item.id)"
               :title="t('pantries.actions.edit')"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
+                <img :src="IconEdit" alt="Edit" width="16" height="16" />
               </button>
               <button 
               class="btn-icon-sm btn-danger"
               @click.stop="confirmDelete(item)"
               :title="t('pantries.actions.delete')"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
+                <img :src="IconDelete" alt="Delete" width="16" height="16" />
               </button>
             </div>
           </template>
@@ -328,20 +296,14 @@
                   @click.stop="goToEdit(pantry.id)"
                   :title="t('pantries.actions.edit')"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
+                  <img :src="IconEdit" alt="Edit" width="14" height="14" />
                 </button>
                 <button
                   class="btn-icon-xs btn-danger"
                   @click.stop="confirmDelete(pantry)"
                   :title="t('pantries.actions.delete')"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                  </svg>
+                  <img :src="IconDelete" alt="Delete" width="14" height="14" />
                 </button>
               </div>
             </div>
@@ -463,6 +425,11 @@ import DataTable from '@/components/DataTable.vue'
 import Modal from '@/components/Modal.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLanguageStore } from '@/stores/language'
+import IconMenu from '@/assets/menu.svg'
+import IconEdit from '@/assets/edit.svg'
+import IconDelete from '@/assets/delete.svg'
+import IconGridView from '@/assets/grid_view.svg'
+import IconLists from '@/assets/lists.svg'
 
 const router = useRouter()
 const pantriesStore = usePantriesStore()
@@ -676,8 +643,8 @@ const loadPantries = async () => {
 }
 
 // Lifecycle
-onMounted(() => {
-  loadPantries()
+onMounted(async () => {
+  await loadPantries()
 })
 </script>
 
@@ -751,6 +718,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+.menu-btn img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
 }
 
 .menu-btn:hover {
@@ -898,10 +869,11 @@ onMounted(() => {
 .toolbar-center {
   flex: 2;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
+  padding-right: 24px;
 }
 
 .toolbar-right {
@@ -1008,14 +980,27 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+.view-btn img {
+  filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(670%) hue-rotate(201deg) brightness(98%) contrast(91%);
+  transition: filter 0.2s ease;
+}
+
 .view-btn:hover {
   background: rgba(107, 124, 255, 0.1);
   color: #EDEAF6;
 }
 
+.view-btn:hover img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
+}
+
 .view-btn.active {
   background: rgba(107, 124, 255, 0.2);
   color: #6B7CFF;
+}
+
+.view-btn.active img {
+  filter: brightness(0) saturate(100%) invert(55%) sepia(68%) saturate(2458%) hue-rotate(220deg) brightness(101%) contrast(101%);
 }
 
 /* Sort Controls */
@@ -1247,6 +1232,10 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+.btn-icon-sm img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
+}
+
 .btn-icon-sm:hover {
   background: rgba(107, 124, 255, 0.15);
   border-color: rgba(107, 124, 255, 0.4);
@@ -1257,6 +1246,10 @@ onMounted(() => {
   background: rgba(244, 67, 54, 0.15);
   border-color: rgba(244, 67, 54, 0.4);
   color: #F44336;
+}
+
+.btn-icon-sm.btn-danger:hover img {
+  filter: brightness(0) saturate(100%) invert(40%) sepia(89%) saturate(6145%) hue-rotate(348deg) brightness(96%) contrast(92%);
 }
 
 /* ==================== GRID VIEW ==================== */
@@ -1336,6 +1329,10 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
+.btn-icon-xs img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
+}
+
 .btn-icon-xs:hover {
   background: rgba(107, 124, 255, 0.2);
   border-color: rgba(107, 124, 255, 0.4);
@@ -1345,6 +1342,10 @@ onMounted(() => {
   background: rgba(244, 67, 54, 0.2);
   border-color: rgba(244, 67, 54, 0.4);
   color: #F44336;
+}
+
+.btn-icon-xs.btn-danger:hover img {
+  filter: brightness(0) saturate(100%) invert(40%) sepia(89%) saturate(6145%) hue-rotate(348deg) brightness(96%) contrast(92%);
 }
 
 .card-content {
