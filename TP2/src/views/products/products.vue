@@ -341,6 +341,7 @@ import Pagination from '@/components/Pagination.vue'
 import Modal from '@/components/Modal.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLanguageStore } from '@/stores/language'
+import { formatDateBuenosAires } from '@/utils/dateFormatter'
 
 // Import local SVG icons
 import IconShoppingCart from '@/assets/shopping_cart.svg'
@@ -407,16 +408,8 @@ const closeSidebar = () => {
 }
 
 const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
   const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
-  return date.toLocaleDateString(locale, { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  return formatDateBuenosAires(dateStr, locale)
 }
 
 const loadProducts = async () => {
@@ -448,12 +441,8 @@ const loadProducts = async () => {
     console.log('Products loaded from API:', result)
     console.log('Products in store after fetch:', store.items.length)
     
-    // Update total from response if available
-    if (result && typeof result === 'object' && 'total' in result) {
-      totalProducts.value = (result as any).total || store.items.length
-    } else {
-      totalProducts.value = store.items.length
-    }
+    // Update total from store (which gets it from pagination)
+    totalProducts.value = store.total
     
     console.log('Total products:', totalProducts.value)
   } catch (error: any) {

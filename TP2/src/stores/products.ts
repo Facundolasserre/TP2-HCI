@@ -63,7 +63,8 @@ export const useProductsStore = defineStore('products', () => {
     error.value = null
 
     try {
-      const products = await productsService.listProducts(params)
+      const response = await productsService.listProducts(params)
+      const products = response.data
       
       // Only update items if we got products back, or if we explicitly have no filters
       // This prevents losing locally created items if API returns empty
@@ -75,6 +76,9 @@ export const useProductsStore = defineStore('products', () => {
         console.warn('⚠️ API returned empty array but we have local items. Keeping local items.')
       }
       
+      // Update total from pagination
+      total.value = response.pagination?.total || products.length
+      
       // Update filters and pagination state
       if (params) {
         filters.value = { ...filters.value, ...params }
@@ -82,7 +86,7 @@ export const useProductsStore = defineStore('products', () => {
       if (params?.page) currentPage.value = params.page
       if (params?.per_page) perPage.value = params.per_page
       
-      return products
+      return response
     } catch (err) {
       error.value = err as ApiError
       throw err

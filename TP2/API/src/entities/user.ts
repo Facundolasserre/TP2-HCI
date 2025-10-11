@@ -50,8 +50,8 @@ export class User extends BaseEntity {
       surname: this.surname,
       email: this.email,
       metadata: this.metadata ?? {},
-      createdAt: this.createdAt.toISOString().substring(0, 19).replace('T', ' '),
-      updatedAt: this.updatedAt.toISOString().substring(0, 19).replace('T', ' '),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
     };
   }
 

@@ -45,7 +45,12 @@
         <button class="tool-btn" @click="onFilter" :aria-label="t('listView.toolbar.filter')">
           <img src="../../assets/fonts/filter.png" :alt="t('listView.toolbar.filter')" class="tool-icon" />
         </button>
-        <button class="tool-btn" @click="onSort" :aria-label="t('listView.toolbar.sort')">
+        <button 
+          class="tool-btn" 
+          :class="{ 'active': sortAlphabetically }"
+          @click="onSort" 
+          :aria-label="t('listView.toolbar.sort')"
+        >
           <img src="../../assets/fonts/sort.png" :alt="t('listView.toolbar.sort')" class="tool-icon" />
         </button>
       </div>
@@ -84,22 +89,27 @@
 
             <div class="item-info">
               <div class="item-name">{{ product.name }}</div>
-              <div class="item-meta">{{ t('listView.item.added_by', { name: product.addedBy || t('listView.item.unknown_user') }) }}</div>
+              <div class="item-meta">{{ product.amount }} {{ product.unit }}</div>
             </div>
           </div>
 
-          <!-- Right: quantity + checkbox -->
+          <!-- Right: quantity + action buttons -->
           <div class="item-right">
-            <div class="item-quantity">x{{ product.amount }}</div>
-            <label class="checkbox-wrapper">
-              <input 
-                type="checkbox" 
-                :checked="product.checked" 
-                @change="toggleCheck(product.id)"
-                class="checkbox-input"
-              />
-              <span class="checkbox-custom"></span>
-            </label>
+            <div class="item-quantity">{{ product.amount }} {{ product.unit }}</div>
+            <button 
+              class="action-btn edit-btn" 
+              @click="editItem(product.id)"
+              :aria-label="t('listView.actions.edit')"
+            >
+              <img src="@/assets/edit.svg" alt="Edit" class="action-icon" />
+            </button>
+            <button 
+              class="action-btn delete-btn" 
+              @click="confirmDeleteItem(product.id, product.name)"
+              :aria-label="t('listView.actions.delete')"
+            >
+              <img src="@/assets/delete.svg" alt="Delete" class="action-icon" />
+            </button>
           </div>
         </article>
       </div>
@@ -110,6 +120,7 @@
       v-if="showShareModal && currentList"
       :list-id="listId!"
       :list-name="currentList.name"
+      :owner="currentList.owner"
       @close="closeShareModal"
     />
 
@@ -217,27 +228,34 @@
 
           <!-- Quantity and Unit -->
           <div v-if="selectedProductId && !showCreateProductInline" class="quantity-section">
-            <div class="form-group">
-              <label for="quantity">Quantity</label>
+            <div class="form-group quantity-group">
+              <label for="quantity">Quantity *</label>
               <input
                 id="quantity"
                 v-model.number="quantity"
                 type="number"
                 min="1"
+                step="1"
                 class="form-input"
+                placeholder="Enter quantity"
               />
             </div>
 
-            <div class="form-group">
-              <label for="unit">Unit</label>
-              <input
+            <div class="form-group unit-group">
+              <label for="unit">Unit *</label>
+              <select
                 id="unit"
                 v-model="unit"
-                type="text"
-                placeholder="e.g., kg, units, liters"
                 class="form-input"
-                maxlength="20"
-              />
+              >
+                <option value="units">Units</option>
+                <option value="kg">Kg</option>
+                <option value="g">g</option>
+                <option value="L">L</option>
+                <option value="mL">mL</option>
+                <option value="lbs">lbs</option>
+                <option value="oz">oz</option>
+              </select>
             </div>
           </div>
         </div>
@@ -251,10 +269,114 @@
           <button
             type="button"
             class="btn-save"
-            :disabled="!selectedProductId || showCreateProductInline"
+            :disabled="!selectedProductId || showCreateProductInline || quantity <= 0"
             @click="addItemToList"
           >
             Add to List
+          </button>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Edit Item Modal -->
+    <Modal :open="showEditItemModal" @close="closeEditItemModal" size="md">
+      <template #header>
+        <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
+          Edit product
+        </h2>
+      </template>
+
+      <template #default>
+        <div class="add-item-modal-content">
+          <!-- Product Name (Read-only) -->
+          <div class="form-group">
+            <label for="edit-product-name">
+              Name <span class="required-indicator">*</span>
+            </label>
+            <input
+              id="edit-product-name"
+              :value="editingProductName"
+              type="text"
+              class="form-input"
+              disabled
+              style="opacity: 0.6; cursor: not-allowed;"
+            />
+          </div>
+
+          <!-- Category (Read-only) -->
+          <div class="form-group">
+            <label for="edit-product-category">
+              Category <span class="required-indicator">*</span>
+            </label>
+            <input
+              id="edit-product-category"
+              :value="editingProductCategory"
+              type="text"
+              class="form-input"
+              disabled
+              style="opacity: 0.6; cursor: not-allowed;"
+            />
+          </div>
+
+          <!-- Description (Empty, disabled) -->
+          <div class="form-group">
+            <label for="edit-product-description">Description</label>
+            <textarea
+              id="edit-product-description"
+              class="form-input"
+              rows="4"
+              disabled
+              style="opacity: 0.6; cursor: not-allowed; resize: none;"
+            ></textarea>
+          </div>
+
+          <!-- Quantity and Unit -->
+          <div class="quantity-section">
+            <div class="form-group quantity-group">
+              <label for="edit-quantity">Quantity *</label>
+              <input
+                id="edit-quantity"
+                v-model.number="editingQuantity"
+                type="number"
+                min="1"
+                step="1"
+                class="form-input"
+                placeholder="Enter quantity"
+              />
+            </div>
+
+            <div class="form-group unit-group">
+              <label for="edit-unit">Unit *</label>
+              <select
+                id="edit-unit"
+                v-model="editingUnit"
+                class="form-input"
+              >
+                <option value="units">Units</option>
+                <option value="kg">Kg</option>
+                <option value="g">g</option>
+                <option value="L">L</option>
+                <option value="mL">mL</option>
+                <option value="lbs">lbs</option>
+                <option value="oz">oz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" @click="closeEditItemModal">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-save"
+            :disabled="editingQuantity <= 0 || !editingUnit.trim()"
+            @click="saveEditItem"
+          >
+            Update
           </button>
         </div>
       </template>
@@ -287,6 +409,12 @@ const { t } = useI18n()
 const q = ref('')
 const showShareModal = ref(false)
 const showAddItemModal = ref(false)
+const showEditItemModal = ref(false)
+const editingItemId = ref<number | null>(null)
+const editingProductName = ref('')
+const editingProductCategory = ref('')
+const editingQuantity = ref(1)
+const editingUnit = ref('units')
 const searchProductQuery = ref('')
 const selectedProductId = ref<number | null>(null)
 const quantity = ref(1)
@@ -294,6 +422,7 @@ const unit = ref('units')
 const showCreateProductInline = ref(false)
 const newProductName = ref('')
 const newProductCategoryId = ref<number | null>(null)
+const sortAlphabetically = ref(false)
 
 // Get list ID from route
 const listId = computed(() => {
@@ -306,6 +435,9 @@ const currentList = computed(() => listsStore.currentList)
 const filteredProducts = computed(() => {
   let items = itemsStore.items
   
+  // Filter out items with null products
+  items = items.filter(item => item.product != null)
+  
   if (q.value) {
     const search = q.value.toLowerCase()
     items = items.filter(item => 
@@ -313,14 +445,28 @@ const filteredProducts = computed(() => {
     )
   }
   
-  return items.map(item => ({
+  const mappedItems = items.map(item => ({
     id: item.id,
     name: item.product.name,
     amount: item.quantity,
     unit: item.unit,
     checked: item.purchased,
     addedBy: '', // We don't track this in the API schema
+    createdAt: item.createdAt // Keep track of when it was added
   }))
+  
+  // Sort based on sortAlphabetically state
+  if (sortAlphabetically.value) {
+    // Sort alphabetically (case-insensitive)
+    return mappedItems.sort((a, b) => 
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    )
+  } else {
+    // Sort by creation date (oldest first - order of addition)
+    return mappedItems.sort((a, b) => 
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    )
+  }
 })
 
 const loadData = async () => {
@@ -364,7 +510,7 @@ const filteredModalProducts = computed(() => {
 
 // Check if a product is already in the list
 const isProductInList = (productId: number): boolean => {
-  return itemsStore.items.some(item => item.product.id === productId)
+  return itemsStore.items.some(item => item.product != null && item.product.id === productId)
 }
 
 // Open/close add item modal
@@ -428,8 +574,8 @@ const addItemToList = async () => {
     return
   }
 
-  if (quantity.value <= 0) {
-    toast.error('Quantity must be greater than 0')
+  if (quantity.value < 1) {
+    toast.error('Quantity must be at least 1')
     return
   }
 
@@ -480,7 +626,12 @@ const onFilter = () => {
 }
 
 const onSort = () => {
-  toast.info(t('listView.toast.sort_soon'))
+  sortAlphabetically.value = !sortAlphabetically.value
+  if (sortAlphabetically.value) {
+    toast.success(t('listView.toast.sort_alphabetically'))
+  } else {
+    toast.success(t('listView.toast.sort_by_date'))
+  }
 }
 
 const editList = () => {
@@ -508,6 +659,74 @@ const toggleCheck = async (productId: number) => {
     await itemsStore.togglePurchased(listId.value, productId, !item.purchased)
   } catch (error: any) {
     toast.error(error.message || t('listView.toast.update_error'))
+  }
+}
+
+const editItem = async (itemId: number) => {
+  if (!listId.value) return
+  
+  const item = itemsStore.items.find(i => i.id === itemId)
+  if (!item || !item.product) return
+  
+  // Set editing state
+  editingItemId.value = itemId
+  editingProductName.value = item.product.name
+  editingProductCategory.value = item.product.category?.name || 'No category'
+  editingQuantity.value = item.quantity
+  editingUnit.value = item.unit
+  showEditItemModal.value = true
+}
+
+const closeEditItemModal = () => {
+  showEditItemModal.value = false
+  editingItemId.value = null
+  editingProductName.value = ''
+  editingProductCategory.value = ''
+  editingQuantity.value = 1
+  editingUnit.value = 'units'
+}
+
+const saveEditItem = async () => {
+  if (!listId.value || !editingItemId.value) return
+  
+  // Validate
+  if (editingQuantity.value <= 0) {
+    toast.error(t('listView.toast.quantity_error'))
+    return
+  }
+  
+  if (!editingUnit.value.trim()) {
+    toast.error(t('listView.toast.unit_error'))
+    return
+  }
+  
+  try {
+    await itemsStore.updateItem(listId.value, editingItemId.value, {
+      quantity: editingQuantity.value,
+      unit: editingUnit.value
+    })
+    
+    toast.success(t('listView.toast.quantity_updated'))
+    closeEditItemModal()
+  } catch (error: any) {
+    toast.error(error.message || t('listView.toast.update_error'))
+  }
+}
+
+const confirmDeleteItem = async (itemId: number, productName: string) => {
+  const confirmed = window.confirm(
+    t('listView.confirm.delete_item', { name: productName })
+  )
+  
+  if (!confirmed) return
+  
+  if (!listId.value) return
+  
+  try {
+    await itemsStore.removeItem(listId.value, itemId)
+    toast.success(t('listView.toast.item_deleted'))
+  } catch (error: any) {
+    toast.error(error.message || t('listView.toast.delete_error'))
   }
 }
 
@@ -553,7 +772,7 @@ const onProductAdded = () => {
   display: grid;
   grid-template-columns: 80px 1fr 80px;
   align-items: center;
-  gap: 40px;
+  gap: 60px;
   padding: 12px 0;
   margin-bottom: 8px;
 }
@@ -663,10 +882,19 @@ const onProductAdded = () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.tool-btn.active {
+  background: #6B7CFF;
+  box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
+}
+
 .tool-btn:hover {
   background: #6a678f;
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.tool-btn.active:hover {
+  background: #7d8dff;
 }
 
 .tool-icon {
@@ -781,24 +1009,80 @@ const onProductAdded = () => {
 }
 
 .item-meta {
-  font-size: 16px;
-  color: #B9B5D1;
-  opacity: 0.85;
+  font-size: 15px;
+  color: #6B7CFF;
+  opacity: 0.9;
+  font-weight: 600;
+  background: rgba(107, 124, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
 }
 
-/* Right side: quantity + checkbox */
+/* Right side: quantity + action buttons */
 .item-right {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 16px;
 }
 
 .item-quantity {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
-  color: #EDEAF6;
-  min-width: 70px;
+  color: #6B7CFF;
+  min-width: 90px;
   text-align: right;
+  padding: 8px 14px;
+  background: rgba(107, 124, 255, 0.12);
+  border-radius: 10px;
+  border: 1px solid rgba(107, 124, 255, 0.25);
+}
+
+/* Action buttons (edit & delete) */
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+.action-btn.edit-btn:hover {
+  background: rgba(107, 124, 255, 0.15);
+}
+
+.action-btn.delete-btn {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.action-btn.delete-btn:hover {
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.action-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+}
+
+.action-btn:hover .action-icon {
+  opacity: 1;
 }
 
 /* ===== CUSTOM CHECKBOX - Larger ===== */
@@ -954,7 +1238,8 @@ const onProductAdded = () => {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 8px 0;
+  padding: 8px 20px;
+  max-width: 100%;
 }
 
 .form-group {
@@ -971,6 +1256,7 @@ const onProductAdded = () => {
 
 .form-input {
   width: 100%;
+  max-width: 100%;
   padding: 14px 18px;
   background: #0E0F1A;
   border: 2px solid rgba(107, 124, 255, 0.3);
@@ -978,6 +1264,7 @@ const onProductAdded = () => {
   color: #EDEAF6;
   font-size: 16px;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
@@ -1125,11 +1412,41 @@ const onProductAdded = () => {
 }
 
 .quantity-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  display: flex;
+  gap: 20px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 16px;
+  border-top: 2px solid rgba(107, 124, 255, 0.2);
+  align-items: flex-start;
+}
+
+.quantity-group {
+  flex: 0 0 20%;
+  min-width: 0;
+}
+
+.unit-group {
+  flex: 0 0 20%;
+  min-width: 0;
+}
+
+.quantity-section .form-group {
+  margin: 0;
+}
+
+.quantity-section .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quantity-section .form-group label::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #E76F51;
+  border-radius: 50%;
 }
 
 .modal-actions {

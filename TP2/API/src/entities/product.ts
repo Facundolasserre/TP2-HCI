@@ -54,8 +54,8 @@ export class Product extends BaseEntity {
       id: this.id,
       name: this.name,
       metadata: this.metadata ?? null,
-      createdAt: this.createdAt?.toISOString().substring(0, 19).replace('T', ' '),
-      updatedAt: this.updatedAt?.toISOString().substring(0, 19).replace('T', ' '),
+      createdAt: this.createdAt?.toISOString(),
+      updatedAt: this.updatedAt?.toISOString(),
       category: this.category?.getFormattedCategory() ?? null,
     };
   }

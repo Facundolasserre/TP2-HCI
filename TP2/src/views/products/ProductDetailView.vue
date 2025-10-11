@@ -114,6 +114,7 @@ import { useProductsStore } from '@/stores/products'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 import { useLanguageStore } from '@/stores/language'
+import { formatDateBuenosAires } from '@/utils/dateFormatter'
 import editIcon from '@/assets/edit.svg'
 import deleteIcon from '@/assets/delete.svg'
 
@@ -151,19 +152,8 @@ const loadProduct = async () => {
 }
 
 const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString)
-    const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
-    return date.toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateString
-  }
+  const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+  return formatDateBuenosAires(dateString, locale)
 }
 
 const formatMetadata = (metadata: any) => {

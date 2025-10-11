@@ -130,6 +130,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
+import { formatDateOnlyBuenosAires } from '@/utils/dateFormatter'
 import type { GetCategory } from '@/types/categories'
 
 const router = useRouter()
@@ -230,16 +231,7 @@ const executeDelete = async () => {
 }
 
 const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-AR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-  } catch {
-    return dateString
-  }
+  return formatDateOnlyBuenosAires(dateString, 'es-AR')
 }
 </script>
 

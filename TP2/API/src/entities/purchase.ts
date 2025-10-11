@@ -46,7 +46,7 @@ export class Purchase extends BaseEntity {
       owner: this.owner ? this.owner.getFormattedUser() : null,
       list: this.list ? this.list.getFormattedList() : null,
       items: this.items ? this.items.map(i => i.getFormattedListItem()) : [],
-      createdAt: this.createdAt?.toISOString().substring(0, 19).replace('T', ' '),
+      createdAt: this.createdAt?.toISOString(),
     };
   }
 }

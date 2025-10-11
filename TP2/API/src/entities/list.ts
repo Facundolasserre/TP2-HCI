@@ -69,11 +69,11 @@ export class List extends BaseEntity {
 
   formatDate(date: any): string | null {
     if (!date) return null;
-    if (date instanceof Date) return date.toISOString().substring(0, 19).replace('T', ' ');
+    if (date instanceof Date) return date.toISOString();
     if (typeof date === "string") {
       const d = new Date(date);
-      if (!isNaN(d.getTime())) return d.toISOString().substring(0, 19).replace('T', ' ');
-      return date.substring(0, 19).replace('T', ' ');
+      if (!isNaN(d.getTime())) return d.toISOString();
+      return date;
     }
     return null;
   }

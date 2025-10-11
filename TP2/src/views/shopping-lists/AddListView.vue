@@ -153,6 +153,16 @@ const availableIcons = [
     name: 'Bebidas',
     src: new URL('@/assets/liquor.svg', import.meta.url).href
   },
+  { 
+    id: 'house.svg', 
+    name: 'Casa',
+    src: new URL('@/assets/house.svg', import.meta.url).href
+  },
+  { 
+    id: 'work.svg', 
+    name: 'Trabajo',
+    src: new URL('@/assets/work.svg', import.meta.url).href
+  },
 ];
 
 function setShared(){
@@ -167,7 +177,16 @@ function onShareSave(payload: { members: string[], pending: string[], blocked: s
 }
 
 /** ============ Colors ============ */
-const colors = ['#6B7CFF', '#5EC5A7', '#F0B429', '#E76F51', '#E91E63'];
+const colors = [
+  '#6B7CFF', // Azul/Púrpura principal (original)
+  '#5EC5A7', // Verde menta (original)
+  '#F0B429', // Amarillo dorado (original)
+  '#E76F51', // Coral/Naranja (original)
+  '#E91E63', // Rosa fuerte (original)
+  '#9B59B6', // Púrpura profundo (nuevo)
+  '#3498DB', // Azul cielo (nuevo)
+  '#F39C12', // Naranja brillante (nuevo)
+];
 
 function onEsc() {
   close();
@@ -332,19 +351,31 @@ async function submit(){
 .colors {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Mantener en una sola fila */
   align-items: center;
+  overflow-x: auto; /* Permitir scroll horizontal si es necesario en pantallas pequeñas */
+  padding-bottom: 4px; /* Espacio para el scrollbar si aparece */
 }
 
 .swatch{
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   border: 2px solid rgba(255,255,255,.25);
   cursor: pointer;
+  flex-shrink: 0; /* Evitar que los botones se compriman */
+  transition: all 0.2s ease;
 }
 
-.swatch.picked{ outline: 2px solid #fff; }
+.swatch:hover{
+  transform: scale(1.1);
+  border-color: rgba(255,255,255,.45);
+}
+
+.swatch.picked{ 
+  border: 3px solid #fff;
+  transform: scale(1.05);
+}
 
 
 

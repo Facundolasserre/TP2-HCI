@@ -49,8 +49,8 @@ export class PantryItem extends BaseEntity {
       unit: this.unit,
       metadata: this.metadata ?? null,
       product : this.product.getFormattedProduct(),
-      createdAt: this.createdAt.toISOString().substring(0, 19).replace('T', ' '),
-      updatedAt: this.updatedAt.toISOString().substring(0, 19).replace('T', ' '),
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString(),
     };
   }
 }

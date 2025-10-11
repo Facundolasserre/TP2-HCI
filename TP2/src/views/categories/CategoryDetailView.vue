@@ -77,6 +77,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
+import { formatDateBuenosAires } from '@/utils/dateFormatter'
 
 const router = useRouter()
 const route = useRoute()
@@ -110,18 +111,7 @@ const loadCategory = async () => {
 }
 
 const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-AR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateString
-  }
+  return formatDateBuenosAires(dateString, 'es-AR')
 }
 
 const formatMetadata = (metadata: any) => {

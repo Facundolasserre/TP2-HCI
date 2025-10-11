@@ -41,6 +41,9 @@ export async function addListItemService(
 
         const itemsArray = Array.isArray(list.items) ? list.items : [];
         for (const auxItem of itemsArray) {
+            // Skip items with null product (deleted products)
+            if (!auxItem.product) continue;
+            
             if (auxItem.product.id === product.id) {
                 throw new ConflictError(ERROR_MESSAGES.CONFLICT.ITEM_EXISTS);
             }
@@ -51,7 +54,7 @@ export async function addListItemService(
         item.unit = itemData.unit;
         item.metadata = itemData.metadata ?? null;
         item.purchased = false;
-        item.list = list.getFormattedList();
+        item.list = list;
 
         await queryRunner.manager.save(item);
         await queryRunner.commitTransaction();

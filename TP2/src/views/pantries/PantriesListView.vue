@@ -425,6 +425,7 @@ import DataTable from '@/components/DataTable.vue'
 import Modal from '@/components/Modal.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLanguageStore } from '@/stores/language'
+import { formatDateOnlyBuenosAires } from '@/utils/dateFormatter'
 import IconMenu from '@/assets/menu.svg'
 import IconEdit from '@/assets/edit.svg'
 import IconDelete from '@/assets/delete.svg'
@@ -536,14 +537,8 @@ const sharedPeopleLabel = (count: number): string => {
 }
 
 const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
   const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
-  return date.toLocaleDateString(locale, { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric'
-  })
+  return formatDateOnlyBuenosAires(dateStr, locale)
 }
 
 const goToDetail = (id: number) => {
