@@ -101,12 +101,31 @@ export const listProducts = async (
   // The API returns an array directly
   const response = await get<any>(url)
   
+  console.log('Raw API response for listProducts:', response)
+  console.log('Response type:', typeof response)
+  console.log('Is array?', Array.isArray(response))
+  if (response && typeof response === 'object') {
+    console.log('Response keys:', Object.keys(response))
+  }
+  
   // Handle different response formats
   if (Array.isArray(response)) {
+    console.log('✓ Format: Direct array, length:', response.length)
     return response as Product[]
-  } else if (response.products && Array.isArray(response.products)) {
+  } else if (response && response.products && Array.isArray(response.products)) {
+    console.log('✓ Format: Object with products property, length:', response.products.length)
     return response.products as Product[]
+  } else if (response && response.data && Array.isArray(response.data)) {
+    console.log('✓ Format: Object with data property, length:', response.data.length)
+    return response.data as Product[]
+  } else if (response && response.result && Array.isArray(response.result)) {
+    console.log('✓ Format: Object with result property, length:', response.result.length)
+    return response.result as Product[]
+  } else if (response && response.items && Array.isArray(response.items)) {
+    console.log('✓ Format: Object with items property, length:', response.items.length)
+    return response.items as Product[]
   } else {
+    console.error('❌ Unknown response format, returning empty array. Response:', response)
     return []
   }
 }

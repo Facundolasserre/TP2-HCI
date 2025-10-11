@@ -9,11 +9,7 @@
             @click="toggleSidebar"
             :aria-label="t('topbar.open_menu')"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
+            <img :src="IconMenu" alt="Menu" width="24" height="24" />
           </button>
           <div>
             <h1 class="title">{{ t('products.title') }}</h1>
@@ -217,12 +213,29 @@
             v-model="productForm.categoryId"
             class="form-input"
             required
+            @change="onCategoryChange"
           >
             <option :value="null">{{ t('products.form.category_placeholder') }}</option>
             <option v-for="cat in categoriesStore.items" :key="cat.id" :value="cat.id">
               {{ cat.name }}
             </option>
+            <option value="__new__">{{ t('products.form.category_new') }}</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label for="product-description" class="form-label">
+            {{ t('products.form.description_label') }}
+          </label>
+          <textarea
+            id="product-description"
+            v-model="productForm.description"
+            class="form-input textarea"
+            :placeholder="t('products.form.description_placeholder')"
+            rows="3"
+            maxlength="500"
+          ></textarea>
+          <span class="form-hint">{{ t('products.form.description_hint') }}</span>
         </div>
 
         <div class="form-group">
@@ -273,6 +286,41 @@
       </template>
     </Modal>
 
+    <!-- New Category Modal -->
+    <Modal
+      :open="showCategoryModal"
+      :title="t('products.category_modal.title')"
+      size="sm"
+      @close="closeCategoryModal"
+    >
+      <form @submit.prevent="saveCategory" class="category-form">
+        <div class="form-group">
+          <label for="category-name" class="form-label">
+            {{ t('products.category_modal.name_label') }} <span class="required">*</span>
+          </label>
+          <input
+            id="category-name"
+            v-model="categoryForm.name"
+            type="text"
+            class="form-input"
+            :placeholder="t('products.category_modal.name_placeholder')"
+            maxlength="50"
+            required
+          />
+          <span class="form-hint">{{ t('products.category_modal.name_hint') }}</span>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" class="btn-secondary" @click="closeCategoryModal">
+          {{ t('common.cancel') }}
+        </button>
+        <button type="button" class="btn-primary" @click="saveCategory" :disabled="isCreatingCategory">
+          {{ isCreatingCategory ? t('common.saving') : t('common.create') }}
+        </button>
+      </template>
+    </Modal>
+
     <!-- Sidebar -->
     <Sidebar
       :open="sidebarOpen"
@@ -283,7 +331,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
@@ -298,6 +346,7 @@ import { useLanguageStore } from '@/stores/language'
 import IconShoppingCart from '@/assets/shopping_cart.svg'
 import IconEdit from '@/assets/edit.svg'
 import IconDelete from '@/assets/delete.svg'
+import IconMenu from '@/assets/menu.svg'
 
 const store = useProductsStore()
 const categoriesStore = useCategoriesStore()
@@ -318,16 +367,24 @@ const totalProducts = ref(0)
 // Modal states
 const showProductModal = ref(false)
 const showDeleteModal = ref(false)
+const showCategoryModal = ref(false)
 const editingProduct = ref<Product | null>(null)
 const productToDelete = ref<Product | null>(null)
 const isSaving = ref(false)
 const isDeleting = ref(false)
+const isCreatingCategory = ref(false)
+const isCreatingProduct = ref(false)
 
 // Form state
 const productForm = ref({
   name: '',
   categoryId: null as number | null,
+  description: '',
   metadataString: ''
+})
+
+const categoryForm = ref({
+  name: ''
 })
 
 const metadataError = ref('')
@@ -363,7 +420,22 @@ const formatDate = (dateStr: string): string => {
 }
 
 const loadProducts = async () => {
+  // Don't reload if we're currently creating a product
+  if (isCreatingProduct.value) {
+    console.log('⚠️ Skipping loadProducts - product creation in progress')
+    return
+  }
+  
   try {
+    console.log('Loading products with params:', {
+      name: searchQuery.value,
+      category_id: selectedCategory.value,
+      per_page: perPage.value,
+      page: currentPage.value,
+      order: sortOrder.value,
+      sort_by: sortBy.value,
+    })
+    
     const result = await store.fetchProducts({
       name: searchQuery.value || undefined,
       category_id: selectedCategory.value,
@@ -373,13 +445,19 @@ const loadProducts = async () => {
       sort_by: sortBy.value,
     })
     
+    console.log('Products loaded from API:', result)
+    console.log('Products in store after fetch:', store.items.length)
+    
     // Update total from response if available
     if (result && typeof result === 'object' && 'total' in result) {
       totalProducts.value = (result as any).total || store.items.length
     } else {
       totalProducts.value = store.items.length
     }
+    
+    console.log('Total products:', totalProducts.value)
   } catch (error: any) {
+    console.error('Error loading products:', error)
     toast.error(error.message || t('products.toast.load_error'))
   }
 }
@@ -416,6 +494,7 @@ const openCreateModal = () => {
   productForm.value = {
     name: '',
     categoryId: null,
+    description: '',
     metadataString: ''
   }
   metadataError.value = ''
@@ -424,9 +503,14 @@ const openCreateModal = () => {
 
 const openEditModal = (product: Product) => {
   editingProduct.value = product
+  
+  // Extract description from metadata if it exists
+  const description = product.metadata?.description || ''
+  
   productForm.value = {
     name: product.name,
     categoryId: product.category?.id || null,
+    description: description,
     metadataString: product.metadata ? JSON.stringify(product.metadata, null, 2) : ''
   }
   metadataError.value = ''
@@ -439,6 +523,7 @@ const closeProductModal = () => {
   productForm.value = {
     name: '',
     categoryId: null,
+    description: '',
     metadataString: ''
   }
   metadataError.value = ''
@@ -477,9 +562,15 @@ const saveProduct = async () => {
   isSaving.value = true
   
   try {
+    // Parse metadata from JSON string
     const metadata = productForm.value.metadataString.trim() 
       ? JSON.parse(productForm.value.metadataString)
       : {}
+    
+    // Add description to metadata if provided
+    if (productForm.value.description.trim()) {
+      metadata.description = productForm.value.description.trim()
+    }
     
     const productData = {
       name: productForm.value.name.trim(),
@@ -487,17 +578,52 @@ const saveProduct = async () => {
       metadata
     }
     
+    console.log('Saving product with data:', productData)
+    
     if (editingProduct.value) {
       await store.updateProduct(editingProduct.value.id, productData)
       toast.success(t('products.toast.update_success'))
+      
+      closeProductModal()
+      await loadProducts()
     } else {
-      await store.createProduct(productData)
+      // Set flag to prevent other reloads
+      isCreatingProduct.value = true
+      console.log('🔒 Locked - preventing other reloads during product creation')
+      
+      const newProduct = await store.createProduct(productData)
+      console.log('✓ Product created successfully:', newProduct)
+      console.log('✓ Product ID:', newProduct.id)
+      console.log('✓ Products in store immediately after creation:', store.items.length)
+      console.log('✓ Products in store:', store.items.map(p => ({ id: p.id, name: p.name })))
+      
       toast.success(t('products.toast.create_success'))
+      
+      closeProductModal()
+      
+      // Clear filters to ensure the new product will be visible
+      searchQuery.value = ''
+      selectedCategory.value = undefined
+      currentPage.value = 1
+      
+      // Wait for next tick to ensure Vue has updated
+      await nextTick()
+      
+      console.log('⏳ Waiting 500ms for API to sync...')
+      // Wait for API to fully process the creation
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Unlock and reload
+      isCreatingProduct.value = false
+      console.log('🔓 Unlocked - now reloading from API')
+      
+      console.log('⟳ Reloading products from API...')
+      await loadProducts()
+      console.log('✓ Products after reload:', store.items.length)
     }
-    
-    closeProductModal()
-    loadProducts()
   } catch (error: any) {
+    console.error('Error saving product:', error)
+    isCreatingProduct.value = false // Unlock on error
     toast.error(
       error.message ||
       t(editingProduct.value ? 'products.toast.update_error' : 'products.toast.create_error')
@@ -533,6 +659,62 @@ const executeDelete = async () => {
     toast.error(error.message || t('products.toast.delete_error'))
   } finally {
     isDeleting.value = false
+  }
+}
+
+// Category Modal
+const onCategoryChange = () => {
+  if (productForm.value.categoryId === '__new__' as any) {
+    // Open the new category modal
+    showCategoryModal.value = true
+    // Reset the category select back to null
+    productForm.value.categoryId = null
+  }
+}
+
+const closeCategoryModal = () => {
+  showCategoryModal.value = false
+  categoryForm.value = {
+    name: ''
+  }
+}
+
+const saveCategory = async () => {
+  if (!categoryForm.value.name.trim()) {
+    toast.error(t('products.category_modal.name_required'))
+    return
+  }
+  
+  isCreatingCategory.value = true
+  
+  try {
+    console.log('Creating category with name:', categoryForm.value.name.trim())
+    
+    const newCategory = await categoriesStore.createCategory({
+      name: categoryForm.value.name.trim()
+    })
+    
+    console.log('Category created successfully:', newCategory)
+    
+    toast.success(t('products.category_modal.create_success'))
+    
+    // Set the newly created category as selected
+    productForm.value.categoryId = newCategory.id
+    
+    console.log('Selected category ID:', newCategory.id)
+    
+    // Close the modal
+    closeCategoryModal()
+    
+    // Reload categories to ensure the list is up to date
+    await categoriesStore.fetchCategories({ per_page: 100 })
+    
+    console.log('Categories reloaded, total:', categoriesStore.items.length)
+  } catch (error: any) {
+    console.error('Error creating category:', error)
+    toast.error(error.message || t('products.category_modal.create_error'))
+  } finally {
+    isCreatingCategory.value = false
   }
 }
 
@@ -602,6 +784,11 @@ onMounted(async () => {
   border-radius: 8px;
   transition: background 0.2s ease;
   color: #EDEAF6;
+}
+
+.menu-button img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(3%) saturate(1259%) hue-rotate(205deg) brightness(103%) contrast(94%);
+  transition: filter 0.2s ease;
 }
 
 .menu-button:hover {

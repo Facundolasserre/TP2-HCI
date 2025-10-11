@@ -55,8 +55,8 @@ export const useProductsStore = defineStore('products', () => {
 
   // Actions
 
-  /**
-   * Fetch products list with filters
+    /**
+   * Fetch products list with filters and pagination
    */
   const fetchProducts = async (params?: ProductsListParams) => {
     loading.value = true
@@ -64,7 +64,16 @@ export const useProductsStore = defineStore('products', () => {
 
     try {
       const products = await productsService.listProducts(params)
-      items.value = products
+      
+      // Only update items if we got products back, or if we explicitly have no filters
+      // This prevents losing locally created items if API returns empty
+      const hasNoFilters = !params?.name && !params?.category_id && !params?.pantry_id
+      
+      if (products.length > 0 || hasNoFilters || items.value.length === 0) {
+        items.value = products
+      } else {
+        console.warn('⚠️ API returned empty array but we have local items. Keeping local items.')
+      }
       
       // Update filters and pagination state
       if (params) {

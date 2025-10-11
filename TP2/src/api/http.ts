@@ -15,6 +15,35 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+// Add response interceptor to log API responses
+http.interceptors.response.use(
+  (response) => {
+    console.log(`API Response [${response.config.method?.toUpperCase()} ${response.config.url}]:`, {
+      status: response.status,
+      data: response.data,
+      dataType: typeof response.data,
+      isArray: Array.isArray(response.data),
+      dataKeys: response.data && typeof response.data === 'object' ? Object.keys(response.data) : 'N/A',
+      headers: response.headers
+    });
+    
+    // Extra logging for list endpoints
+    if (response.config.url?.includes('/api/products?') || response.config.url?.includes('/api/categories?')) {
+      console.log('📦 LIST RESPONSE DATA:', JSON.stringify(response.data, null, 2));
+    }
+    
+    return response;
+  },
+  (error) => {
+    console.error(`API Error [${error.config?.method?.toUpperCase()} ${error.config?.url}]:`, {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
+
 export const get = async <T = any>(
   url: string,
   config?: AxiosRequestConfig

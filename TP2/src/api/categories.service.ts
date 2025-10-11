@@ -102,12 +102,31 @@ export const listCategories = async (
   // The API returns ArrayOfCategories, but we'll handle both formats
   const response = await get<any>(url)
   
+  console.log('Raw API response for listCategories:', response)
+  console.log('Response type:', typeof response)
+  console.log('Is array?', Array.isArray(response))
+  if (response && typeof response === 'object') {
+    console.log('Response keys:', Object.keys(response))
+  }
+  
   // Handle different response formats
   if (Array.isArray(response)) {
+    console.log('✓ Format: Direct array, length:', response.length)
     return response as GetCategory[]
-  } else if (response.categories && Array.isArray(response.categories)) {
+  } else if (response && response.categories && Array.isArray(response.categories)) {
+    console.log('✓ Format: Object with categories property, length:', response.categories.length)
     return response.categories as GetCategory[]
+  } else if (response && response.data && Array.isArray(response.data)) {
+    console.log('✓ Format: Object with data property, length:', response.data.length)
+    return response.data as GetCategory[]
+  } else if (response && response.result && Array.isArray(response.result)) {
+    console.log('✓ Format: Object with result property, length:', response.result.length)
+    return response.result as GetCategory[]
+  } else if (response && response.items && Array.isArray(response.items)) {
+    console.log('✓ Format: Object with items property, length:', response.items.length)
+    return response.items as GetCategory[]
   } else {
+    console.error('❌ Unknown response format, returning empty array. Response:', response)
     return []
   }
 }
