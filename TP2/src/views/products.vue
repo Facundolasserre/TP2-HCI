@@ -4,7 +4,11 @@
     <div class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button class="menu-button" @click="toggleSidebar" aria-label="Toggle menu">
+          <button
+            class="menu-button"
+            @click="toggleSidebar"
+            :aria-label="t('topbar.open_menu')"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="3" y1="12" x2="21" y2="12"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
@@ -12,8 +16,8 @@
             </svg>
           </button>
           <div>
-            <h1 class="title">Products</h1>
-            <p class="subtitle">Manage your product inventory</p>
+            <h1 class="title">{{ t('products.title') }}</h1>
+            <p class="subtitle">{{ t('products.subtitle') }}</p>
           </div>
         </div>
         <button class="btn-primary" @click="openCreateModal">
@@ -21,7 +25,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Create Product
+          {{ t('products.create_button') }}
         </button>
       </div>
     </div>
@@ -37,7 +41,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search products…"
+            :placeholder="t('products.search_placeholder')"
             class="search-input"
             @input="onSearchDebounced"
           />
@@ -45,15 +49,15 @@
       </div>
 
       <div class="toolbar-right">
-        <select v-model="selectedCategory" @change="onFilterChange" class="filter-select">
-          <option :value="undefined">All Categories</option>
+        <select v-model="selectedCategory" @change="onFilterChange" class="filter-select" :aria-label="t('products.form.category_label')">
+          <option :value="undefined">{{ t('products.filter.all_categories') }}</option>
           <option v-for="cat in categoriesStore.items" :key="cat.id" :value="cat.id">
             {{ cat.name }}
           </option>
         </select>
 
         <div class="per-page-control">
-          <label for="per-page">Show:</label>
+          <label for="per-page">{{ t('products.filter.show') }}</label>
           <select id="per-page" v-model.number="perPage" @change="onPerPageChange" class="filter-select small">
             <option :value="10">10</option>
             <option :value="20">20</option>
@@ -70,7 +74,7 @@
         :class="['pill', { active: selectedCategory === undefined }]"
         @click="selectedCategory = undefined; onFilterChange()"
       >
-        All Categories
+        {{ t('products.filter.all_categories') }}
       </button>
       <button 
         v-for="cat in categoriesStore.items" 
@@ -87,7 +91,7 @@
       <!-- Loading -->
       <div v-if="store.isLoading" class="state-container">
         <div class="spinner"></div>
-        <p>Loading products...</p>
+        <p>{{ t('products.loading') }}</p>
       </div>
 
       <!-- Empty State -->
@@ -95,14 +99,14 @@
         <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
         </svg>
-        <h3>No products found</h3>
-        <p>{{ searchQuery ? 'Try adjusting your search' : 'Create your first product to get started' }}</p>
+        <h3>{{ t('products.empty.title') }}</h3>
+        <p>{{ searchQuery ? t('products.empty.search_hint') : t('products.empty.create_hint') }}</p>
         <button class="btn-primary" @click="openCreateModal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Create Product
+          {{ t('products.create_button') }}
         </button>
       </div>
 
@@ -114,7 +118,7 @@
           class="product-card"
         >
           <div class="product-icon">
-            <img :src="IconShoppingCart" alt="Product" width="32" height="32" />
+            <img :src="IconShoppingCart" :alt="t('products.title')" width="32" height="32" />
           </div>
 
           <div class="product-content">
@@ -138,11 +142,11 @@
 
             <div class="product-meta">
               <span v-if="product.metadata?.stock" class="meta-item">
-                Stock: <strong>{{ product.metadata.stock }}</strong>
+                {{ t('products.stock_label') }} <strong>{{ product.metadata.stock }}</strong>
               </span>
               <span class="meta-item meta-divider">•</span>
               <span class="meta-item">
-                Updated: <strong>{{ formatDate(product.updatedAt) }}</strong>
+                {{ t('products.updated_label') }} <strong>{{ formatDate(product.updatedAt) }}</strong>
               </span>
             </div>
           </div>
@@ -151,18 +155,18 @@
             <button 
               class="btn-icon"
               @click="openEditModal(product)"
-              title="Edit product"
-              aria-label="Edit product"
+              :title="t('products.actions.edit')"
+              :aria-label="t('products.actions.edit')"
             >
-              <img :src="IconEdit" alt="Edit" width="18" height="18" />
+              <img :src="IconEdit" :alt="t('common.edit')" width="18" height="18" />
             </button>
             <button 
               class="btn-icon btn-danger"
               @click="confirmDelete(product)"
-              title="Delete product"
-              aria-label="Delete product"
+              :title="t('products.actions.delete')"
+              :aria-label="t('products.actions.delete')"
             >
-              <img :src="IconDelete" alt="Delete" width="18" height="18" />
+              <img :src="IconDelete" :alt="t('common.delete')" width="18" height="18" />
             </button>
           </div>
         </div>
@@ -181,30 +185,30 @@
     <!-- Create/Edit Modal -->
     <Modal
       :open="showProductModal"
-      :title="editingProduct ? 'Edit Product' : 'Create Product'"
+      :title="editingProduct ? t('products.modal.edit_title') : t('products.modal.create_title')"
       size="md"
       @close="closeProductModal"
     >
       <form @submit.prevent="saveProduct" class="product-form">
         <div class="form-group">
           <label for="product-name" class="form-label">
-            Name <span class="required">*</span>
+            {{ t('products.form.name_label') }} <span class="required">*</span>
           </label>
           <input
             id="product-name"
             v-model="productForm.name"
             type="text"
             class="form-input"
-            placeholder="Enter product name"
+            :placeholder="t('products.form.name_placeholder')"
             maxlength="50"
             required
           />
-          <span class="form-hint">Maximum 50 characters</span>
+          <span class="form-hint">{{ t('products.form.name_hint') }}</span>
         </div>
 
         <div class="form-group">
           <label for="product-category" class="form-label">
-            Category <span class="required">*</span>
+            {{ t('products.form.category_label') }} <span class="required">*</span>
           </label>
           <select
             id="product-category"
@@ -212,7 +216,7 @@
             class="form-input"
             required
           >
-            <option :value="null">Select a category</option>
+            <option :value="null">{{ t('products.form.category_placeholder') }}</option>
             <option v-for="cat in categoriesStore.items" :key="cat.id" :value="cat.id">
               {{ cat.name }}
             </option>
@@ -221,26 +225,26 @@
 
         <div class="form-group">
           <label for="product-metadata" class="form-label">
-            Metadata (JSON)
+            {{ t('products.form.metadata_label') }}
           </label>
           <textarea
             id="product-metadata"
             v-model="productForm.metadataString"
             class="form-input textarea"
-            placeholder='{"description": "Product description", "barcode": "123456"}'
+            :placeholder="t('products.form.metadata_placeholder')"
             rows="4"
           ></textarea>
           <span v-if="metadataError" class="form-error">{{ metadataError }}</span>
-          <span v-else class="form-hint">Optional: Additional product information in JSON format</span>
+          <span v-else class="form-hint">{{ t('products.form.metadata_hint') }}</span>
         </div>
       </form>
 
       <template #footer>
         <button type="button" class="btn-secondary" @click="closeProductModal">
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button type="button" class="btn-primary" @click="saveProduct" :disabled="isSaving">
-          {{ isSaving ? 'Saving...' : (editingProduct ? 'Update' : 'Create') }}
+          {{ isSaving ? t('common.saving') : (editingProduct ? t('common.update') : t('common.create')) }}
         </button>
       </template>
     </Modal>
@@ -248,21 +252,21 @@
     <!-- Delete Confirmation Modal -->
     <Modal
       :open="showDeleteModal"
-      title="Confirm Deletion"
+      :title="t('products.delete.title')"
       size="sm"
       @close="cancelDelete"
     >
       <p class="modal-text">
-        Are you sure you want to delete <strong>{{ productToDelete?.name }}</strong>?
+        {{ t('products.delete.message', { name: productToDelete?.name || '' }) }}
       </p>
-      <p class="modal-warning">This action cannot be undone.</p>
+      <p class="modal-warning">{{ t('products.delete.warning') }}</p>
 
       <template #footer>
         <button type="button" class="btn-secondary" @click="cancelDelete">
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button type="button" class="btn-danger" @click="executeDelete" :disabled="isDeleting">
-          {{ isDeleting ? 'Deleting...' : 'Delete' }}
+          {{ isDeleting ? t('common.deleting') : t('products.delete.confirm') }}
         </button>
       </template>
     </Modal>
@@ -285,6 +289,8 @@ import type { Product } from '@/types/products'
 import Sidebar from '@/components/Sidebar.vue'
 import Pagination from '@/components/Pagination.vue'
 import Modal from '@/components/Modal.vue'
+import { useI18n } from '@/composables/useI18n'
+import { useLanguageStore } from '@/stores/language'
 
 // Import local SVG icons
 import IconShoppingCart from '@/assets/shopping_cart.svg'
@@ -294,6 +300,8 @@ import IconDelete from '@/assets/delete.svg'
 const store = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const toast = useToast()
+const { t } = useI18n()
+const languageStore = useLanguageStore()
 
 // State
 const sidebarOpen = ref(false)
@@ -342,7 +350,8 @@ const closeSidebar = () => {
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { 
+  const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+  return date.toLocaleDateString(locale, { 
     year: 'numeric', 
     month: 'short', 
     day: 'numeric',
@@ -369,7 +378,7 @@ const loadProducts = async () => {
       totalProducts.value = store.items.length
     }
   } catch (error: any) {
-    toast.error(error.message || 'Error loading products')
+    toast.error(error.message || t('products.toast.load_error'))
   }
 }
 
@@ -443,19 +452,19 @@ const validateMetadata = (): boolean => {
     metadataError.value = ''
     return true
   } catch (error) {
-    metadataError.value = 'Invalid JSON format'
+    metadataError.value = t('products.form.metadata_invalid')
     return false
   }
 }
 
 const saveProduct = async () => {
   if (!productForm.value.name.trim()) {
-    toast.error('Product name is required')
+    toast.error(t('products.toast.name_required'))
     return
   }
   
   if (!productForm.value.categoryId) {
-    toast.error('Category is required')
+    toast.error(t('products.toast.category_required'))
     return
   }
   
@@ -478,16 +487,19 @@ const saveProduct = async () => {
     
     if (editingProduct.value) {
       await store.updateProduct(editingProduct.value.id, productData)
-      toast.success('Product updated successfully')
+      toast.success(t('products.toast.update_success'))
     } else {
       await store.createProduct(productData)
-      toast.success('Product created successfully')
+      toast.success(t('products.toast.create_success'))
     }
     
     closeProductModal()
     loadProducts()
   } catch (error: any) {
-    toast.error(error.message || `Error ${editingProduct.value ? 'updating' : 'creating'} product`)
+    toast.error(
+      error.message ||
+      t(editingProduct.value ? 'products.toast.update_error' : 'products.toast.create_error')
+    )
   } finally {
     isSaving.value = false
   }
@@ -511,12 +523,12 @@ const executeDelete = async () => {
   
   try {
     await store.deleteProduct(productToDelete.value.id)
-    toast.success('Product deleted successfully')
+    toast.success(t('products.toast.delete_success'))
     showDeleteModal.value = false
     productToDelete.value = null
     loadProducts()
   } catch (error: any) {
-    toast.error(error.message || 'Error deleting product')
+    toast.error(error.message || t('products.toast.delete_error'))
   } finally {
     isDeleting.value = false
   }

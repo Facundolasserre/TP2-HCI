@@ -2,8 +2,8 @@
   <div class="page">
     <!-- TOPBAR -->
     <header class="topbar">
-      <button class="btn-back" @click="goBack" aria-label="Back">
-        ← Back
+      <button class="btn-back" @click="goBack" :aria-label="t('shoppingListDetail.topbar.back')">
+        ← {{ t('shoppingListDetail.topbar.back') }}
       </button>
 
       <div class="search-wrap">
@@ -11,11 +11,11 @@
           v-model.trim="itemSearch" 
           class="search" 
           type="text" 
-          placeholder="Search products..." 
+          :placeholder="t('shoppingListDetail.search_placeholder')" 
         />
       </div>
 
-      <button class="btn-icon" @click="shareList" aria-label="Share">
+      <button class="btn-icon" @click="shareList" :aria-label="t('shoppingListDetail.share')">
         🔗
       </button>
     </header>
@@ -23,15 +23,15 @@
     <!-- Loading state -->
     <div v-if="listsStore.isLoading && !listsStore.currentList" class="loading-state">
       <div class="spinner"></div>
-      <p>Loading list...</p>
+      <p>{{ t('shoppingListDetail.loading') }}</p>
     </div>
 
     <!-- Error state -->
     <div v-else-if="listsStore.hasError" class="error-state">
       <div class="error-icon">⚠️</div>
-      <h2>Error loading list</h2>
-      <p>{{ listsStore.error?.message || 'Something went wrong' }}</p>
-      <button class="btn-retry" @click="loadList">Retry</button>
+      <h2>{{ t('shoppingListDetail.error.title') }}</h2>
+      <p>{{ listsStore.error?.message || t('shoppingListDetail.error.generic') }}</p>
+      <button class="btn-retry" @click="loadList">{{ t('shoppingListDetail.error.retry') }}</button>
     </div>
 
     <!-- Main content -->
@@ -39,16 +39,16 @@
       <!-- TITLE BAR -->
       <section class="titlebar">
         <div class="left-actions">
-          <button class="round" @click="toggleFilter" title="Filter">🜜</button>
-          <button class="round" @click="openActionsMenu" title="More Actions">⋯</button>
+          <button class="round" @click="toggleFilter" :title="t('shoppingListDetail.actions.filter')">🜜</button>
+          <button class="round" @click="openActionsMenu" :title="t('shoppingListDetail.actions.more')">⋯</button>
         </div>
 
         <h1 class="title">{{ list.name }}</h1>
 
         <div class="right-actions">
-          <button class="round" @click="editList" title="Edit">✎</button>
+          <button class="round" @click="editList" :title="t('shoppingListDetail.actions.edit')">✎</button>
           <button class="add" @click="showAddItemModal = true">
-            <span>Add Item</span>
+            <span>{{ t('shoppingListDetail.actions.add') }}</span>
             <span class="plus">＋</span>
           </button>
         </div>
@@ -62,15 +62,15 @@
         <div v-if="showFilter" class="filter-panel">
           <label class="filter-item">
             <input type="radio" v-model="itemFilter" value="all" />
-            <span>All Items ({{ itemsStore.itemsCount }})</span>
+            <span>{{ t('shoppingListDetail.filter.all', { count: itemsStore.itemsCount }) }}</span>
           </label>
           <label class="filter-item">
             <input type="radio" v-model="itemFilter" value="pending" />
-            <span>Pending ({{ itemsStore.pendingCount }})</span>
+            <span>{{ t('shoppingListDetail.filter.pending', { count: itemsStore.pendingCount }) }}</span>
           </label>
           <label class="filter-item">
             <input type="radio" v-model="itemFilter" value="purchased" />
-            <span>Purchased ({{ itemsStore.purchasedCount }})</span>
+            <span>{{ t('shoppingListDetail.filter.purchased', { count: itemsStore.purchasedCount }) }}</span>
           </label>
         </div>
       </transition>
@@ -81,13 +81,13 @@
           :class="['tab', { active: activeTab === 'items' }]" 
           @click="activeTab = 'items'"
         >
-          Items ({{ itemsStore.itemsCount }})
+          {{ t('shoppingListDetail.tabs.items', { count: itemsStore.itemsCount }) }}
         </button>
         <button 
           :class="['tab', { active: activeTab === 'share' }]" 
           @click="activeTab = 'share'"
         >
-          Shared ({{ list.sharedWith?.length || 0 }})
+          {{ t('shoppingListDetail.tabs.share', { count: list.sharedWith?.length || 0 }) }}
         </button>
       </div>
 
@@ -115,17 +115,17 @@
                   {{ item.product.name }}
                 </div>
                 <div class="item-category">
-                  {{ item.product.category?.name || 'No category' }}
+                  {{ item.product.category?.name || t('shoppingListDetail.item.category_fallback') }}
                 </div>
               </div>
             </div>
 
             <div class="item-right">
               <div class="item-quantity">{{ item.quantity }} {{ item.unit }}</div>
-              <button class="item-action" @click="editItem(item)" title="Edit">
+              <button class="item-action" @click="editItem(item)" :title="t('shoppingListDetail.actions.edit')">
                 ✎
               </button>
-              <button class="item-action danger" @click="deleteItem(item)" title="Delete">
+              <button class="item-action danger" @click="deleteItem(item)" :title="t('common.delete')">
                 🗑
               </button>
             </div>
@@ -135,10 +135,10 @@
         <!-- Empty state for items -->
         <div v-else class="empty-state">
           <div class="empty-icon">📦</div>
-          <h3>No items yet</h3>
-          <p>Add items to your shopping list</p>
+          <h3>{{ t('shoppingListDetail.items.empty.title') }}</h3>
+          <p>{{ t('shoppingListDetail.items.empty.text') }}</p>
           <button class="btn-add-first" @click="showAddItemModal = true">
-            Add First Item
+            {{ t('shoppingListDetail.items.empty.cta') }}
           </button>
         </div>
       </div>
@@ -177,17 +177,17 @@
         <!-- Empty state for share -->
         <div v-else class="empty-state">
           <div class="empty-icon">👥</div>
-          <h3>Not shared yet</h3>
-          <p>Share this list with other users</p>
+          <h3>{{ t('shoppingListDetail.share.empty.title') }}</h3>
+          <p>{{ t('shoppingListDetail.share.empty.text') }}</p>
           <button v-if="isOwner" class="btn-add-first" @click="openShareModal">
-            Share List
+            {{ t('shoppingListDetail.share.empty.cta') }}
           </button>
         </div>
 
         <!-- Share button -->
         <div v-if="isOwner && sharedUsers.length > 0" class="share-actions">
           <button class="btn-share" @click="openShareModal">
-            + Share with Another User
+            + {{ t('shoppingListDetail.share.button') }}
           </button>
         </div>
       </div>
@@ -198,16 +198,16 @@
       <div v-if="showActionsMenu" class="actions-menu-overlay" @click="closeActionsMenu">
         <div class="actions-menu" @click.stop>
           <button class="menu-item" @click="purchaseList">
-            🛒 Mark as Purchased
+            🛒 {{ t('shoppingListDetail.menu.purchase') }}
           </button>
           <button class="menu-item" @click="resetList">
-            🔄 Reset All Items
+            🔄 {{ t('shoppingListDetail.menu.reset') }}
           </button>
           <button class="menu-item" @click="moveToPantry">
-            📦 Move Purchased to Pantry
+            📦 {{ t('shoppingListDetail.menu.move') }}
           </button>
           <button class="menu-item danger" @click="deleteList">
-            🗑 Delete List
+            🗑 {{ t('shoppingListDetail.menu.delete') }}
           </button>
         </div>
       </div>
@@ -217,7 +217,7 @@
     <teleport to="body">
       <div v-if="showAddItemModal || editingItem" class="modal-overlay" @click="closeItemModal">
         <div class="modal" @click.stop>
-          <h2>{{ editingItem ? 'Edit Item' : 'Add Item' }}</h2>
+          <h2>{{ editingItem ? t('shoppingListDetail.item_modal.title.edit') : t('shoppingListDetail.item_modal.title.create') }}</h2>
           <form @submit.prevent="saveItem">
             <div class="form-group">
               <label>Product Name</label>
@@ -242,9 +242,9 @@
               </div>
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn-cancel" @click="closeItemModal">Cancel</button>
+              <button type="button" class="btn-cancel" @click="closeItemModal">{{ t('common.cancel') }}</button>
               <button type="submit" class="btn-save" :disabled="itemsStore.isLoading">
-                {{ editingItem ? 'Save Changes' : 'Add Item' }}
+                {{ editingItem ? t('shoppingListDetail.item_modal.save') : t('shoppingListDetail.item_modal.add') }}
               </button>
             </div>
           </form>
@@ -268,6 +268,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useListItemsStore } from '@/stores/listItems'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from '@/composables/useI18n'
 import type { ListItem, User } from '@/types/shopping-lists'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
@@ -276,6 +277,7 @@ const route = useRoute()
 const listsStore = useShoppingListsStore()
 const itemsStore = useListItemsStore()
 const toast = useToast()
+const { t } = useI18n()
 
 // State
 const activeTab = ref<'items' | 'share'>('items')
@@ -339,7 +341,7 @@ const loadList = async () => {
     await itemsStore.fetchItems(listId.value)
     await loadSharedUsers()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to load list')
+    toast.error(error.message || t('shoppingListDetail.toast.load_error'))
   }
 }
 
@@ -394,7 +396,7 @@ const togglePurchased = async (item: ListItem) => {
   try {
     await itemsStore.togglePurchased(listId.value, item.id, !item.purchased)
   } catch (error: any) {
-    toast.error(error.message || 'Failed to update item')
+    toast.error(error.message || t('shoppingListDetail.toast.item_update_error'))
   }
 }
 
@@ -409,13 +411,13 @@ const editItem = (item: ListItem) => {
 
 const deleteItem = async (item: ListItem) => {
   if (!listId.value) return
-  if (!confirm(`Delete "${item.product.name}"?`)) return
+  if (!confirm(t('shoppingListDetail.confirm.delete_item'))) return
 
   try {
     await itemsStore.removeItem(listId.value, item.id)
-    toast.success('Item deleted')
+    toast.success(t('shoppingListDetail.toast.item_delete_success'))
   } catch (error: any) {
-    toast.error(error.message || 'Failed to delete item')
+    toast.error(error.message || t('shoppingListDetail.toast.item_delete_error'))
   }
 }
 
@@ -424,22 +426,18 @@ const saveItem = async () => {
 
   try {
     if (editingItem.value) {
-      // Update existing item
       await itemsStore.updateItem(listId.value, editingItem.value.id, {
         quantity: itemForm.value.quantity,
         unit: itemForm.value.unit,
       })
-      toast.success('Item updated')
+      toast.success(t('shoppingListDetail.toast.item_save_success'))
     } else {
-      // Add new item
-      // Note: We need a product ID, but the form only has name
-      // This is a simplified version - in production you'd search/create products
-      toast.error('Adding new items requires product selection - feature not yet implemented')
+      toast.error(t('shoppingListDetail.toast.item_save_error'))
       return
     }
     closeItemModal()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to save item')
+    toast.error(error.message || t('shoppingListDetail.toast.item_save_error'))
   }
 }
 
@@ -455,14 +453,14 @@ const closeItemModal = () => {
 
 const revokeAccess = async (user: User) => {
   if (!listId.value) return
-  if (!confirm(`Revoke access for ${user.name} ${user.surname}?`)) return
+  if (!confirm(t('shoppingListDetail.confirm.revoke_access', { name: user.name, surname: user.surname }))) return
 
   try {
     await listsStore.revokeShare(listId.value, user.id)
-    toast.success('Access revoked')
+    toast.success(t('shoppingListDetail.toast.access_revoked'))
     loadSharedUsers()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to revoke access')
+    toast.error(error.message || t('shoppingListDetail.toast.revoke_error'))
   }
 }
 
@@ -472,52 +470,52 @@ const purchaseList = async () => {
 
   try {
     await listsStore.purchaseList(listId.value)
-    toast.success('List marked as purchased!')
+    toast.success(t('shoppingListDetail.toast.purchase_success'))
     await loadList()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to mark list as purchased')
+    toast.error(error.message || t('shoppingListDetail.toast.purchase_error'))
   }
 }
 
 const resetList = async () => {
   if (!listId.value) return
-  if (!confirm('Reset all items to not purchased?')) return
+  if (!confirm(t('shoppingListDetail.confirm.reset'))) return
   closeActionsMenu()
 
   try {
     await listsStore.resetList(listId.value)
-    toast.success('List reset!')
+    toast.success(t('shoppingListDetail.toast.reset_success'))
     await loadList()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to reset list')
+    toast.error(error.message || t('shoppingListDetail.toast.reset_error'))
   }
 }
 
 const moveToPantry = async () => {
   if (!listId.value) return
-  if (!confirm('Move all purchased items to pantry?')) return
+  if (!confirm(t('shoppingListDetail.confirm.move'))) return
   closeActionsMenu()
 
   try {
     await listsStore.moveToPantry(listId.value)
-    toast.success('Purchased items moved to pantry!')
+    toast.success(t('shoppingListDetail.toast.move_success'))
     await loadList()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to move items')
+    toast.error(error.message || t('shoppingListDetail.toast.move_error'))
   }
 }
 
 const deleteList = async () => {
   if (!listId.value || !list.value) return
-  if (!confirm(`Delete "${list.value.name}"? This cannot be undone.`)) return
+  if (!confirm(t('shoppingListDetail.confirm.delete_list'))) return
   closeActionsMenu()
 
   try {
     await listsStore.deleteList(listId.value)
-    toast.success('List deleted!')
+    toast.success(t('shoppingListDetail.toast.delete_success'))
     router.push('/lists')
   } catch (error: any) {
-    toast.error(error.message || 'Failed to delete list')
+    toast.error(error.message || t('shoppingListDetail.toast.delete_error'))
   }
 }
 

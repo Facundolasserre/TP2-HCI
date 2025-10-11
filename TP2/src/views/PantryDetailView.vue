@@ -12,8 +12,8 @@
             </svg>
           </div>
           <div class="header-text">
-            <h1 class="title">{{ pantry?.name || 'Loading...' }}</h1>
-            <p class="subtitle">Pantry Management</p>
+            <h1 class="title">{{ pantry?.name || t('pantryDetail.loading_name') }}</h1>
+            <p class="subtitle">{{ t('pantryDetail.subtitle') }}</p>
           </div>
         </div>
         <div class="header-actions">
@@ -23,21 +23,21 @@
               <polyline points="16 6 12 2 8 6"/>
               <line x1="12" y1="2" x2="12" y2="15"/>
             </svg>
-            Share
+            {{ t('pantryDetail.actions.share') }}
           </button>
           <button class="btn-secondary" @click="openEditModal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Edit
+            {{ t('pantryDetail.actions.edit') }}
           </button>
           <button class="btn-danger" @click="confirmDeletePantry">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
             </svg>
-            Delete
+            {{ t('pantryDetail.actions.delete') }}
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@
           </svg>
         </div>
         <div class="metric-content">
-          <div class="metric-label">Total Items</div>
+          <div class="metric-label">{{ t('pantryDetail.metrics.total_items') }}</div>
           <div class="metric-value">{{ totalItems }}</div>
         </div>
       </div>
@@ -68,7 +68,7 @@
           </svg>
         </div>
         <div class="metric-content">
-          <div class="metric-label">Low Stock</div>
+          <div class="metric-label">{{ t('pantryDetail.metrics.low_stock') }}</div>
           <div class="metric-value">{{ lowStockCount }}</div>
         </div>
       </div>
@@ -84,7 +84,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search products..."
+          :placeholder="t('pantryDetail.search_placeholder')"
           class="search-input"
           @input="onSearch"
         />
@@ -94,13 +94,13 @@
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        Add
+        {{ t('pantryDetail.actions.add') }}
       </button>
     </div>
 
     <!-- Loading State -->
     <div v-if="itemsStore.isLoading && !itemsStore.hasItems" class="loading-state">
-      <p>Loading products...</p>
+      <p>{{ t('pantryDetail.loading_items') }}</p>
     </div>
 
     <!-- Empty State -->
@@ -112,9 +112,9 @@
           <path d="M12 3v6"/>
         </svg>
       </div>
-      <h3>No products in this pantry</h3>
-      <p>Start adding products to track your pantry inventory</p>
-      <button class="btn-create" @click="openAddItemModal">Add First Product</button>
+      <h3>{{ t('pantryDetail.empty.title') }}</h3>
+      <p>{{ t('pantryDetail.empty.text') }}</p>
+      <button class="btn-create" @click="openAddItemModal">{{ t('pantryDetail.empty.cta') }}</button>
     </div>
 
     <!-- Items List -->
@@ -128,13 +128,13 @@
             </span>
           </div>
           <div class="item-actions">
-            <button class="btn-icon" @click="openEditItemModal(item)" title="Edit">
+            <button class="btn-icon" @click="openEditItemModal(item)" :title="t('pantryDetail.actions.edit')">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </button>
-            <button class="btn-icon btn-delete" @click="confirmDeleteItem(item.id)" title="Delete">
+            <button class="btn-icon btn-delete" @click="confirmDeleteItem(item.id)" :title="t('pantryDetail.actions.delete')">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -145,7 +145,7 @@
         
         <div class="item-details">
           <div class="detail-row">
-            <span class="detail-label">Quantity:</span>
+            <span class="detail-label">{{ t('pantryDetail.fields.quantity') }}</span>
             <span class="detail-value">{{ item.quantity }} {{ item.unit }}</span>
           </div>
           <div v-if="getStockStatus(item) === 'low'" class="low-stock-badge">
@@ -154,12 +154,12 @@
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Low Stock
+            {{ t('pantryDetail.badges.low_stock') }}
           </div>
         </div>
         
         <div class="item-meta">
-          <span class="item-date">Updated {{ formatDate(item.updatedAt) }}</span>
+          <span class="item-date">{{ t('pantryDetail.meta.updated', { date: formatDate(item.updatedAt) }) }}</span>
         </div>
       </div>
     </div>
@@ -168,28 +168,28 @@
     <div v-if="showAddItemModal" class="modal-overlay" @click.self="showAddItemModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h2>Add Product to Pantry</h2>
+          <h2>{{ t('pantryDetail.add_modal.title') }}</h2>
           <button class="btn-close" @click="showAddItemModal = false">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Product ID *</label>
-            <input v-model.number="newItem.product_id" type="number" placeholder="Enter product ID" required />
+            <label>{{ t('pantryDetail.fields.product_id') }}</label>
+            <input v-model.number="newItem.product_id" type="number" :placeholder="t('pantryDetail.fields.product_id_placeholder')" required />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Quantity *</label>
+              <label>{{ t('pantryDetail.fields.quantity_required') }}</label>
               <input v-model.number="newItem.quantity" type="number" step="0.01" placeholder="0.00" required />
             </div>
             <div class="form-group">
-              <label>Unit *</label>
+              <label>{{ t('pantryDetail.fields.unit_required') }}</label>
               <input v-model="newItem.unit" type="text" placeholder="kg, l, u" required />
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-secondary" @click="showAddItemModal = false">Cancel</button>
-          <button class="btn-primary" @click="handleAddItem">Add Product</button>
+          <button class="btn-secondary" @click="showAddItemModal = false">{{ t('common.cancel') }}</button>
+          <button class="btn-primary" @click="handleAddItem">{{ t('pantryDetail.add_modal.submit') }}</button>
         </div>
       </div>
     </div>
@@ -198,28 +198,28 @@
     <div v-if="showEditItemModal && editingItem" class="modal-overlay" @click.self="showEditItemModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h2>Edit Product</h2>
+          <h2>{{ t('pantryDetail.edit_modal.title') }}</h2>
           <button class="btn-close" @click="showEditItemModal = false">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Product</label>
+            <label>{{ t('pantryDetail.fields.product') }}</label>
             <input :value="editingItem.product.name" disabled />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Quantity *</label>
+              <label>{{ t('pantryDetail.fields.quantity_required') }}</label>
               <input v-model.number="editingItem.quantity" type="number" step="0.01" required />
             </div>
             <div class="form-group">
-              <label>Unit *</label>
+              <label>{{ t('pantryDetail.fields.unit_required') }}</label>
               <input v-model="editingItem.unit" type="text" required />
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-secondary" @click="showEditItemModal = false">Cancel</button>
-          <button class="btn-primary" @click="handleUpdateItem">Save Changes</button>
+          <button class="btn-secondary" @click="showEditItemModal = false">{{ t('common.cancel') }}</button>
+          <button class="btn-primary" @click="handleUpdateItem">{{ t('pantryDetail.edit_modal.submit') }}</button>
         </div>
       </div>
     </div>
@@ -228,22 +228,22 @@
     <div v-if="showShareModal" class="modal-overlay" @click.self="showShareModal = false">
       <div class="modal large">
         <div class="modal-header">
-          <h2>Share Pantry</h2>
+          <h2>{{ t('pantryDetail.share_modal.title') }}</h2>
           <button class="btn-close" @click="showShareModal = false">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Share with user by email</label>
+            <label>{{ t('pantryDetail.share_modal.label') }}</label>
             <div class="share-input-group">
-              <input v-model="shareEmail" type="email" placeholder="user@example.com" />
-              <button class="btn-primary" @click="handleShare" :disabled="!shareEmail">Share</button>
+              <input v-model="shareEmail" type="email" :placeholder="t('pantryDetail.share_modal.placeholder')" />
+              <button class="btn-primary" @click="handleShare" :disabled="!shareEmail">{{ t('pantryDetail.share_modal.submit') }}</button>
             </div>
           </div>
           
           <div class="shared-users-section">
-            <h3>Users with access</h3>
-            <div v-if="pantriesStore.isLoading" class="loading">Loading...</div>
-            <div v-else-if="sharedUsers.length === 0" class="empty-message">Not shared with anyone yet</div>
+            <h3>{{ t('pantryDetail.share_modal.users_title') }}</h3>
+            <div v-if="pantriesStore.isLoading" class="loading">{{ t('pantryDetail.share_modal.loading') }}</div>
+            <div v-else-if="sharedUsers.length === 0" class="empty-message">{{ t('pantryDetail.share_modal.empty') }}</div>
             <div v-else class="shared-users-list">
               <div v-for="user in sharedUsers" :key="user.id" class="shared-user-item">
                 <div class="user-avatar">
@@ -256,7 +256,7 @@
                   <div class="user-name">{{ user.name }} {{ user.surname }}</div>
                   <div class="user-email">{{ user.email }}</div>
                 </div>
-                <button class="btn-revoke" @click="confirmRevoke(user)">Revoke</button>
+                <button class="btn-revoke" @click="confirmRevoke(user)">{{ t('pantryDetail.share_modal.revoke') }}</button>
               </div>
             </div>
           </div>
@@ -268,18 +268,18 @@
     <div v-if="showEditPantryModal" class="modal-overlay" @click.self="showEditPantryModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h2>Edit Pantry</h2>
+          <h2>{{ t('pantryDetail.edit_pantry.title') }}</h2>
           <button class="btn-close" @click="showEditPantryModal = false">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Pantry Name *</label>
-            <input v-model="pantryEditData.name" type="text" placeholder="Enter pantry name" maxlength="50" required />
+            <label>{{ t('pantryDetail.edit_pantry.name_label') }}</label>
+            <input v-model="pantryEditData.name" type="text" :placeholder="t('pantryDetail.edit_pantry.name_placeholder')" maxlength="50" required />
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-secondary" @click="showEditPantryModal = false">Cancel</button>
-          <button class="btn-primary" @click="handleUpdatePantry">Save Changes</button>
+          <button class="btn-secondary" @click="showEditPantryModal = false">{{ t('common.cancel') }}</button>
+          <button class="btn-primary" @click="handleUpdatePantry">{{ t('common.save_changes') }}</button>
         </div>
       </div>
     </div>
@@ -295,10 +295,13 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePantriesStore } from '@/stores/pantries'
 import { usePantryItemsStore } from '@/stores/pantryItems'
+import { useLanguageStore } from '@/stores/language'
+import { useI18n } from '@/composables/useI18n'
+import { useToast } from '@/composables/useToast'
 import Sidebar from '@/components/Sidebar.vue'
 import type { PantryItem, PantryItemCreate, PantryItemUpdate } from '@/types/pantry'
 import type { GetUser } from '@/types/user'
@@ -307,6 +310,9 @@ const router = useRouter()
 const route = useRoute()
 const pantriesStore = usePantriesStore()
 const itemsStore = usePantryItemsStore()
+const languageStore = useLanguageStore()
+const { t } = useI18n()
+const toast = useToast()
 
 const pantryId = computed(() => parseInt(route.params.id as string, 10))
 const pantry = computed(() => pantriesStore.currentPantry)
@@ -368,7 +374,8 @@ async function loadPantry() {
   try {
     await pantriesStore.fetchPantryById(pantryId.value)
   } catch (error) {
-    alert('Error al cargar la despensa')
+    const message = (error as Error)?.message || t('pantryDetail.toast.load_pantry_error')
+    toast.error(message)
     router.push('/pantries')
   }
 }
@@ -378,6 +385,7 @@ async function loadItems() {
     await itemsStore.fetchItems(pantryId.value, { page: 1, per_page: 100 })
   } catch (error) {
     console.error('Error loading items:', error)
+    toast.error(t('pantryDetail.toast.load_items_error'))
   }
 }
 
@@ -386,6 +394,7 @@ async function loadSharedUsers() {
     await pantriesStore.fetchSharedUsers(pantryId.value)
   } catch (error) {
     console.error('Error loading shared users:', error)
+    toast.error(t('pantryDetail.toast.load_shared_error'))
   }
 }
 
@@ -402,9 +411,12 @@ async function handleAddItem() {
   try {
     await itemsStore.addItem(pantryId.value, newItem)
     showAddItemModal.value = false
-    alert('✓ Product added to pantry')
+    toast.success(t('pantryDetail.toast.item_added'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.item_error')
+    toast.error(message)
   }
 }
 
@@ -426,20 +438,26 @@ async function handleUpdateItem() {
     await itemsStore.updateItem(pantryId.value, editingItem.value.id, updateData)
     showEditItemModal.value = false
     editingItem.value = null
-    alert('✓ Product updated')
+    toast.success(t('pantryDetail.toast.item_updated'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.item_error')
+    toast.error(message)
   }
 }
 
 async function confirmDeleteItem(itemId: number) {
-  if (!confirm('Are you sure you want to remove this product?')) return
+  if (!confirm(t('pantryDetail.confirm.remove_item'))) return
 
   try {
     await itemsStore.removeItem(pantryId.value, itemId)
-    alert('✓ Product removed from pantry')
+    toast.success(t('pantryDetail.toast.item_removed'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.item_error')
+    toast.error(message)
   }
 }
 
@@ -456,21 +474,27 @@ async function handleShare() {
     await pantriesStore.sharePantry(pantryId.value, shareEmail.value)
     shareEmail.value = ''
     await loadSharedUsers()
-    alert('✓ Pantry shared successfully')
+    toast.success(t('pantryDetail.toast.share_success'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.share_error')
+    toast.error(message)
   }
 }
 
 async function confirmRevoke(user: GetUser) {
-  if (!confirm(`Revoke access for ${user.name} ${user.surname}?`)) return
+  if (!confirm(t('pantryDetail.confirm.revoke_access', { name: user.name, surname: user.surname }))) return
 
   try {
     await pantriesStore.revokeShare(pantryId.value, user.id)
     await loadSharedUsers()
-    alert('✓ Access revoked')
+    toast.success(t('pantryDetail.toast.revoke_success'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.share_error')
+    toast.error(message)
   }
 }
 
@@ -491,28 +515,36 @@ async function handleUpdatePantry() {
     })
     showEditPantryModal.value = false
     await loadPantry()
-    alert('✓ Pantry updated')
+    toast.success(t('pantries.toast.update_success'))
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.update_error')
+    toast.error(message)
   }
 }
 
 // Delete pantry
 async function confirmDeletePantry() {
-  if (!confirm(`Are you sure you want to delete "${pantry.value?.name}"? This action cannot be undone.`)) return
+  const pantryName = pantry.value?.name || ''
+  if (!confirm(t('pantryDetail.confirm.delete_pantry', { name: pantryName }))) return
 
   try {
     await pantriesStore.deletePantry(pantryId.value)
-    alert('✓ Pantry deleted')
+    toast.success(t('pantries.toast.delete_success'))
     router.push('/pantries')
   } catch (error: any) {
-    alert(`✗ Error: ${error.message}`)
+    const message = error?.message
+      ? t('pantryDetail.toast.generic_error', { message: error.message })
+      : t('pantryDetail.toast.delete_error')
+    toast.error(message)
   }
 }
 
 function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('en-US')
+  const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+  return new Date(dateStr).toLocaleString(locale)
 }
 
 function getStockStatus(item: PantryItem): 'low' | 'ok' {

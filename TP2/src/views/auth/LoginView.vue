@@ -180,9 +180,24 @@ function toggleLanguage() {
 }
 
 .links-row { 
-  display: flex; 
-  justify-content: flex-end;
+  display: inline-flex; 
+  align-self: center;
+  justify-content: center;
+  align-items: center;
   text-decoration: underline;
+  gap: 8px;
+  text-align: center;
+}
+
+.signup-row {
+  display: inline-flex;
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  text-align: center;
+  flex-wrap: wrap;
 }
 
 .link { color: #DAD4FF; font-size: 14px; cursor: pointer; }

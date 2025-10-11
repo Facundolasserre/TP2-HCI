@@ -2,13 +2,15 @@
   <div class="product-form-view">
     <div class="form-container">
       <div class="form-header">
-        <button class="btn-back" @click="goBack">← Volver</button>
-        <h1 class="title">{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}</h1>
+        <button class="btn-back" @click="goBack">← {{ t('common.back') }}</button>
+        <h1 class="title">
+          {{ isEditMode ? t('productForm.title.edit') : t('productForm.title.new') }}
+        </h1>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading">
-        <p>{{ isEditMode ? 'Cargando producto...' : 'Guardando...' }}</p>
+        <p>{{ isEditMode ? t('productForm.loading.edit') : t('productForm.loading.new') }}</p>
       </div>
 
       <!-- Form -->
@@ -16,7 +18,7 @@
         <!-- Name Field -->
         <div class="form-group">
           <label for="name" class="label">
-            Nombre <span class="required">*</span>
+            {{ t('products.form.name_label') }} <span class="required">*</span>
           </label>
           <input
             id="name"
@@ -24,7 +26,7 @@
             type="text"
             class="input"
             :class="{ 'input-error': errors.name }"
-            placeholder="Ej: Leche, Pan, Manzanas..."
+            :placeholder="t('productForm.name_placeholder')"
             maxlength="50"
             @input="clearError('name')"
           />
@@ -37,7 +39,7 @@
         <!-- Category Field -->
         <div class="form-group">
           <label for="category" class="label">
-            Categoría
+            {{ t('products.form.category_label') }}
           </label>
           <select
             id="category"
@@ -46,7 +48,7 @@
             :class="{ 'input-error': errors.category }"
             @change="clearError('category')"
           >
-            <option :value="undefined">Sin categoría</option>
+            <option :value="undefined">{{ t('productForm.category.none') }}</option>
             <option v-for="cat in categories" :key="cat.id" :value="cat.id">
               {{ cat.name }}
             </option>
@@ -54,7 +56,7 @@
           <div class="field-info">
             <span v-if="errors.category" class="error-text">{{ errors.category }}</span>
             <span v-else class="hint-text">
-              Seleccioná una categoría existente o dejá sin asignar
+              {{ t('productForm.category.hint') }}
             </span>
           </div>
         </div>
@@ -62,14 +64,14 @@
         <!-- Description Field -->
         <div class="form-group">
           <label for="description" class="label">
-            Descripción
+            {{ t('productForm.description.label') }}
           </label>
           <textarea
             id="description"
             v-model="formData.description"
             class="textarea"
             :class="{ 'input-error': errors.description }"
-            placeholder="Descripción del producto..."
+            :placeholder="t('productForm.description.placeholder')"
             rows="4"
             maxlength="500"
             @input="clearError('description')"
@@ -83,21 +85,21 @@
         <!-- Metadata Field -->
         <div class="form-group">
           <label for="metadata" class="label">
-            Metadata (JSON opcional)
+            {{ t('productForm.metadata.label') }}
           </label>
           <textarea
             id="metadata"
             v-model="metadataText"
             class="textarea"
             :class="{ 'input-error': errors.metadata }"
-            placeholder='{"barcode": "1234567890", "price": 100}'
+            :placeholder="t('productForm.metadata.placeholder')"
             rows="6"
             @input="clearError('metadata')"
           />
           <div class="field-info">
             <span v-if="errors.metadata" class="error-text">{{ errors.metadata }}</span>
             <span v-else class="hint-text">
-              Ingresá un objeto JSON válido con datos adicionales (opcional)
+              {{ t('productForm.metadata.hint') }}
             </span>
           </div>
         </div>
@@ -105,10 +107,10 @@
         <!-- Actions -->
         <div class="form-actions">
           <button type="button" class="btn-secondary" @click="goBack">
-            Cancelar
+            {{ t('common.cancel') }}
           </button>
           <button type="submit" class="btn-primary" :disabled="submitting">
-            {{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear') }}
+            {{ submitting ? t('common.saving') : (isEditMode ? t('common.update') : t('common.create')) }}
           </button>
         </div>
       </form>
@@ -123,12 +125,14 @@ import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
 import type { ProductRegistrationData, ProductUpdateData } from '@/types/products'
+import { useI18n } from '@/composables/useI18n'
 
 const router = useRouter()
 const route = useRoute()
 const store = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const formData = ref({
   name: '',
@@ -176,7 +180,7 @@ const loadProduct = async () => {
       }
     }
   } catch (error: any) {
-    toast.error(error.message || 'Error al cargar producto')
+    toast.error(error.message || t('productForm.toast.load_error'))
     router.push('/products')
   } finally {
     loading.value = false
@@ -189,16 +193,16 @@ const validateForm = (): boolean => {
 
   // Validate name
   if (!formData.value.name.trim()) {
-    errors.value.name = 'El nombre es requerido'
+    errors.value.name = t('products.toast.name_required')
     isValid = false
   } else if (formData.value.name.length > 50) {
-    errors.value.name = 'El nombre no puede exceder los 50 caracteres'
+    errors.value.name = t('productForm.errors.name_max')
     isValid = false
   }
 
   // Validate description length
   if (formData.value.description.length > 500) {
-    errors.value.description = 'La descripción no puede exceder los 500 caracteres'
+    errors.value.description = t('productForm.errors.description_max')
     isValid = false
   }
 
@@ -207,7 +211,7 @@ const validateForm = (): boolean => {
     try {
       JSON.parse(metadataText.value)
     } catch {
-      errors.value.metadata = 'El metadata debe ser un JSON válido'
+      errors.value.metadata = t('productForm.errors.metadata_invalid')
       isValid = false
     }
   }
@@ -221,7 +225,7 @@ const clearError = (field: string) => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    toast.error('Por favor corregí los errores en el formulario')
+    toast.error(t('productForm.toast.validation_error'))
     return
   }
 
@@ -257,16 +261,16 @@ const handleSubmit = async () => {
     if (isEditMode.value) {
       // Update existing product
       await store.updateProduct(productId.value, data as ProductUpdateData)
-      toast.success('Producto actualizado exitosamente')
+      toast.success(t('products.toast.update_success'))
       router.push(`/products/${productId.value}`)
     } else {
       // Create new product
       const newProduct = await store.createProduct(data)
-      toast.success('Producto creado exitosamente')
+      toast.success(t('products.toast.create_success'))
       router.push(`/products/${newProduct.id}`)
     }
   } catch (error: any) {
-    toast.error(error.message || 'Error al guardar producto')
+    toast.error(error.message || t('productForm.toast.save_error'))
   } finally {
     submitting.value = false
   }

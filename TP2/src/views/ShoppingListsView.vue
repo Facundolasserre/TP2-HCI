@@ -5,8 +5,8 @@
       <div class="topbar-wrap">
         <div class="topbar">
           <!-- Burger menu -->
-          <button class="btn-icon" @click="toggleSidebar" aria-label="Menu">
-            <img src="@/assets/fonts/burgerIcon.png" alt="Menu" />
+          <button class="btn-icon" @click="toggleSidebar" :aria-label="t('topbar.open_menu')">
+            <img src="@/assets/fonts/burgerIcon.png" :alt="t('topbar.menu_icon')" />
           </button>
 
           <!-- Search -->
@@ -15,30 +15,30 @@
               v-model.trim="searchQuery" 
               class="search" 
               type="text" 
-              placeholder="Search shopping lists..." 
+              :placeholder="t('shoppingLists.search_placeholder')" 
               @input="onSearch"
             />
           </div>
 
           <!-- Filter button -->
-          <button class="btn-icon" @click="toggleFilters" aria-label="Filter">
-            <img src="@/assets/fonts/filter.png" alt="Filter" />
+          <button class="btn-icon" @click="toggleFilters" :aria-label="t('topbar.filter')">
+            <img src="@/assets/fonts/filter.png" :alt="t('topbar.filter_icon')" />
           </button>
 
           <!-- Sort button -->
-          <button class="btn-icon" @click="toggleSort" aria-label="Sort">
-            <img src="@/assets/fonts/sort.png" alt="Sort" />
+          <button class="btn-icon" @click="toggleSort" :aria-label="t('topbar.sort')">
+            <img src="@/assets/fonts/sort.png" :alt="t('topbar.sort_icon')" />
           </button>
 
           <!-- New list button -->
           <button class="btn-new" @click="createNewList">
             <span class="plus">+</span>
-            New List
+            {{ t('shoppingLists.buttons.new') }}
           </button>
 
           <!-- Settings -->
-          <button class="btn-icon" @click="goSettings" aria-label="Settings">
-            <img src="@/assets/fonts/settings.png" alt="Settings" />
+          <button class="btn-icon" @click="goSettings" :aria-label="t('common.settings')">
+            <img src="@/assets/fonts/settings.png" :alt="t('common.settings')" />
           </button>
         </div>
 
@@ -47,13 +47,13 @@
           <div v-if="showFilters" class="filters-panel">
             <label class="filter-item">
               <input type="checkbox" v-model="filters.owner" />
-              <span>My Lists Only</span>
+              <span>{{ t('shoppingLists.filter.owner_only') }}</span>
             </label>
             <label class="filter-item">
               <input type="checkbox" v-model="filters.recurring" />
-              <span>Recurring Lists</span>
+              <span>{{ t('shoppingLists.filter.recurring') }}</span>
             </label>
-            <button class="btn-clear-filters" @click="clearFilters">Clear Filters</button>
+            <button class="btn-clear-filters" @click="clearFilters">{{ t('shoppingLists.filter.clear') }}</button>
           </div>
         </transition>
 
@@ -74,15 +74,15 @@
       <!-- Loading state -->
       <div v-if="store.isLoading && !store.hasLists" class="loading-state">
         <div class="spinner"></div>
-        <p>Loading shopping lists...</p>
+        <p>{{ t('shoppingLists.loading') }}</p>
       </div>
 
       <!-- Error state -->
       <div v-else-if="store.hasError" class="error-state">
         <div class="error-icon">⚠️</div>
-        <h2>Error loading lists</h2>
-        <p>{{ store.error?.message || 'Something went wrong' }}</p>
-        <button class="btn-retry" @click="loadLists">Retry</button>
+        <h2>{{ t('shoppingLists.error.title') }}</h2>
+        <p>{{ store.error?.message || t('shoppingLists.error.generic') }}</p>
+        <button class="btn-retry" @click="loadLists">{{ t('shoppingLists.error.retry') }}</button>
       </div>
 
       <!-- Empty state -->
@@ -91,11 +91,11 @@
           <div class="empty-icon">
             <img src="@/assets/shopping_cart.svg" alt="Empty" />
           </div>
-          <h2 class="empty-title">No shopping lists yet</h2>
-          <p class="empty-text">Create your first list to start organizing your shopping</p>
+          <h2 class="empty-title">{{ t('shoppingLists.empty.title') }}</h2>
+          <p class="empty-text">{{ t('shoppingLists.empty.text') }}</p>
           <button class="btn-create" @click="createNewList">
             <span class="plus-icon">+</span>
-            Create List
+            {{ t('shoppingLists.empty.cta') }}
           </button>
         </div>
       </div>
@@ -113,7 +113,7 @@
               <img :src="getListIcon(list)" :alt="list.name" />
             </div>
             <h3 class="card-title">{{ list.name }}</h3>
-            <div v-if="list.recurring" class="recurring-badge">🔄 Recurring</div>
+            <div v-if="list.recurring" class="recurring-badge">🔄 {{ t('shoppingLists.card.recurring') }}</div>
           </div>
           
           <div class="card-body">
@@ -126,23 +126,23 @@
               </div>
               <div v-if="list.sharedWith?.length" class="meta-item">
                 <span class="meta-icon">🔗</span>
-                <span class="meta-text">Shared with {{ list.sharedWith.length }}</span>
+                <span class="meta-text">{{ t('shoppingLists.card.shared_with', { count: list.sharedWith.length }) }}</span>
               </div>
               <div v-if="list.lastPurchasedAt" class="meta-item">
                 <span class="meta-icon">🛒</span>
-                <span class="meta-text">Last: {{ formatDate(list.lastPurchasedAt) }}</span>
+                <span class="meta-text">{{ t('shoppingLists.card.last', { date: formatDate(list.lastPurchasedAt) }) }}</span>
               </div>
             </div>
           </div>
 
           <div class="card-actions" @click.stop>
-            <button class="action-btn" @click="editList(list)" title="Edit">
+            <button class="action-btn" @click="editList(list)" :title="t('common.edit')">
               ✎
             </button>
-            <button class="action-btn" @click="shareListModal(list)" title="Share">
+            <button class="action-btn" @click="shareListModal(list)" :title="t('common.share')">
               🔗
             </button>
-            <button class="action-btn danger" @click="confirmDelete(list)" title="Delete">
+            <button class="action-btn danger" @click="confirmDelete(list)" :title="t('common.delete')">
               🗑
             </button>
           </div>
@@ -172,6 +172,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useToast } from '@/composables/useToast'
+import { useLanguageStore } from '@/stores/language'
+import { useI18n } from '@/composables/useI18n'
 import type { ShoppingList } from '@/types/shopping-lists'
 import Sidebar from '@/components/Sidebar.vue'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
@@ -179,6 +181,8 @@ import ShareMembersModal from '@/components/ShareMembersModal.vue'
 const router = useRouter()
 const store = useShoppingListsStore()
 const toast = useToast()
+const languageStore = useLanguageStore()
+const { t } = useI18n()
 
 // UI State
 const sidebarOpen = ref(false)
@@ -196,12 +200,12 @@ const filters = ref({
 
 // Sort
 const sortBy = ref<'name' | 'createdAt' | 'updatedAt' | 'lastPurchasedAt'>('createdAt')
-const sortOptions = [
-  { value: 'name', label: 'Name (A-Z)' },
-  { value: 'createdAt', label: 'Created Date' },
-  { value: 'updatedAt', label: 'Last Updated' },
-  { value: 'lastPurchasedAt', label: 'Last Purchased' },
-]
+const sortOptions = computed(() => [
+  { value: 'name', label: t('shoppingLists.sort.name') },
+  { value: 'createdAt', label: t('shoppingLists.sort.created') },
+  { value: 'updatedAt', label: t('shoppingLists.sort.updated') },
+  { value: 'lastPurchasedAt', label: t('shoppingLists.sort.last_purchased') },
+])
 
 // Icon mapping
 const iconMap: Record<string, string> = {
@@ -251,7 +255,7 @@ const loadLists = async () => {
       per_page: 50,
     })
   } catch (error: any) {
-    toast.error(error.message || 'Failed to load lists')
+    toast.error(error.message || t('shoppingLists.toast.load_error'))
   }
 }
 
@@ -279,15 +283,15 @@ const closeShareModal = () => {
 }
 
 const confirmDelete = async (list: ShoppingList) => {
-  if (!confirm(`Are you sure you want to delete "${list.name}"?`)) {
+  if (!confirm(t('shoppingLists.confirm_delete', { name: list.name }))) {
     return
   }
 
   try {
     await store.deleteList(list.id)
-    toast.success('List deleted successfully')
+    toast.success(t('shoppingLists.toast.delete_success'))
   } catch (error: any) {
-    toast.error(error.message || 'Failed to delete list')
+    toast.error(error.message || t('shoppingLists.toast.delete_error'))
   }
 }
 
@@ -312,11 +316,16 @@ const formatDate = (dateString: string): string => {
   const diffMs = now.getTime() - date.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
   
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
-  return date.toLocaleDateString()
+  if (diffDays === 0) return t('common.today')
+  if (diffDays === 1) return t('common.yesterday')
+  if (diffDays < 7) return t('shoppingLists.relative.days_ago', { count: diffDays })
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return t('shoppingLists.relative.weeks_ago', { count: weeks })
+  }
+
+  const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date)
 }
 
 // Watch for filter/sort changes

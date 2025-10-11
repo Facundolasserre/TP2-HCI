@@ -3,7 +3,11 @@
     <!-- Top Navigation Bar - Full Width -->
     <nav class="top-nav">
       <div class="nav-left">
-        <button class="menu-btn" @click="toggleSidebar" aria-label="Toggle menu">
+        <button
+          class="menu-btn"
+          @click="toggleSidebar"
+          :aria-label="t('topbar.open_menu')"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"/>
             <line x1="3" y1="6" x2="21" y2="6"/>
@@ -11,8 +15,8 @@
           </svg>
         </button>
         <div class="nav-title">
-          <h1>Pantries Dashboard</h1>
-          <span class="nav-subtitle">Manage all your pantries</span>
+          <h1>{{ t('pantries.title') }}</h1>
+          <span class="nav-subtitle">{{ t('pantries.subtitle') }}</span>
         </div>
       </div>
 
@@ -22,7 +26,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          New Pantry
+          {{ t('pantries.new_button') }}
         </button>
       </div>
     </nav>
@@ -39,7 +43,7 @@
             </svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">Total Pantries</span>
+            <span class="metric-label">{{ t('pantries.metrics.total') }}</span>
             <span class="metric-value">{{ totalPantriesCount }}</span>
           </div>
         </div>
@@ -52,7 +56,7 @@
             </svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">My Pantries</span>
+            <span class="metric-label">{{ t('pantries.metrics.mine') }}</span>
             <span class="metric-value">{{ myPantriesCount }}</span>
           </div>
         </div>
@@ -67,7 +71,7 @@
             </svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">Shared with Me</span>
+            <span class="metric-label">{{ t('pantries.metrics.shared') }}</span>
             <span class="metric-value">{{ sharedPantriesCount }}</span>
           </div>
         </div>
@@ -81,7 +85,7 @@
             </svg>
           </div>
           <div class="metric-details">
-            <span class="metric-label">Total Items</span>
+            <span class="metric-label">{{ t('pantries.metrics.items') }}</span>
             <span class="metric-value">0</span>
           </div>
         </div>
@@ -96,19 +100,19 @@
               :class="['tab', { active: ownerFilter === undefined }]"
               @click="ownerFilter = undefined"
             >
-              All
+              {{ t('pantries.filters.all') }}
             </button>
             <button 
               :class="['tab', { active: ownerFilter === true }]"
               @click="ownerFilter = true"
             >
-              My Pantries
+              {{ t('pantries.filters.mine') }}
             </button>
             <button 
               :class="['tab', { active: ownerFilter === false }]"
               @click="ownerFilter = false"
             >
-              Shared
+              {{ t('pantries.filters.shared') }}
             </button>
           </div>
 
@@ -121,7 +125,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search pantries..."
+              :placeholder="t('pantries.search_placeholder')"
               class="search-input"
             />
           </div>
@@ -133,7 +137,7 @@
             <button 
               :class="['view-btn', { active: viewMode === 'table' }]"
               @click="viewMode = 'table'"
-              title="Table view"
+              :title="t('pantries.view.table')"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="8" y1="6" x2="21" y2="6"/>
@@ -147,7 +151,7 @@
             <button 
               :class="['view-btn', { active: viewMode === 'grid' }]"
               @click="viewMode = 'grid'"
-              title="Grid view"
+              :title="t('pantries.view.grid')"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"/>
@@ -160,12 +164,16 @@
 
           <!-- Sort -->
           <select v-model="sortBy" @change="loadPantries" class="sort-select">
-            <option value="name">Name</option>
-            <option value="createdAt">Date Created</option>
-            <option value="updatedAt">Last Updated</option>
+            <option value="name">{{ t('pantries.sort.name') }}</option>
+            <option value="createdAt">{{ t('pantries.sort.created') }}</option>
+            <option value="updatedAt">{{ t('pantries.sort.updated') }}</option>
           </select>
 
-          <button class="sort-order-btn" @click="toggleSortOrder" :title="sortOrder === 'ASC' ? 'Ascending' : 'Descending'">
+          <button
+            class="sort-order-btn"
+            @click="toggleSortOrder"
+            :title="sortOrder === 'ASC' ? t('common.ascending') : t('common.descending')"
+          >
             <svg v-if="sortOrder === 'ASC'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="m3 8 4-4 4 4"/>
               <path d="M7 4v16"/>
@@ -183,7 +191,7 @@
         <!-- Loading -->
         <div v-if="pantriesStore.isLoading" class="state-container">
           <div class="spinner"></div>
-          <p>Loading pantries...</p>
+          <p>{{ t('pantries.loading') }}</p>
         </div>
 
         <!-- Empty State -->
@@ -193,14 +201,14 @@
             <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/>
             <path d="M12 3v6"/>
           </svg>
-          <h3>No pantries found</h3>
-          <p>{{ searchQuery ? 'Try adjusting your search' : 'Create your first pantry to get started' }}</p>
+          <h3>{{ t('pantries.empty.title') }}</h3>
+          <p>{{ searchQuery ? t('pantries.empty.search_hint') : t('pantries.empty.create_hint') }}</p>
           <button class="btn-primary" @click="openCreateModal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            Create Pantry
+            {{ t('pantries.new_button') }}
           </button>
         </div>
 
@@ -224,7 +232,7 @@
               </div>
               <div class="name-content">
                 <span class="pantry-name-text">{{ item.name }}</span>
-                <span v-if="isSharedWithMe(item)" class="badge-mini">Shared</span>
+                <span v-if="isSharedWithMe(item)" class="badge-mini">{{ t('pantries.shared.badge') }}</span>
               </div>
             </div>
           </template>
@@ -245,7 +253,7 @@
                   </div>
                   <span v-if="item.sharedWith.length > 3" class="more-count">+{{ item.sharedWith.length - 3 }}</span>
                 </div>
-                <span class="count-text">{{ item.sharedWith.length }} {{ item.sharedWith.length === 1 ? 'person' : 'people' }}</span>
+                <span class="count-text">{{ sharedPeopleLabel(item.sharedWith.length) }}</span>
               </template>
               <span v-else class="text-muted">—</span>
             </div>
@@ -260,7 +268,7 @@
               <button 
                 class="btn-icon-sm"
                 @click.stop="goToDetail(item.id)"
-                title="View"
+                :title="t('pantries.actions.view')"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -268,20 +276,20 @@
                 </svg>
               </button>
               <button 
-                class="btn-icon-sm"
-                @click.stop="goToEdit(item.id)"
-                title="Edit"
-              >
+              class="btn-icon-sm"
+              @click.stop="goToEdit(item.id)"
+              :title="t('pantries.actions.edit')"
+            >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
               </button>
               <button 
-                class="btn-icon-sm btn-danger"
-                @click.stop="confirmDelete(item)"
-                title="Delete"
-              >
+              class="btn-icon-sm btn-danger"
+              @click.stop="confirmDelete(item)"
+              :title="t('pantries.actions.delete')"
+            >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"/>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -295,7 +303,7 @@
               <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
               <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/>
             </svg>
-            <p>No pantries found</p>
+            <p>{{ t('pantries.empty.title') }}</p>
           </template>
         </DataTable>
 
@@ -315,13 +323,21 @@
                 </svg>
               </div>
               <div class="card-actions">
-                <button class="btn-icon-xs" @click.stop="goToEdit(pantry.id)" title="Edit">
+                <button
+                  class="btn-icon-xs"
+                  @click.stop="goToEdit(pantry.id)"
+                  :title="t('pantries.actions.edit')"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
                 </button>
-                <button class="btn-icon-xs btn-danger" @click.stop="confirmDelete(pantry)" title="Delete">
+                <button
+                  class="btn-icon-xs btn-danger"
+                  @click.stop="confirmDelete(pantry)"
+                  :title="t('pantries.actions.delete')"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
@@ -349,7 +365,7 @@
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
-                  <span>Shared with {{ pantry.sharedWith.length }}</span>
+                  <span>{{ t('pantries.shared.count', { count: pantry.sharedWith.length }) }}</span>
                 </div>
 
                 <div class="info-item">
@@ -357,11 +373,11 @@
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  <span>{{ formatDate(pantry.updatedAt) }}</span>
+              <span>{{ formatDate(pantry.updatedAt) }}</span>
                 </div>
               </div>
 
-              <span v-if="isSharedWithMe(pantry)" class="card-badge">Shared with you</span>
+            <span v-if="isSharedWithMe(pantry)" class="card-badge">{{ t('pantries.shared.badge_with_you') }}</span>
             </div>
           </div>
         </div>
@@ -371,34 +387,34 @@
     <!-- Create/Edit Modal -->
     <Modal
       :open="showPantryModal"
-      :title="editingPantry ? 'Edit Pantry' : 'Create New Pantry'"
+      :title="editingPantry ? t('pantries.form.modal.edit_title') : t('pantries.form.modal.create_title')"
       size="md"
       @close="closePantryModal"
     >
       <form @submit.prevent="savePantry" class="pantry-form">
         <div class="form-group">
           <label for="pantry-name" class="form-label">
-            Pantry Name <span class="required">*</span>
+            {{ t('pantries.form.name_label') }} <span class="required">*</span>
           </label>
           <input
             id="pantry-name"
             v-model="pantryForm.name"
             type="text"
             class="form-input"
-            placeholder="Enter pantry name"
+            :placeholder="t('pantries.form.name_placeholder')"
             maxlength="100"
             required
           />
-          <span class="form-hint">Maximum 100 characters</span>
+          <span class="form-hint">{{ t('pantries.form.name_hint') }}</span>
         </div>
       </form>
 
       <template #footer>
         <button type="button" class="btn-secondary" @click="closePantryModal">
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button type="button" class="btn-primary" @click="savePantry" :disabled="isSaving">
-          {{ isSaving ? 'Saving...' : (editingPantry ? 'Update' : 'Create') }}
+          {{ isSaving ? t('common.saving') : (editingPantry ? t('common.update') : t('common.create')) }}
         </button>
       </template>
     </Modal>
@@ -406,21 +422,21 @@
     <!-- Delete Confirmation Modal -->
     <Modal
       :open="showDeleteModal"
-      title="Confirm Deletion"
+      :title="t('pantries.delete.title')"
       size="sm"
       @close="cancelDelete"
     >
       <p class="modal-text">
-        Are you sure you want to delete <strong>{{ pantryToDelete?.name }}</strong>?
+        {{ t('pantries.delete.message', { name: pantryToDelete?.name || '' }) }}
       </p>
-      <p class="modal-warning">This action cannot be undone and will delete all items in this pantry.</p>
+      <p class="modal-warning">{{ t('pantries.delete.warning') }}</p>
 
       <template #footer>
         <button type="button" class="btn-secondary" @click="cancelDelete">
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button type="button" class="btn-danger" @click="executeDelete" :disabled="isDeleting">
-          {{ isDeleting ? 'Deleting...' : 'Delete' }}
+          {{ isDeleting ? t('common.deleting') : t('pantries.delete.confirm') }}
         </button>
       </template>
     </Modal>
@@ -445,11 +461,15 @@ import type { GetUser } from '@/types/user'
 import Sidebar from '@/components/Sidebar.vue'
 import DataTable from '@/components/DataTable.vue'
 import Modal from '@/components/Modal.vue'
+import { useI18n } from '@/composables/useI18n'
+import { useLanguageStore } from '@/stores/language'
 
 const router = useRouter()
 const pantriesStore = usePantriesStore()
 const authStore = useAuthStore()
 const toast = useToast()
+const { t } = useI18n()
+const languageStore = useLanguageStore()
 
 // State
 const sidebarOpen = ref(false)
@@ -474,10 +494,10 @@ const pantryForm = ref({
 
 // Table columns
 const tableColumns = computed(() => [
-  { key: 'name', label: 'Pantry Name', sortable: true },
-  { key: 'owner', label: 'Owner', sortable: false },
-  { key: 'sharedWith', label: 'Shared With', sortable: false },
-  { key: 'updatedAt', label: 'Last Updated', sortable: true }
+  { key: 'name', label: t('pantries.table.name'), sortable: true },
+  { key: 'owner', label: t('pantries.table.owner'), sortable: false },
+  { key: 'sharedWith', label: t('pantries.table.sharedWith'), sortable: false },
+  { key: 'updatedAt', label: t('pantries.table.updatedAt'), sortable: true },
 ])
 
 // Computed
@@ -538,10 +558,17 @@ const getInitials = (user: GetUser): string => {
   return `${user.name[0]}${user.surname[0]}`.toUpperCase()
 }
 
+const sharedPeopleLabel = (count: number): string => {
+  return count === 1
+    ? t('pantries.shared.person_one')
+    : t('pantries.shared.person_other', { count })
+}
+
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { 
+  const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+  return date.toLocaleDateString(locale, { 
     year: 'numeric', 
     month: 'short', 
     day: 'numeric'
@@ -571,7 +598,7 @@ const closePantryModal = () => {
 
 const savePantry = async () => {
   if (!pantryForm.value.name.trim()) {
-    toast.error('Pantry name is required')
+    toast.error(t('pantries.toast.name_required'))
     return
   }
 
@@ -580,16 +607,19 @@ const savePantry = async () => {
   try {
     if (editingPantry.value) {
       await pantriesStore.updatePantry(editingPantry.value.id, { name: pantryForm.value.name.trim() })
-      toast.success('Pantry updated successfully')
+      toast.success(t('pantries.toast.update_success'))
     } else {
       await pantriesStore.createPantry({ name: pantryForm.value.name.trim() })
-      toast.success('Pantry created successfully')
+      toast.success(t('pantries.toast.create_success'))
     }
 
     closePantryModal()
     loadPantries()
   } catch (error: any) {
-    toast.error(error.message || `Error ${editingPantry.value ? 'updating' : 'creating'} pantry`)
+    toast.error(
+      error.message ||
+      t(editingPantry.value ? 'pantries.toast.update_error' : 'pantries.toast.create_error')
+    )
   } finally {
     isSaving.value = false
   }
@@ -612,12 +642,12 @@ const executeDelete = async () => {
 
   try {
     await pantriesStore.deletePantry(pantryToDelete.value.id)
-    toast.success('Pantry deleted successfully')
+    toast.success(t('pantries.toast.delete_success'))
     showDeleteModal.value = false
     pantryToDelete.value = null
     loadPantries()
   } catch (error: any) {
-    toast.error(error.message || 'Error deleting pantry')
+    toast.error(error.message || t('pantries.toast.delete_error'))
   } finally {
     isDeleting.value = false
   }
@@ -633,6 +663,7 @@ const loadPantries = async () => {
     })
   } catch (error: any) {
     console.error('Error loading pantries:', error)
+    toast.error(error.message || t('pantries.toast.load_error'))
   }
 }
 

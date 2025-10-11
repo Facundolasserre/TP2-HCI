@@ -1,13 +1,14 @@
 <template>
-  <section class="card">
+  <div class="auth-wrapper">
+    <section class="card">
     <!-- Logo -->
     <div class="logo-wrap">
       <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
     <!-- Título -->
-    <h1 class="title">Reset password</h1>
-    <p class="subtitle">Please enter your email address</p>
+    <h1 class="title">{{ t('forgotPassword.title') }}</h1>
+    <p class="subtitle">{{ t('forgotPassword.subtitle') }}</p>
 
     <!-- Form -->
     <form class="form" @submit.prevent="onSubmit">
@@ -16,7 +17,7 @@
         v-model.trim="email"
         type="email"
         autocomplete="email"
-        placeholder="your@email.com"
+        :placeholder="t('forgotPassword.placeholder')"
         required
       />
       
@@ -31,16 +32,18 @@
       </div>
       
       <button class="btn" type="submit" :disabled="!isEmail(email) || isLoading">
-        {{ isLoading ? 'Sending...' : 'Reset' }}
+        {{ isLoading ? t('forgotPassword.loading') : t('forgotPassword.submit') }}
       </button>
     </form>
   </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from '@/composables/useI18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -48,12 +51,13 @@ const email = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const isLoading = ref(false)
+const { t } = useI18n()
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
 async function onSubmit() {
   if (!isEmail(email.value)) {
-    errorMessage.value = 'Por favor ingresa un email válido'
+    errorMessage.value = t('forgotPassword.error_invalid')
     return
   }
   
@@ -65,7 +69,7 @@ async function onSubmit() {
     // Send password recovery code
     await authStore.sendPasswordRecovery(email.value.trim())
     
-    successMessage.value = '✓ Código de recuperación enviado! Revisa tu email'
+    successMessage.value = t('forgotPassword.success')
     
     // Redirect to reset password page after 2 seconds
     setTimeout(() => {
@@ -77,7 +81,7 @@ async function onSubmit() {
     
   } catch (err: any) {
     console.error('Error sending recovery code:', err)
-    errorMessage.value = err.response?.data?.message || err.message || 'Error al enviar código de recuperación'
+    errorMessage.value = err.response?.data?.message || err.message || t('forgotPassword.error_generic')
   } finally {
     isLoading.value = false
   }
@@ -85,6 +89,14 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1C1C30;
+}
+
 .card{
   width: 460px;
   background: #322D59;

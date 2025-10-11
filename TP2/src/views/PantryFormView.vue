@@ -1,7 +1,7 @@
 <template>
   <div class="pantry-form-view">
     <header class="page-header">
-      <h1>{{ isEditing ? 'Editar Despensa' : 'Nueva Despensa' }}</h1>
+      <h1>{{ isEditing ? t('pantryForm.title.edit') : t('pantryForm.title.new') }}</h1>
     </header>
 
     <!-- Error Message -->
@@ -13,12 +13,12 @@
     <form @submit.prevent="handleSubmit" class="pantry-form">
       <!-- Name Field -->
       <div class="form-group">
-        <label for="name">Nombre *</label>
+        <label for="name">{{ t('pantryForm.name.label') }} *</label>
         <input
           id="name"
           v-model="formData.name"
           type="text"
-          placeholder="Ej: Alacena, Refrigerador, Despensa..."
+          :placeholder="t('pantryForm.name.placeholder')"
           maxlength="50"
           required
           class="form-input"
@@ -31,14 +31,14 @@
       <!-- Metadata Field (Optional JSON) -->
       <div class="form-group">
         <label for="metadata">
-          Metadata (opcional)
-          <span class="help-text">JSON válido, ej: {"color": "blue", "location": "kitchen"}</span>
+          {{ t('pantryForm.metadata.label') }}
+          <span class="help-text">{{ t('pantryForm.metadata.hint') }}</span>
         </label>
         <textarea
           id="metadata"
           v-model="metadataText"
           rows="4"
-          placeholder='{"color": "blue", "location": "kitchen"}'
+          :placeholder="t('pantryForm.metadata.placeholder')"
           class="form-input"
           :class="{ 'input-error': errors.metadata }"
         ></textarea>
@@ -48,10 +48,10 @@
       <!-- Actions -->
       <div class="form-actions">
         <button type="button" @click="goBack" class="btn-secondary">
-          Cancelar
+          {{ t('common.cancel') }}
         </button>
         <button type="submit" :disabled="pantriesStore.isLoading" class="btn-primary">
-          {{ pantriesStore.isLoading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          {{ pantriesStore.isLoading ? t('common.saving') : (isEditing ? t('common.update') : t('common.create')) }}
         </button>
       </div>
     </form>
@@ -63,11 +63,14 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePantriesStore } from '@/stores/pantries'
 import type { PantryCreate, PantryUpdate } from '@/types/pantry'
-import { ValidationMessages } from '@/types/pantry'
+import { useI18n } from '@/composables/useI18n'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const route = useRoute()
 const pantriesStore = usePantriesStore()
+const { t } = useI18n()
+const toast = useToast()
 
 const pantryId = computed(() => {
   const id = route.params.id
@@ -95,12 +98,12 @@ function validateForm(): boolean {
 
   // Validate name
   if (!formData.name.trim()) {
-    errors.name = ValidationMessages.NAME_REQUIRED
+    errors.name = t('pantryForm.errors.name_required')
     return false
   }
 
   if (formData.name.length > 50) {
-    errors.name = ValidationMessages.NAME_TOO_LONG
+    errors.name = t('pantryForm.errors.name_max')
     return false
   }
 
@@ -109,7 +112,7 @@ function validateForm(): boolean {
     try {
       JSON.parse(metadataText.value)
     } catch (e) {
-      errors.metadata = ValidationMessages.METADATA_INVALID
+      errors.metadata = t('pantryForm.errors.metadata_invalid')
       return false
     }
   }
@@ -131,31 +134,34 @@ async function handleSubmit() {
   if (!validateForm()) return
 
   const metadata = parseMetadata()
+  const name = formData.name.trim()
 
   try {
     if (isEditing.value && pantryId.value) {
       // Update existing pantry
       const updateData: PantryUpdate = {
-        name: formData.name,
+        name,
         metadata
       }
       
       await pantriesStore.updatePantry(pantryId.value, updateData)
-      alert('✓ Despensa actualizada exitosamente')
+      toast.success(t('pantries.toast.update_success'))
       router.push(`/pantries/${pantryId.value}`)
     } else {
       // Create new pantry
       const createData: PantryCreate = {
-        name: formData.name,
+        name,
         metadata
       }
       
       const newPantry = await pantriesStore.createPantry(createData)
-      alert('✓ Despensa creada exitosamente')
+      toast.success(t('pantries.toast.create_success'))
       router.push(`/pantries/${newPantry.id}`)
     }
   } catch (error: any) {
-    errorMessage.value = error.message || 'Error al guardar la despensa'
+    const message = error.message || t('pantryForm.toast.save_error')
+    errorMessage.value = message
+    toast.error(message)
     console.error('Error saving pantry:', error)
   }
 }
@@ -177,7 +183,9 @@ async function loadPantry() {
       metadataText.value = JSON.stringify(pantry.metadata, null, 2)
     }
   } catch (error: any) {
-    errorMessage.value = 'Error al cargar la despensa'
+    const message = error.message || t('pantryForm.toast.load_error')
+    errorMessage.value = message
+    toast.error(message)
     console.error('Error loading pantry:', error)
   }
 }

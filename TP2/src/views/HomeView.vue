@@ -22,18 +22,18 @@
           class="card"
           @click="openCard(card)"
         >
-          <div class="card-title-wrapper" :style="{ backgroundColor: card.color }">
-            <div class="card-ico">
-              <img :src="card.icon" :alt="card.title" />
-            </div>
-            <h3 class="card-title">{{ card.title }}</h3>
+          <div class="card-icon-wrapper" :style="{ borderColor: card.color, backgroundColor: card.color + '20' }">
+            <img :src="card.icon" :alt="card.title" class="card-icon" />
           </div>
-          <p class="card-sub">
-            <em v-if="card.sharedWith?.length">
-              {{ t('home.shared_with') }} {{ shareText(card.sharedWith) }}
-            </em>
-            <em v-else>{{ t('home.no_shares') }}</em>
-          </p>
+          <div class="card-content">
+            <h3 class="card-title">{{ card.title }}</h3>
+            <p class="card-sub">
+              <em v-if="card.sharedWith?.length">
+                {{ t('home.shared_with') }} {{ shareText(card.sharedWith) }}
+              </em>
+              <em v-else>{{ t('home.no_shares') }}</em>
+            </p>
+          </div>
         </article>
       </main>
       
@@ -244,47 +244,40 @@ watch(cards, (newCards) => {
 
 .card{
   background:#0E0F1A;
-  width: 580px;
-  height: 300px;
   border-radius:16px;
-  min-height: 260px;
   display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  justify-content:space-between;
+  align-items:center;
+  gap: 20px;
+  padding: 20px;
   box-shadow: 0 10px 24px rgba(0,0,0,.35);
   transition: transform .08s ease;
   cursor:pointer;
-  overflow: hidden;
 }
 .card:hover{ transform: translateY(-2px); }
 
-.card-title-wrapper {
-  padding: 20px;
-  text-align: center;
+.card-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  border: 2px solid;
+  flex-shrink: 0;
 }
 
-.card-ico{ 
-  color:#EDEAF6; 
-  opacity:.85;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.card-ico img{
-  width: 72px;
-  height: 72px;
+.card-icon {
+  width: 32px;
+  height: 32px;
   filter: brightness(0) invert(1);
-  opacity: .85;
 }
 
-.card-title{ margin:0; font-weight:800; color:#fff; font-size: 24px; }
-.card-sub{ margin:0; color:#fff; font-size:12px; padding: 20px; text-align: center; }
+.card-content {
+  flex-grow: 1;
+}
+
+.card-title{ margin:0; font-weight:800; color:#fff; font-size: 20px; text-align: left; }
+.card-sub{ margin:4px 0 0; color:#CFC9E6; font-size:14px; text-align: left; }
 
 .empty-state{
   display: grid;

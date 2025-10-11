@@ -3,18 +3,18 @@
     <div class="overlay" @click.self="$emit('close')">
       <section class="panel">
         <!-- Header sólo con close (sin título grande) -->
-        <button class="x" @click="$emit('close')" aria-label="Close">✕</button>
+        <button class="x" @click="$emit('close')" :aria-label="t('common.close')">✕</button>
 
         <!-- Search (pill con icono a la derecha) -->
         <div class="search-wrap">
-          <input class="search" v-model.trim="q" placeholder="Search member" />
+          <input class="search" v-model.trim="q" :placeholder="t('shareModal.search_placeholder')" />
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-          <button :class="['tab', {on: tab==='all'}]" @click="tab='all'">All</button>
-          <button :class="['tab', {on: tab==='pending'}]" @click="tab='pending'">Pending</button>
-          <button :class="['tab', {on: tab==='blocked'}]" @click="tab='blocked'">Blocked</button>
+          <button :class="['tab', {on: tab==='all'}]" @click="tab='all'">{{ t('shareModal.tabs.all') }}</button>
+          <button :class="['tab', {on: tab==='pending'}]" @click="tab='pending'">{{ t('shareModal.tabs.pending') }}</button>
+          <button :class="['tab', {on: tab==='blocked'}]" @click="tab='blocked'">{{ t('shareModal.tabs.blocked') }}</button>
         </div>
 
         <!-- List -->
@@ -27,28 +27,28 @@
 
             <div class="right">
               <span v-if="m.role" :class="['badge', m.role === 'Owner' ? 'owner' : 'member']">
-                {{ m.role }}
+                {{ m.role === 'Owner' ? t('shareModal.role.owner') : t('shareModal.role.member') }}
               </span>
 
               <div class="menu">
                 <button class="dots" @click="toggleMenu(m.id)">⋮</button>
                 <ul v-if="openMenuId === m.id" class="submenu">
-                  <li @click="setRole(m.id,'Owner')">Make Owner</li>
-                  <li @click="setRole(m.id,'Member')">Make Member</li>
-                  <li class="danger" @click="block(m.id)">Block</li>
-                  <li class="danger" @click="remove(m.id)">Remove</li>
+                  <li @click="setRole(m.id,'Owner')">{{ t('shareModal.actions.make_owner') }}</li>
+                  <li @click="setRole(m.id,'Member')">{{ t('shareModal.actions.make_member') }}</li>
+                  <li class="danger" @click="block(m.id)">{{ t('shareModal.actions.block') }}</li>
+                  <li class="danger" @click="remove(m.id)">{{ t('shareModal.actions.remove') }}</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <p v-if="filtered.length===0" class="empty">No results</p>
+          <p v-if="filtered.length===0" class="empty">{{ t('shareModal.empty') }}</p>
         </div>
 
         <!-- Footer: botón centrado -->
         <footer class="footer">
       <button class="btn-add" @click="addMember">
-        <span class="icon-plus">Add Member</span>
+        <span class="icon-plus">{{ t('shareModal.add_button') }}</span>
       </button>
 
     <!-- El modal AddMember va afuera -->
@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 import AddMember from '@/components/AddMember.vue'
 
 type Role = 'Owner' | 'Member' | null
@@ -294,3 +295,4 @@ defineEmits<{ (e:'close'): void }>()
   .name{ font-size:16px; }
 }
 </style>
+const { t } = useI18n()

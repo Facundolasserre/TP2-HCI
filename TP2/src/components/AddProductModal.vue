@@ -4,19 +4,19 @@
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
         <div class="modal-container" @click.stop>
           <div class="modal-header">
-            <h2 class="modal-title">Add Product</h2>
-            <button class="btn-close" @click="handleClose">✕</button>
+            <h2 class="modal-title">{{ t('addProductModal.title') }}</h2>
+            <button class="btn-close" @click="handleClose" :aria-label="t('common.close')">✕</button>
           </div>
 
           <form class="modal-body" @submit.prevent="handleSubmit">
             <!-- Name of the Product -->
             <div class="form-group">
-              <label class="form-label">Name of the Product</label>
+              <label class="form-label">{{ t('addProductModal.name_label') }}</label>
               <input
                 v-model="formData.name"
                 type="text"
                 class="form-input"
-                placeholder="Example: Milk, Bread, etc."
+                :placeholder="t('addProductModal.name_placeholder')"
                 required
               />
             </div>
@@ -24,7 +24,7 @@
             <div class="form-row">
               <!-- Amount -->
               <div class="form-group">
-                <label class="form-label">Amount</label>
+                <label class="form-label">{{ t('addProductModal.amount_label') }}</label>
                 <div class="amount-input">
                   <input
                     v-model.number="formData.amount"
@@ -53,7 +53,7 @@
 
               <!-- Add To Lists -->
               <div class="form-group">
-                <label class="form-label">Add To Lists</label>
+                <label class="form-label">{{ t('addProductModal.list_label') }}</label>
                 <select v-model="formData.listId" class="form-select" required>
                   <option v-for="list in lists" :key="list.id" :value="list.id">
                     {{ list.title }}
@@ -64,18 +64,18 @@
 
             <!-- Notes -->
             <div class="form-group">
-              <label class="form-label">Notes</label>
+              <label class="form-label">{{ t('addProductModal.notes_label') }}</label>
               <textarea
                 v-model="formData.notes"
                 class="form-textarea"
                 rows="4"
-                placeholder="Additional notes..."
+                :placeholder="t('addProductModal.notes_placeholder')"
               />
             </div>
 
             <!-- Actions -->
             <div class="modal-actions">
-              <button type="submit" class="btn-add">Add</button>
+              <button type="submit" class="btn-add">{{ t('addProductModal.submit') }}</button>
             </div>
           </form>
         </div>
@@ -88,6 +88,7 @@
 import { ref, computed, watch } from 'vue'
 import { useListsStore } from '@/stores/lists'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from '@/composables/useI18n'
 
 const props = defineProps<{
   modelValue: boolean
@@ -101,6 +102,7 @@ const emit = defineEmits<{
 
 const listsStore = useListsStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const formData = ref({
   name: '',
@@ -114,7 +116,15 @@ const lists = computed(() => listsStore.allLists)
 // Set default list when modal opens
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    formData.value.listId = props.defaultListId || lists.value[0]?.id || ''
+    const defaultId = props.defaultListId || lists.value[0]?.id || ''
+    formData.value.listId = defaultId
+  }
+})
+
+watch(lists, (newLists) => {
+  if (!newLists.find((list) => list.id === formData.value.listId)) {
+    const fallbackId = props.defaultListId || newLists[0]?.id || ''
+    formData.value.listId = fallbackId
   }
 })
 
@@ -132,11 +142,11 @@ const handleSubmit = () => {
       listId: formData.value.listId,
     })
 
-    toast.success(`${formData.value.name} added successfully!`)
+    toast.success(t('addProductModal.toast.success', { name: formData.value.name }))
     emit('product-added')
     handleClose()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to add product')
+    toast.error(error.message || t('addProductModal.toast.error'))
   }
 }
 

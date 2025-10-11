@@ -5,14 +5,14 @@
         <aside class="sidebar">
           <!-- ENCABEZADO CON 3 ICONOS -->
           <div class="sb-top">
-            <button class="top-icon" @click="goToProfile" aria-label="Account">
-              <img src="@/assets/fonts/account.png" alt="Account" />
+            <button class="top-icon" @click="goToProfile" :aria-label="t('sidebar.account')">
+              <img src="@/assets/fonts/account.png" :alt="t('sidebar.account_icon')" />
             </button>
-            <button class="top-icon brand-logo" aria-label="Logo">
-              <img src="@/assets/LogoHCI.png" alt="Logo" />
+            <button class="top-icon brand-logo" :aria-label="t('sidebar.logo')">
+              <img src="@/assets/LogoHCI.png" :alt="t('sidebar.logo_icon')" />
             </button>
-            <button class="top-icon" @click="toggleLanguage" aria-label="Language">
-              <img src="@/assets/fonts/language.png" alt="Language" />
+            <button class="top-icon" @click="toggleLanguage" :aria-label="t('sidebar.language')">
+              <img src="@/assets/fonts/language.png" :alt="t('sidebar.language_icon')" />
             </button>
           </div>
 
@@ -55,7 +55,7 @@
               :class="{ active: active === 'pantries' }"
               @click="goToPantries"
             >
-              <img src="@/assets/warehouse.svg" alt="Pantries" class="ico-img" />
+              <img src="@/assets/warehouse.svg" :alt="t('sidebar.pantries_icon')" class="ico-img" />
               <span>{{ t('sidebar.pantries') }}</span>
             </li>
 
@@ -63,7 +63,7 @@
               :class="{ active: active === 'products' }"
               @click="goToProducts"
             >
-              <img src="@/assets/shopping_cart.svg" alt="Products" class="ico-img" />
+              <img src="@/assets/shopping_cart.svg" :alt="t('sidebar.products_icon')" class="ico-img" />
               <span>{{ t('sidebar.products') }}</span>
             </li>
           </ul>

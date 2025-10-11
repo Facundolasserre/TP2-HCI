@@ -3,16 +3,16 @@
     <div class="page">
       <!-- TOP BAR - Simple: Home | Title | Share -->
       <header class="topbar">
-        <button class="icon-btn home-btn" @click="goHome" aria-label="Home">
+        <button class="icon-btn home-btn" @click="goHome" :aria-label="t('listView.home_aria')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
         </button>
 
-        <h1 class="main-title">{{ currentList?.name || 'List' }}</h1>
+        <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
 
-        <button class="icon-btn share-btn" @click="shareList" aria-label="Share" title="Share this list">
+        <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="18" cy="5" r="3"/>
             <circle cx="6" cy="12" r="3"/>
@@ -26,16 +26,16 @@
     <!-- TOOLBAR - Filter, Sort | Add -->
     <section class="toolbar">
       <div class="toolbar-left">
-        <button class="tool-btn" @click="onFilter" aria-label="Filter">
-          <img src="@/assets/fonts/filter.png" alt="filter" class="tool-icon" />
+        <button class="tool-btn" @click="onFilter" :aria-label="t('listView.toolbar.filter')">
+          <img src="@/assets/fonts/filter.png" :alt="t('listView.toolbar.filter')" class="tool-icon" />
         </button>
-        <button class="tool-btn" @click="onSort" aria-label="Sort">
-          <img src="@/assets/fonts/sort.png" alt="sort" class="tool-icon" />
+        <button class="tool-btn" @click="onSort" :aria-label="t('listView.toolbar.sort')">
+          <img src="@/assets/fonts/sort.png" :alt="t('listView.toolbar.sort')" class="tool-icon" />
         </button>
       </div>
 
       <button class="add-btn" @click="goToAddItem">
-        <span>Add</span>
+        <span>{{ t('listView.toolbar.add') }}</span>
         <span class="plus-icon">+</span>
       </button>
     </section>
@@ -43,10 +43,10 @@
     <!-- ITEMS LIST -->
     <main class="items-container">
       <div v-if="!currentList" class="empty-state">
-        <p>List not found</p>
+        <p>{{ t('listView.empty.not_found') }}</p>
       </div>
       <div v-else-if="filteredProducts.length === 0" class="empty-state">
-        <p>No products yet. Tap Add to get started!</p>
+        <p>{{ t('listView.empty.no_items') }}</p>
       </div>
       <div v-else class="items-list">
         <article
@@ -68,7 +68,7 @@
 
             <div class="item-info">
               <div class="item-name">{{ product.name }}</div>
-              <div class="item-meta">added by {{ product.addedBy || 'user' }}</div>
+              <div class="item-meta">{{ t('listView.item.added_by', { name: product.addedBy || t('listView.item.unknown_user') }) }}</div>
             </div>
           </div>
 
@@ -106,6 +106,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useListItemsStore } from '@/stores/listItems'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from '@/composables/useI18n'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
 
 const route = useRoute()
@@ -113,6 +114,7 @@ const router = useRouter()
 const listsStore = useShoppingListsStore()
 const itemsStore = useListItemsStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const q = ref('')
 const showShareModal = ref(false)
@@ -157,7 +159,7 @@ const loadData = async () => {
     
     // Only redirect on 404 (not found), not on network errors
     if (error.status === 404) {
-      toast.error('List not found')
+      toast.error(t('listView.toast.not_found'))
       router.push('/Home')
     }
   }
@@ -172,11 +174,11 @@ const goHome = () => {
 }
 
 const onFilter = () => {
-  toast.info('Filter feature coming soon!')
+  toast.info(t('listView.toast.filter_soon'))
 }
 
 const onSort = () => {
-  toast.info('Sort feature coming soon!')
+  toast.info(t('listView.toast.sort_soon'))
 }
 
 const editList = () => {
@@ -186,7 +188,7 @@ const editList = () => {
 }
 
 const goToAddItem = () => {
-  toast.info('Add item feature coming soon! Use the detail view at /lists/' + listId.value)
+  toast.info(t('listView.toast.add_item_soon', { id: listId.value ?? '' }))
 }
 
 const shareList = () => {
@@ -207,7 +209,7 @@ const toggleCheck = async (productId: number) => {
   try {
     await itemsStore.togglePurchased(listId.value, productId, !item.purchased)
   } catch (error: any) {
-    toast.error(error.message || 'Failed to update item')
+    toast.error(error.message || t('listView.toast.update_error'))
   }
 }
 

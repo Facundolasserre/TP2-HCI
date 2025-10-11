@@ -1,43 +1,41 @@
 <template>
-  <section class="card">
+  <div class="auth-wrapper">
+    <section class="card">
     <!-- Logo -->
     <div class="logo-wrap">
       <img src="@/assets/LogoHCI.png" alt="BagIt logo" class="logo-img" />
     </div>
 
     <!-- Título -->
-    <h1 class="title">Reset Password</h1>
-    <p class="subtitle">Enter the code sent to {{ email }} and your new password</p>
+    <h1 class="title">{{ t('resetPassword.title') }}</h1>
+    <p class="subtitle">{{ t('resetPassword.subtitle', { email }) }}</p>
 
     <!-- Form -->
     <form class="form" @submit.prevent="onSubmit">
-      <label class="label">Recovery Code</label>
       <input
         class="input"
         v-model.trim="code"
         type="text"
-        placeholder="Enter 16-character code"
+        :placeholder="t('resetPassword.code_placeholder')"
         maxlength="16"
         required
       />
 
-      <label class="label">New Password</label>
       <input
         class="input"
         v-model="newPassword"
         type="password"
         autocomplete="new-password"
-        placeholder="Min. 6 characters"
+        :placeholder="t('resetPassword.new_placeholder')"
         required
       />
 
-      <label class="label">Confirm Password</label>
       <input
         class="input"
         v-model="confirmPassword"
         type="password"
         autocomplete="new-password"
-        placeholder="Repeat new password"
+        :placeholder="t('resetPassword.confirm_placeholder')"
         required
       />
 
@@ -52,22 +50,24 @@
       </div>
 
       <button class="btn" type="submit" :disabled="!isValid || isLoading">
-        {{ isLoading ? 'Resetting...' : 'Reset Password' }}
+        {{ isLoading ? t('resetPassword.loading') : t('resetPassword.submit') }}
       </button>
 
       <div class="links-row">
-        <a class="link" href="#" @click.prevent="resendCode">Resend code</a>
+        <a class="link" href="#" @click.prevent="resendCode">{{ t('resetPassword.links.resend') }}</a>
         <span class="separator">|</span>
-        <a class="link" href="#" @click.prevent="goToLogin">Back to login</a>
+        <a class="link" href="#" @click.prevent="goToLogin">{{ t('resetPassword.links.back') }}</a>
       </div>
     </form>
   </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from '@/composables/useI18n'
 
 const router = useRouter()
 const route = useRoute()
@@ -80,6 +80,7 @@ const email = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const isLoading = ref(false)
+const { t } = useI18n()
 
 const isValid = computed(() => {
   return (
@@ -96,7 +97,7 @@ onMounted(() => {
 
 async function onSubmit() {
   if (!isValid.value) {
-    errorMessage.value = 'Por favor complete todos los campos correctamente'
+    errorMessage.value = t('resetPassword.error_invalid')
     return
   }
 
@@ -108,7 +109,7 @@ async function onSubmit() {
     // Reset password
     await authStore.resetPassword(code.value.trim(), newPassword.value)
 
-    successMessage.value = '✓ Contraseña restablecida! Redirigiendo al login...'
+    successMessage.value = t('resetPassword.success')
     
     // Redirect to login after 2 seconds
     setTimeout(() => {
@@ -117,7 +118,7 @@ async function onSubmit() {
     
   } catch (err: any) {
     console.error('Error resetting password:', err)
-    errorMessage.value = err.response?.data?.message || err.message || 'Código inválido o expirado'
+    errorMessage.value = err.response?.data?.message || err.message || t('resetPassword.error_reset')
   } finally {
     isLoading.value = false
   }
@@ -125,7 +126,7 @@ async function onSubmit() {
 
 async function resendCode() {
   if (!email.value) {
-    errorMessage.value = 'No se encontró el email'
+    errorMessage.value = t('resetPassword.error_no_email')
     return
   }
 
@@ -135,9 +136,9 @@ async function resendCode() {
 
   try {
     await authStore.sendPasswordRecovery(email.value)
-    successMessage.value = '✓ Código reenviado! Revisa tu email'
+    successMessage.value = t('resetPassword.resend_success')
   } catch (err: any) {
-    errorMessage.value = err.response?.data?.message || err.message || 'Error al reenviar código'
+    errorMessage.value = err.response?.data?.message || err.message || t('resetPassword.error_generic')
   } finally {
     isLoading.value = false
   }
@@ -149,6 +150,14 @@ function goToLogin() {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1C1C30;
+}
+
 .card {
   width: 460px;
   background: #322D59;
@@ -191,11 +200,8 @@ function goToLogin() {
   gap: 20px;
 }
 
-.label {
-  font-size: 14px;
-  color: #CFC9E6;
-  text-align: left;
-  margin-left: 0;
+.input::placeholder {
+  color: rgba(237, 234, 246, 0.5);
 }
 
 .input {

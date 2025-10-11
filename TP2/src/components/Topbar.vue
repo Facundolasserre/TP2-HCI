@@ -1,17 +1,17 @@
 <template>
   <header class="topbar" data-topbar-build="v3">
     <!-- botón con imagen (siempre a la izquierda) -->
-    <button class="burger" @click="$emit('toggle-sidebar')" aria-label="Open menu">
-      <img src="@/assets/fonts/burgerIcon.png" alt="Menu" class="topbar-icon" />
+    <button class="burger" @click="$emit('toggle-sidebar')" :aria-label="t('topbar.open_menu')">
+      <img src="@/assets/fonts/burgerIcon.png" :alt="t('topbar.menu_icon')" class="topbar-icon" />
     </button>
 
     <div class="topbar-content">
       <div class="icon-group">
         <button class="round-btn" :title="t('topbar.filter')" @click="$emit('filter')">
-          <img src="@/assets/fonts/filter.png" alt="Menu" class="topbar-icon"/>
+          <img src="@/assets/fonts/filter.png" :alt="t('topbar.filter_icon')" class="topbar-icon"/>
         </button>
         <button class="round-btn" :title="t('topbar.sort')" @click="$emit('sort')">
-          <img src="@/assets/fonts/sort.png" alt="Menu" class="topbar-icon"/>
+          <img src="@/assets/fonts/sort.png" :alt="t('topbar.sort_icon')" class="topbar-icon"/>
         </button>
       </div>
 
@@ -25,7 +25,7 @@
 
       <div class="icon-group">
         <button class="star" :title="t('topbar.favorites')" @click="$emit('favorites')">
-          <img src="@/assets/fonts/favIcon.png" alt="Menu" class="topbar-icon" />
+          <img src="@/assets/fonts/favIcon.png" :alt="t('topbar.favorites_icon')" class="topbar-icon" />
         </button>
         <button class="plus special-plus" :title="t('topbar.new')" @click="$emit('new')">＋</button>
       </div>

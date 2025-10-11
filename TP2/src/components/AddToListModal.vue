@@ -5,15 +5,15 @@
         <div class="modal-container" @click.stop>
           <div class="modal-header">
             <h2 class="modal-title">{{ productName }}</h2>
-            <button class="btn-close" @click="handleClose">✕</button>
+            <button class="btn-close" @click="handleClose" :aria-label="t('common.close')">✕</button>
           </div>
 
           <form class="modal-body" @submit.prevent="handleSubmit">
             <!-- Add product to another list -->
             <div class="form-group">
-              <label class="form-label">Add product to another list</label>
+              <label class="form-label">{{ t('addToListModal.label') }}</label>
               <select v-model="selectedListId" class="form-select" required>
-                <option v-for="list in availableLists" :key="list.id" :value="list.id">
+                <option v-for="list in availableLists" :key="list.id" :value="String(list.id)">
                   {{ list.title }}
                 </option>
               </select>
@@ -22,7 +22,7 @@
             <!-- Actions -->
             <div class="modal-actions">
               <button type="submit" class="btn-add" :disabled="!selectedListId">
-                Add
+                {{ t('addToListModal.submit') }}
               </button>
             </div>
           </form>
@@ -34,8 +34,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useListsStore } from '@/stores/lists'
+import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from '@/composables/useI18n'
 import type { Product } from '@/types/lists'
 
 const props = defineProps<{
@@ -49,22 +50,29 @@ const emit = defineEmits<{
   'product-added': []
 }>()
 
-const listsStore = useListsStore()
+const shoppingListsStore = useShoppingListsStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const selectedListId = ref('')
 
 const productName = computed(() => props.product?.name || '')
 
-const availableLists = computed(() => {
-  // Filter out the current list
-  return listsStore.allLists.filter(list => list.id !== props.currentListId)
+const lists = computed(() => shoppingListsStore.items)
+const availableLists = computed(() =>
+  lists.value.filter((list) => String(list.id) !== String(props.currentListId ?? ''))
+)
+
+// Set default list when modal opens
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    selectedListId.value = String(availableLists.value[0]?.id || '')
+  }
 })
 
-// Reset selection when modal opens
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen && availableLists.value.length > 0) {
-    selectedListId.value = availableLists.value[0].id
+watch(availableLists, (lists) => {
+  if (!lists.find((list) => String(list.id) === selectedListId.value)) {
+    selectedListId.value = String(lists[0]?.id || '')
   }
 })
 
@@ -77,19 +85,24 @@ const handleSubmit = () => {
   if (!props.product || !selectedListId.value) return
 
   try {
-    listsStore.addProduct({
+    shoppingListsStore.addProduct({
       name: props.product.name,
       amount: props.product.amount,
       notes: props.product.notes,
       listId: selectedListId.value,
     })
 
-    const targetList = listsStore.getListById(selectedListId.value)
-    toast.success(`${props.product.name} added to ${targetList?.title}!`)
+    const targetList = lists.value.find((list) => String(list.id) === selectedListId.value)
+    toast.success(
+      t('addToListModal.toast.success', {
+        product: props.product.name,
+        list: targetList?.name || '',
+      })
+    )
     emit('product-added')
     handleClose()
   } catch (error: any) {
-    toast.error(error.message || 'Failed to add product')
+    toast.error(error.message || t('addToListModal.toast.error'))
   }
 }
 </script>

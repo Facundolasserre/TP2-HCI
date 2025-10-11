@@ -2,28 +2,28 @@
   <div class="product-detail-view">
     <div class="detail-container">
       <div class="detail-header">
-        <button class="btn-back" @click="goBack">← Volver a la lista</button>
+        <button class="btn-back" @click="goBack">← {{ t('productDetail.back_to_list') }}</button>
         <div class="header-actions">
           <button class="btn-edit" @click="goToEdit">
             <img :src="editIcon" alt="Editar" width="16" height="16" />
-            Editar
+            {{ t('common.edit') }}
           </button>
           <button class="btn-delete" @click="confirmDelete">
             <img :src="deleteIcon" alt="Eliminar" width="16" height="16" />
-            Eliminar
+            {{ t('common.delete') }}
           </button>
         </div>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading">
-        <p>Cargando producto...</p>
+        <p>{{ t('productDetail.loading') }}</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="error-state">
         <p>{{ error }}</p>
-        <button class="btn-secondary" @click="loadProduct">Reintentar</button>
+        <button class="btn-secondary" @click="loadProduct">{{ t('common.retry') }}</button>
       </div>
 
       <!-- Product Details -->
@@ -44,36 +44,36 @@
 
           <!-- Category -->
           <div class="detail-item">
-            <span class="detail-label">Categoría</span>
+            <span class="detail-label">{{ t('productDetail.section.category') }}</span>
             <span v-if="product.category" class="detail-value category-value">
               {{ product.category.name }}
             </span>
-            <span v-else class="detail-value no-category">Sin categoría</span>
+            <span v-else class="detail-value no-category">{{ t('productDetail.section.no_category') }}</span>
           </div>
 
           <!-- Created At -->
           <div class="detail-item">
-            <span class="detail-label">Fecha de creación</span>
+            <span class="detail-label">{{ t('productDetail.section.created_at') }}</span>
             <span class="detail-value">{{ formatDate(product.createdAt) }}</span>
           </div>
 
           <!-- Updated At -->
           <div class="detail-item">
-            <span class="detail-label">Última actualización</span>
+            <span class="detail-label">{{ t('productDetail.section.updated_at') }}</span>
             <span class="detail-value">{{ formatDate(product.updatedAt) }}</span>
           </div>
         </div>
 
         <!-- Category Details (if exists) -->
         <div v-if="product.category" class="category-section">
-          <h2 class="section-title">Detalles de Categoría</h2>
+          <h2 class="section-title">{{ t('productDetail.section.category_details') }}</h2>
           <div class="category-details">
             <div class="detail-row">
-              <span class="detail-label">ID de categoría:</span>
+              <span class="detail-label">{{ t('productDetail.section.category_id') }}</span>
               <span class="detail-value">{{ product.category.id }}</span>
             </div>
             <div class="detail-row" v-if="product.category.createdAt">
-              <span class="detail-label">Creada:</span>
+              <span class="detail-label">{{ t('productDetail.section.category_created') }}</span>
               <span class="detail-value">{{ formatDate(product.category.createdAt) }}</span>
             </div>
           </div>
@@ -81,12 +81,12 @@
 
         <!-- Metadata Section -->
         <div class="metadata-section">
-          <h2 class="section-title">Metadata</h2>
+          <h2 class="section-title">{{ t('productDetail.section.metadata') }}</h2>
           <div v-if="product.metadata && Object.keys(product.metadata).length > 0" class="metadata-content">
             <pre class="metadata-json">{{ formatMetadata(product.metadata) }}</pre>
           </div>
           <div v-else class="empty-metadata">
-            <p>No hay metadata asociada a este producto</p>
+            <p>{{ t('productDetail.section.no_metadata') }}</p>
           </div>
         </div>
       </div>
@@ -95,12 +95,12 @@
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
       <div class="modal" @click.stop>
-        <h2>Confirmar eliminación</h2>
-        <p>¿Estás seguro que querés eliminar el producto <strong>{{ product?.name }}</strong>?</p>
-        <p class="warning-text">Esta acción no se puede deshacer.</p>
+        <h2>{{ t('products.delete.title') }}</h2>
+        <p>{{ t('products.delete.message', { name: product?.name || '' }) }}</p>
+        <p class="warning-text">{{ t('products.delete.warning') }}</p>
         <div class="modal-actions">
-          <button class="btn-secondary" @click="cancelDelete">Cancelar</button>
-          <button class="btn-danger" @click="executeDelete">Eliminar</button>
+          <button class="btn-secondary" @click="cancelDelete">{{ t('common.cancel') }}</button>
+          <button class="btn-danger" @click="executeDelete">{{ t('products.delete.confirm') }}</button>
         </div>
       </div>
     </div>
@@ -112,6 +112,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProductsStore } from '@/stores/products'
 import { useToast } from '@/composables/useToast'
+import { useI18n } from '@/composables/useI18n'
+import { useLanguageStore } from '@/stores/language'
 import editIcon from '@/assets/edit.svg'
 import deleteIcon from '@/assets/delete.svg'
 
@@ -119,6 +121,8 @@ const router = useRouter()
 const route = useRoute()
 const store = useProductsStore()
 const toast = useToast()
+const { t } = useI18n()
+const languageStore = useLanguageStore()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -138,7 +142,7 @@ const loadProduct = async () => {
   try {
     await store.fetchProductById(productId.value)
   } catch (err: any) {
-    const errorMessage = err.message || 'Error al cargar el producto'
+    const errorMessage = err.message || t('productDetail.toast.load_error')
     error.value = errorMessage
     toast.error(errorMessage)
   } finally {
@@ -149,7 +153,8 @@ const loadProduct = async () => {
 const formatDate = (dateString: string) => {
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('es-AR', {
+    const locale = languageStore.language === 'es' ? 'es-AR' : 'en-US'
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -190,10 +195,10 @@ const executeDelete = async () => {
 
   try {
     await store.deleteProduct(product.value.id)
-    toast.success('Producto eliminado exitosamente')
+    toast.success(t('products.toast.delete_success'))
     router.push('/products')
   } catch (err: any) {
-    toast.error(err.message || 'Error al eliminar el producto')
+    toast.error(err.message || t('products.toast.delete_error'))
     showDeleteModal.value = false
   }
 }

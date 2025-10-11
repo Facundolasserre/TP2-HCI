@@ -1,58 +1,58 @@
 <template>
   <Teleport to="body">
     <div class="overlay" @click.self="close" @keydown.esc="close" tabindex="-1">
-      <section class="modal" role="dialog" aria-modal="true" aria-label="Add member">
+      <section class="modal" role="dialog" aria-modal="true" :aria-label="t('addMember.title')">
         <header class="head">
-          <h2>Add Member</h2>
-          <button class="x" @click="close" aria-label="Close">✕</button>
+          <h2>{{ t('addMember.title') }}</h2>
+          <button class="x" @click="close" :aria-label="t('common.close')">✕</button>
         </header>
 
         <form class="body" @submit.prevent="submit">
           <!-- Email -->
           <div class="block">
-            <label class="label">Email</label>
+            <label class="label">{{ t('addMember.email_label') }}</label>
             <input
               class="input"
               v-model.trim="email"
-              placeholder="e.g. emma@mail.com"
+              :placeholder="t('addMember.email_placeholder')"
               inputmode="email"
             />
-            <p v-if="touched && !validEmail" class="error">Enter a valid email</p>
+            <p v-if="touched && !validEmail" class="error">{{ t('addMember.email_error') }}</p>
           </div>
 
           <!-- Role -->
           <div class="block">
-            <label class="label">Role</label>
+            <label class="label">{{ t('addMember.role_label') }}</label>
             <div class="segmented">
               <button
                 type="button"
                 class="seg"
                 :class="{ on: role === 'Member' }"
                 @click="role = 'Member'"
-              >Member</button>
+              >{{ t('addMember.role.member') }}</button>
               <button
                 type="button"
                 class="seg"
                 :class="{ on: role === 'Owner' }"
                 @click="role = 'Owner'"
-              >Owner</button>
+              >{{ t('addMember.role.owner') }}</button>
             </div>
           </div>
 
           <!-- Notes -->
           <div class="block">
-            <label class="label">Brief Note (optional)</label>
+            <label class="label">{{ t('addMember.notes_label') }}</label>
             <textarea
               class="textarea"
               v-model.trim="notes"
-              placeholder="Add a short note…"
+              :placeholder="t('addMember.notes_placeholder')"
             ></textarea>
           </div>
 
           <!-- Actions -->
           <footer class="actions">
-            <button type="button" class="btn ghost" @click="close">Cancel</button>
-            <button type="submit" class="btn primary" :disabled="!canSubmit">Add Member</button>
+            <button type="button" class="btn ghost" @click="close">{{ t('common.cancel') }}</button>
+            <button type="submit" class="btn primary" :disabled="!canSubmit">{{ t('addMember.submit') }}</button>
           </footer>
         </form>
       </section>
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from '@/composables/useI18n'
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -76,6 +77,7 @@ const email = ref('')
 const role = ref<'Owner' | 'Member'>('Member')
 const notes = ref('')
 const touched = ref(false)
+const { t } = useI18n()
 
 const validEmail = computed(() =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)

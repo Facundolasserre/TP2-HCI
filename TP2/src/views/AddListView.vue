@@ -135,22 +135,22 @@ const sharedMembers = ref<string[]>([]);
 const availableIcons = [
   { 
     id: 'shopping_cart.svg', 
-    name: 'Shopping Cart',
+    name: 'Carrito de compras',
     src: new URL('@/assets/shopping_cart.svg', import.meta.url).href
   },
   { 
     id: 'family.svg', 
-    name: 'Family',
+    name: 'Familia',
     src: new URL('@/assets/family.svg', import.meta.url).href
   },
   { 
     id: 'travel.svg', 
-    name: 'Travel',
+    name: 'Viaje',
     src: new URL('@/assets/travel.svg', import.meta.url).href
   },
   { 
     id: 'liquor.svg', 
-    name: 'Drinks',
+    name: 'Bebidas',
     src: new URL('@/assets/liquor.svg', import.meta.url).href
   },
 ];
@@ -192,7 +192,7 @@ async function submit(){
       }
     });
     
-    toast.success('List created successfully!');
+    toast.success('¡Lista creada exitosamente!');
     
     // If shared, share with members (TODO: implement after list creation)
     if (visibility.value === 'shared' && sharedMembers.value.length > 0) {
