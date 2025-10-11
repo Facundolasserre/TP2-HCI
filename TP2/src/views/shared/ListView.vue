@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <div class="page">
-      <!-- TOP BAR - Simple: Home | Title | Share -->
+      <!-- TOP BAR - Home | Search | Share -->
       <header class="topbar">
         <button class="icon-btn home-btn" @click="goHome" :aria-label="t('listView.home_aria')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -10,7 +10,12 @@
           </svg>
         </button>
 
-        <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
+        <input
+          v-model="q"
+          type="text"
+          class="search"
+          :placeholder="t('listView.search_placeholder')"
+        />
 
         <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -22,6 +27,17 @@
           </svg>
         </button>
       </header>
+
+      <!-- TITLE & EDIT -->
+      <section class="title-section">
+        <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
+        <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+      </section>
 
     <!-- TOOLBAR - Filter, Sort | Add -->
     <section class="toolbar">
@@ -96,6 +112,153 @@
       :list-name="currentList.name"
       @close="closeShareModal"
     />
+
+    <!-- Add Item Modal -->
+    <Modal :open="showAddItemModal" @close="closeAddItemModal" size="md">
+      <template #header>
+        <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
+          Add Product to List
+        </h2>
+      </template>
+
+      <template #default>
+        <div class="add-item-modal-content">
+          <!-- Search existing products -->
+          <div v-if="!showCreateProductInline" class="form-group">
+            <label for="search-product">Search Product</label>
+            <input
+              id="search-product"
+              v-model="searchProductQuery"
+              type="text"
+              placeholder="Type to search products..."
+              class="form-input"
+            />
+            
+            <div class="products-list">
+              <div
+                v-for="product in filteredModalProducts"
+                :key="product.id"
+                class="product-option"
+                :class="{ 
+                  selected: selectedProductId === product.id,
+                  'already-in-list': isProductInList(product.id)
+                }"
+                @click="!isProductInList(product.id) && (selectedProductId = product.id)"
+              >
+                <div class="product-info-left">
+                  <span class="product-name">{{ product.name }}</span>
+                  <span class="product-category">{{ product.category?.name || 'No category' }}</span>
+                </div>
+                <span v-if="isProductInList(product.id)" class="already-badge">Already in list</span>
+              </div>
+              
+              <div
+                v-if="filteredModalProducts.length === 0"
+                class="no-products"
+              >
+                No products found. Create a new one below.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="create-product-btn"
+              @click="showCreateProductInline = true"
+            >
+              ➕ Create New Product
+            </button>
+          </div>
+
+          <!-- Create new product inline -->
+          <div v-else class="form-group">
+            <label for="new-product-name">New Product Name</label>
+            <input
+              id="new-product-name"
+              v-model="newProductName"
+              type="text"
+              placeholder="Enter product name"
+              class="form-input"
+              maxlength="50"
+            />
+
+            <label for="new-product-category">Category</label>
+            <select
+              id="new-product-category"
+              v-model="newProductCategoryId"
+              class="form-input"
+            >
+              <option :value="null">Select a category</option>
+              <option
+                v-for="category in categoriesStore.items"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.name }}
+              </option>
+            </select>
+
+            <div class="inline-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                @click="showCreateProductInline = false; newProductName = ''; newProductCategoryId = null"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn-primary"
+                @click="createProductInline"
+              >
+                Create Product
+              </button>
+            </div>
+          </div>
+
+          <!-- Quantity and Unit -->
+          <div v-if="selectedProductId && !showCreateProductInline" class="quantity-section">
+            <div class="form-group">
+              <label for="quantity">Quantity</label>
+              <input
+                id="quantity"
+                v-model.number="quantity"
+                type="number"
+                min="1"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="unit">Unit</label>
+              <input
+                id="unit"
+                v-model="unit"
+                type="text"
+                placeholder="e.g., kg, units, liters"
+                class="form-input"
+                maxlength="20"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" @click="closeAddItemModal">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-save"
+            :disabled="!selectedProductId || showCreateProductInline"
+            @click="addItemToList"
+          >
+            Add to List
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
   </div>
 </template>
@@ -105,19 +268,32 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
 import { useListItemsStore } from '@/stores/listItems'
+import { useProductsStore } from '@/stores/products'
+import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 import ShareMembersModal from '@/components/ShareMembersModal.vue'
+import Modal from '@/components/Modal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const listsStore = useShoppingListsStore()
 const itemsStore = useListItemsStore()
+const productsStore = useProductsStore()
+const categoriesStore = useCategoriesStore()
 const toast = useToast()
 const { t } = useI18n()
 
 const q = ref('')
 const showShareModal = ref(false)
+const showAddItemModal = ref(false)
+const searchProductQuery = ref('')
+const selectedProductId = ref<number | null>(null)
+const quantity = ref(1)
+const unit = ref('units')
+const showCreateProductInline = ref(false)
+const newProductName = ref('')
+const newProductCategoryId = ref<number | null>(null)
 
 // Get list ID from route
 const listId = computed(() => {
@@ -165,9 +341,135 @@ const loadData = async () => {
   }
 }
 
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  await loadData()
+  // Load products and categories for the add item modal
+  await productsStore.fetchProducts()
+  await categoriesStore.fetchCategories()
 })
+
+// Filter products for search in modal
+const filteredModalProducts = computed(() => {
+  let products = productsStore.items
+  
+  if (searchProductQuery.value) {
+    const search = searchProductQuery.value.toLowerCase()
+    products = products.filter(p => 
+      p.name.toLowerCase().includes(search)
+    )
+  }
+  
+  return products
+})
+
+// Check if a product is already in the list
+const isProductInList = (productId: number): boolean => {
+  return itemsStore.items.some(item => item.product.id === productId)
+}
+
+// Open/close add item modal
+const openAddItemModal = () => {
+  showAddItemModal.value = true
+  selectedProductId.value = null
+  quantity.value = 1
+  unit.value = 'units'
+  searchProductQuery.value = ''
+  showCreateProductInline.value = false
+  newProductName.value = ''
+  newProductCategoryId.value = null
+}
+
+const closeAddItemModal = () => {
+  showAddItemModal.value = false
+  selectedProductId.value = null
+  quantity.value = 1
+  unit.value = 'units'
+  searchProductQuery.value = ''
+  showCreateProductInline.value = false
+  newProductName.value = ''
+  newProductCategoryId.value = null
+}
+
+// Create new product inline
+const createProductInline = async () => {
+  if (!newProductName.value.trim() || !newProductCategoryId.value) {
+    toast.error('Please enter a product name and select a category')
+    return
+  }
+
+  try {
+    const newProduct = await productsStore.createProduct({
+      name: newProductName.value.trim(),
+      category: { id: newProductCategoryId.value },
+      metadata: {}
+    })
+    
+    await productsStore.fetchProducts()
+    selectedProductId.value = newProduct.id
+    showCreateProductInline.value = false
+    newProductName.value = ''
+    newProductCategoryId.value = null
+    toast.success('Product created successfully')
+  } catch (error) {
+    toast.error('Failed to create product')
+    console.error('Error creating product:', error)
+  }
+}
+
+// Add item to list
+const addItemToList = async () => {
+  if (!listId.value) {
+    toast.error('List not found')
+    return
+  }
+
+  if (!selectedProductId.value) {
+    toast.error('Please select a product')
+    return
+  }
+
+  if (quantity.value <= 0) {
+    toast.error('Quantity must be greater than 0')
+    return
+  }
+
+  if (!unit.value.trim()) {
+    toast.error('Unit is required')
+    return
+  }
+
+  try {
+    const newItem = await itemsStore.addItem(listId.value, {
+      product: { id: selectedProductId.value },
+      quantity: quantity.value,
+      unit: unit.value.trim(),
+      metadata: {}
+    })
+    
+    // Force refresh to ensure we have the latest data with full product details
+    await itemsStore.fetchItems(listId.value)
+    
+    toast.success(t('listView.toast.item_added'))
+    closeAddItemModal()
+  } catch (error: any) {
+    console.error('Error adding item:', error)
+    
+    // Handle specific error cases
+    if (error.response?.status === 409) {
+      toast.error('This product is already in the list. You can update its quantity from the list.')
+    } else if (error.response?.status === 404) {
+      toast.error('Product or list not found')
+    } else if (error.message) {
+      toast.error(error.message)
+    } else {
+      toast.error('Failed to add item to list')
+    }
+  }
+}
+
+const goToAddItem = () => {
+  openAddItemModal()
+}
 
 const goHome = () => {
   router.push('/Home')
@@ -185,10 +487,6 @@ const editList = () => {
   if (listId.value) {
     router.push(`/lists/${listId.value}/edit`)
   }
-}
-
-const goToAddItem = () => {
-  toast.info(t('listView.toast.add_item_soon', { id: listId.value ?? '' }))
 }
 
 const shareList = () => {
@@ -250,7 +548,7 @@ const onProductAdded = () => {
   gap: 28px;
 }
 
-/* ===== TOP BAR: Home | Title | Share ===== */
+/* ===== TOP BAR: Home | Search | Share ===== */
 .topbar {
   display: grid;
   grid-template-columns: 80px 1fr 80px;
@@ -258,6 +556,27 @@ const onProductAdded = () => {
   gap: 40px;
   padding: 12px 0;
   margin-bottom: 8px;
+}
+
+.search {
+  width: 100%;
+  height: 52px;
+  border-radius: 999px;
+  border: none;
+  background: #0E0F1A;
+  color: #fff;
+  padding: 0 24px;
+  outline: none;
+  font-size: 18px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  text-align: left;
+}
+
+.search::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
 }
 
 .icon-btn {
@@ -286,13 +605,32 @@ const onProductAdded = () => {
   height: 32px;
 }
 
-.main-title {
+/* ===== TITLE SECTION ===== */
+.title-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.title-section .main-title {
   margin: 0;
-  text-align: center;
   font-size: 56px;
   font-weight: 900;
   color: #EDEAF6;
   letter-spacing: -1px;
+}
+
+.title-section .edit-btn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.title-section .edit-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ===== TOOLBAR: Filter/Sort | Add ===== */
@@ -609,5 +947,229 @@ const onProductAdded = () => {
   .item-quantity {
     font-size: 16px;
   }
+}
+
+/* Add Item Modal Styles */
+.add-item-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #EDEAF6;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 18px;
+  background: #0E0F1A;
+  border: 2px solid rgba(107, 124, 255, 0.3);
+  border-radius: 12px;
+  color: #EDEAF6;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6B7CFF;
+  box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.15);
+}
+
+.form-input::placeholder {
+  color: rgba(185, 181, 209, 0.5);
+}
+
+.products-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 2px solid rgba(107, 124, 255, 0.2);
+  border-radius: 12px;
+  background: #0E0F1A;
+}
+
+.product-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.product-option:last-child {
+  border-bottom: none;
+}
+
+.product-option:hover {
+  background: rgba(107, 124, 255, 0.1);
+}
+
+.product-option.selected {
+  background: rgba(107, 124, 255, 0.2);
+  border-left: 4px solid #6B7CFF;
+}
+
+.product-option.already-in-list {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.product-option.already-in-list:hover {
+  background: rgba(255, 152, 0, 0.1);
+}
+
+.product-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #EDEAF6;
+}
+
+.product-category {
+  font-size: 14px;
+  color: #B9B5D1;
+  opacity: 0.7;
+}
+
+.already-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: rgba(255, 152, 0, 0.2);
+  color: #FFB74D;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.no-products {
+  padding: 32px 18px;
+  text-align: center;
+  color: #B9B5D1;
+  font-size: 15px;
+}
+
+.create-product-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 14px;
+  background: rgba(107, 124, 255, 0.15);
+  border: 2px dashed rgba(107, 124, 255, 0.4);
+  border-radius: 12px;
+  color: #6B7CFF;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-product-btn:hover {
+  background: rgba(107, 124, 255, 0.25);
+  border-color: #6B7CFF;
+}
+
+.inline-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-secondary,
+.btn-primary {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #EDEAF6;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6B7CFF 0%, #5B5DD9 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(107, 124, 255, 0.4);
+}
+
+.quantity-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #EDEAF6;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #6B7CFF 0%, #5B5DD9 100%);
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(107, 124, 255, 0.4);
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

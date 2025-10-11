@@ -112,8 +112,10 @@ export const addItem = async (
   validateMetadata(data.metadata)
 
   const url = getListItemsEndpoint(listId)
-  const response = await post<ListItem>(url, data)
-  return response
+  const response = await post<{ item: ListItem }>(url, data)
+  
+  // Backend returns { item: ListItem }, we need to extract the item
+  return response.item
 }
 
 /**
@@ -155,12 +157,23 @@ export const getItems = async (
   
   const response = await get<any>(url)
   
+  console.log('📦 LIST ITEMS Response:', response)
+  console.log('Response type:', typeof response)
+  console.log('Is array?', Array.isArray(response))
+  
   // Handle different response formats
   if (Array.isArray(response)) {
+    console.log('✓ Format: Direct array, length:', response.length)
     return response as ListItemArray
+  } else if (response.data && Array.isArray(response.data)) {
+    console.log('✓ Format: Object with data property, length:', response.data.length)
+    return response.data as ListItemArray
   } else if (response.items && Array.isArray(response.items)) {
+    console.log('✓ Format: Object with items property, length:', response.items.length)
     return response.items as ListItemArray
   } else {
+    console.warn('⚠️ Unknown response format, returning empty array')
+    console.log('Response keys:', Object.keys(response))
     return []
   }
 }
