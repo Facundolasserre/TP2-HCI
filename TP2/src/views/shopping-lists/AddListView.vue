@@ -113,7 +113,7 @@ import { useRouter } from 'vue-router';
 import { useShoppingListsStore } from '@/stores/shoppingLists';
 import { useToast } from '@/composables/useToast';
 import { useI18n } from '@/composables/useI18n';
-import ShareMembersModal from '@/components/ShareMembersModal.vue';
+import ShareMembersModal from '@/components/members/ShareMembersModal.vue';
 
 const router = useRouter();
 const shoppingListsStore = useShoppingListsStore();

@@ -443,8 +443,8 @@ import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
-import ShareMembersModal from '@/components/ShareMembersModal.vue'
-import Modal from '@/components/Modal.vue'
+import ShareMembersModal from '@/components/members/ShareMembersModal.vue'
+import Modal from '@/components/common/Modal.vue'
 
 const route = useRoute()
 const router = useRouter()

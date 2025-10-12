@@ -1,58 +1,98 @@
 <template>
   <div class="profile-view">
+  <div class="home-profile">
+  <header class="topbar">
+    <button class="home-btn" @click="goBack" aria-label="Go home">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+    </button>
+    <h1>Profile</h1>
+  </header>
+  </div>
+
     <div class="profile-container">
       <!-- Left Column -->
       <div class="left-column">
         <!-- Profile Header -->
         <div class="profile-header card">
           <div class="profile-info">
-            <img src="https://i.pravatar.cc/100" alt="Profile Picture" class="profile-picture">
+            <img :src="avatarFallback" alt="Profile Picture" class="profile-picture" />
             <div class="profile-text">
-              <h2>Jane Doe</h2>
-              <p class="muted-text">Organized shopper since 2024</p>
-              <p class="small-text muted-text">jane.doe@example.com</p>
+              <h2>{{ user?.name }} {{ user?.surname }}</h2>
+              <p class="muted-text">
+                Organized shopper since
+                <span v-if="user?.createdAt">
+                  {{ new Date(user.createdAt).toLocaleDateString() }}
+                </span>
+                <span v-else>—</span>
+              </p>
+              <p class="small-text muted-text">{{ user?.email }}</p>
             </div>
           </div>
-          <button class="edit-profile-btn" @click="goToSettings">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
-              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.902 3.433 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.892 3.433-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.892-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.291a1.873 1.873 0 0 0 1.115 2.694l.319.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.292c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.694 1.115l-.094.319c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.291.159A1.873 1.873 0 0 0 6.166 1.626l.094-.319z"/>
-            </svg>
-            Edit Profile
-          </button>
+
+          <div class="profile-actions">
+            <!-- Cambiar foto -->
+            <!-- Ir a Settings -->
+            <button class="edit-profile-btn" @click="goToSettings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                   class="bi bi-gear" viewBox="0 0 16 16">
+              </svg>
+              Edit Profile
+            </button>
+          </div>
         </div>
 
         <!-- Shopping Overview -->
         <div class="shopping-overview">
           <div class="overview-card card">
             <div class="overview-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                   fill="currentColor" class="bi bi-list-ul" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                      d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
               </svg>
             </div>
-            <h3>12</h3>
+            <h3>{{ overview?.lists ?? 0 }}</h3>
             <p>Active Lists</p>
-            <p class="caption muted-text">+2 this week</p>
+            <p class="caption muted-text">—</p>
           </div>
+
           <div class="overview-card card">
             <div class="overview-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
-                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                   fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
+                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
               </svg>
             </div>
-            <h3>347</h3>
+            <h3>{{ overview?.purchases ?? 0 }}</h3>
             <p>Items Purchased</p>
-            <p class="caption muted-text">+23 this month</p>
+            <p class="caption muted-text">—</p>
           </div>
+
           <div class="overview-card card">
             <div class="overview-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                   fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
                 <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.371 2.371 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976l2.61-3.045zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0zM1.5 8.5A.5.5 0 0 1 2 9v6h12V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5zM4 15h3v-5H4v5zm5-5v5h3V10H9zm-4-1h3v.5a.5.5 0 0 1-1 0V9H4v1z"/>
               </svg>
             </div>
-            <h3>8</h3>
-            <p>Favorite Stores</p>
-            <p class="caption muted-text">Most visited: Whole Foods</p>
+            <h3>{{ overview?.pantries ?? 0 }}</h3>
+            <p>Pantries</p>
+            <p class="caption muted-text">—</p>
+          </div>
+
+          <div class="overview-card card">
+            <div class="overview-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                   fill="#8b7cf6" viewBox="0 0 16 16" class="icon">
+                <path d="M9.828.122A.5.5 0 0 0 9.5 0h-3a.5.5 0 0 0-.328.122L.11 4.072A.5.5 0 0 0 0 4.5v7a.5.5 0 0 0 .289.454l6 3a.5.5 0 0 0 .422 0l6-3A.5.5 0 0 0 13 11.5v-7a.5.5 0 0 0-.11-.428L9.828.122zM8 1.234 12.5 4 8 6.766 3.5 4 8 1.234zM1 5.383 7.5 9v5.117L1 10.5V5.383zM8.5 14.117V9L15 5.383v5.117l-6.5 3.617z"/>
+              </svg>
+            </div>
+            <h3>{{ overview?.products ?? 0 }}</h3>
+            <p>Products</p>
+            <p class="caption muted-text">—</p>
           </div>
         </div>
 
@@ -60,36 +100,18 @@
         <div class="recent-activity">
           <h3>Recent Activity</h3>
           <div class="activity-list">
-            <div class="activity-item card">
-              <p>Weekly Groceries</p>
+            <div v-if="activity.length === 0" class="muted-text small-text">No recent activity</div>
+
+            <div v-for="item in activity" :key="item.id" class="activity-item card">
+              <p>{{ item.title }}</p>
               <div class="activity-details">
-                <span class="badge completed">Completed</span>
-                <span class="muted-text">24 items</span>
-                <span class="muted-text">2 hours ago</span>
-              </div>
-            </div>
-            <div class="activity-item card">
-              <p>Holiday Dinner</p>
-              <div class="activity-details">
-                <span class="badge active">Active</span>
-                <span class="muted-text">18 items</span>
-                <span class="muted-text">5 hours ago</span>
-              </div>
-            </div>
-            <div class="activity-item card">
-              <p>Pantry Restock</p>
-              <div class="activity-details">
-                <span class="badge completed">Completed</span>
-                <span class="muted-text">12 items</span>
-                <span class="muted-text">1 day ago</span>
-              </div>
-            </div>
-            <div class="activity-item card">
-              <p>Meal Prep Sunday</p>
-              <div class="activity-details">
-                <span class="badge active">Active</span>
-                <span class="muted-text">15 items</span>
-                <span class="muted-text">2 days ago</span>
+                <span class="badge" :class="item.type === 'purchase' ? 'completed' : 'active'">
+                  {{ item.type }}
+                </span>
+                <span class="muted-text" v-if="item.description">{{ item.description }}</span>
+                <span class="muted-text">
+                  {{ new Date(item.date).toLocaleString() }}
+                </span>
               </div>
             </div>
           </div>
@@ -104,21 +126,36 @@
           <div class="notification-item">
             <label for="email-notifications">Email Notifications</label>
             <label class="switch">
-              <input type="checkbox" id="email-notifications" checked>
+              <input 
+                type="checkbox" 
+                id="email-notifications" 
+                v-model="notifications.emailNotifications"
+                @change="saveNotifications"
+              >
               <span class="slider round"></span>
             </label>
           </div>
           <div class="notification-item">
             <label for="push-notifications">Push Notifications</label>
             <label class="switch">
-              <input type="checkbox" id="push-notifications" checked>
+              <input 
+                type="checkbox" 
+                id="push-notifications" 
+                v-model="notifications.pushNotifications"
+                @change="saveNotifications"
+              >
               <span class="slider round"></span>
             </label>
           </div>
           <div class="notification-item">
             <label for="price-alerts">Price Alerts</label>
             <label class="switch">
-              <input type="checkbox" id="price-alerts">
+              <input 
+                type="checkbox" 
+                id="price-alerts" 
+                v-model="notifications.priceAlerts"
+                @change="saveNotifications"
+              >
               <span class="slider round"></span>
             </label>
           </div>
@@ -127,12 +164,35 @@
         <!-- Dietary Preferences -->
         <div class="dietary-preferences card">
           <h3>Dietary Preferences</h3>
+
           <div class="preferences-tags">
-            <span class="tag">Organic</span>
-            <span class="tag">Gluten-Free</span>
-            <span class="tag">Dairy-Free</span>
-            <span class="tag">Local Produce</span>
-            <button class="add-btn">+</button>
+            <!-- Tags dinámicas (clic para quitar) -->
+            <span
+                v-for="pref in dietary"
+                :key="pref"
+                class="tag"
+                title="Remove"
+                @click="removePref(pref)"
+            >
+      {{ pref }} <span aria-hidden="true" style="margin-left:.4rem;">×</span>
+    </span>
+
+            <!-- Modo agregar -->
+            <template v-if="addingPref">
+              <input
+                  v-model="newPref"
+                  class="tag-input"
+                  type="text"
+                  placeholder="Add preference…"
+                  @keyup.enter="addPref"
+                  @blur="addingPref=false"
+                  autofocus
+              />
+              <button class="add-btn" @click="addPref">+</button>
+            </template>
+            <template v-else>
+              <button class="add-btn" @click="addingPref = true">+</button>
+            </template>
           </div>
         </div>
 
@@ -140,11 +200,34 @@
         <div class="favorite-stores card">
           <h3>Favorite Stores</h3>
           <div class="stores-list">
-            <div class="store-item">Whole Foods Market</div>
-            <div class="store-item">Trader Joe's</div>
-            <div class="store-item">Safeway</div>
-            <div class="store-item">Target</div>
-            <button class="add-btn">+</button>
+            <div 
+              v-for="store in stores" 
+              :key="store" 
+              class="store-item"
+              @click="removeStore(store)"
+              title="Click to remove"
+            >
+              {{ store }} <span aria-hidden="true" style="margin-left:.4rem;">×</span>
+            </div>
+
+            <!-- Add store mode -->
+            <template v-if="addingStore">
+              <input
+                  v-model="newStore"
+                  class="tag-input"
+                  type="text"
+                  placeholder="Add store…"
+                  @keyup.enter="addStore"
+                  @blur="addingStore=false"
+                  autofocus
+              />
+              <button class="add-btn" @click="addStore">+</button>
+            </template>
+            <template v-else>
+              <div class="add-store-button-wrapper">
+                <button class="add-btn" @click="addingStore = true">+</button>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -152,24 +235,279 @@
   </div>
 </template>
 
-<script>
-import { useRouter } from 'vue-router'
+<script setup lang="ts">
 
-export default {
-  name: 'ProfileView',
-  setup() {
-    const router = useRouter()
+import { onMounted, ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import UsersService, { type GetUser, type UpdateUserProfile } from '@/api/users.service'
+import { useAuthStore } from "@/stores/auth";
 
-    const goToSettings = () => {
-      router.push('/settings')
-    }
+import { useToast } from "@/composables/useToast";
 
-    return { goToSettings }
+const router = useRouter();
+const { success: showSuccessToast, error: showErrorToast } = useToast();
+
+const auth = useAuthStore();
+const { user, loading } = storeToRefs(auth);
+
+// Si más adelante implementás overview/activity en tu API,
+// podés volver a tiparlas y cargarlas. Por ahora las dejamos null.
+type OverviewCounts = { lists: number; purchases: number; pantries: number; products: number; } | null;
+type ActivityItem = { id: string; type: string; title: string; date: string; description?: string } ;
+
+const overview = ref<OverviewCounts>(null);
+const activity = ref<ActivityItem[]>([]);
+
+function goBack() {
+  router.push('/home');
+}
+
+const avatarFallback = computed(() => {
+  // Generate a stable avatar URL based on user email or ID
+  const seed = user.value?.email || user.value?.id?.toString() || 'default';
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+});
+
+const goToSettings = () => router.push("/settings");
+
+// ---------- NUEVO: estado y lógica para Dietary Preferences ----------
+const dietary = ref<string[]>([]);
+const addingPref = ref(false);
+const newPref = ref("");
+
+// Sincronizar con el perfil cuando llega desde la API
+watch(user, (u) => {
+  dietary.value = Array.isArray(u?.metadata?.dietaryPreferences) ? [...u!.metadata.dietaryPreferences] : [];
+}, { immediate: true });
+
+async function saveDietary() {
+  try {
+    // Store dietary preferences in metadata
+    const currentMetadata = user.value?.metadata || {};
+    const updatedMetadata = {
+      ...currentMetadata,
+      dietaryPreferences: dietary.value
+    };
+
+    await UsersService.updateProfile({ 
+      name: user.value?.name || '',
+      surname: user.value?.surname || '',
+      metadata: updatedMetadata 
+    });
+
+    // 🔄 refresca el perfil desde el backend
+    await auth.fetchCurrentUser();
+
+    // sincroniza estado local con backend
+    dietary.value = Array.isArray(user.value?.metadata?.dietaryPreferences)
+        ? [...(user.value!.metadata.dietaryPreferences!)]
+        : [];
+
+    showSuccessToast('Dietary preferences saved');
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? 'Could not save dietary preferences');
   }
 }
-</script>
 
+async function addPref() {
+  const v = newPref.value.trim();
+  if (!v) return;
+  if (dietary.value.includes(v)) {
+    showErrorToast("Already added");
+    return;
+  }
+  dietary.value.push(v);
+  newPref.value = "";
+  addingPref.value = false;
+  try {
+    await saveDietary();
+    showSuccessToast("Preference added");
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? "Could not save");
+  }
+}
+
+async function removePref(pref: string) {
+  dietary.value = dietary.value.filter(p => p !== pref);
+  try {
+    await saveDietary();
+    showSuccessToast("Preference removed");
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? "Could not save");
+  }
+}
+
+// ---------- Notifications state and logic ----------
+const notifications = ref({
+  emailNotifications: true,
+  pushNotifications: true,
+  priceAlerts: false
+});
+
+// Sync notifications with user metadata
+watch(user, (u) => {
+  if (u?.metadata?.notifications) {
+    notifications.value = {
+      emailNotifications: u.metadata.notifications.emailNotifications ?? true,
+      pushNotifications: u.metadata.notifications.pushNotifications ?? true,
+      priceAlerts: u.metadata.notifications.priceAlerts ?? false
+    };
+  }
+}, { immediate: true });
+
+async function saveNotifications() {
+  try {
+    const currentMetadata = user.value?.metadata || {};
+    const updatedMetadata = {
+      ...currentMetadata,
+      notifications: notifications.value
+    };
+
+    await UsersService.updateProfile({ 
+      name: user.value?.name || '',
+      surname: user.value?.surname || '',
+      metadata: updatedMetadata 
+    });
+
+    await auth.fetchCurrentUser();
+    showSuccessToast('Notification preferences saved');
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? 'Could not save notification preferences');
+  }
+}
+
+// ---------- (Opcional) también dejo lista la lógica para Favorite Stores ----------
+const stores = ref<string[]>([]);
+const addingStore = ref(false);
+const newStore = ref("");
+
+watch(user, (u) => {
+  stores.value = Array.isArray(u?.metadata?.favoriteStores) ? [...u!.metadata.favoriteStores] : [];
+}, { immediate: true });
+
+async function saveStores() {
+  try {
+    // Store favorite stores in metadata
+    const currentMetadata = user.value?.metadata || {};
+    const updatedMetadata = {
+      ...currentMetadata,
+      favoriteStores: stores.value
+    };
+
+    await UsersService.updateProfile({ 
+      name: user.value?.name || '',
+      surname: user.value?.surname || '',
+      metadata: updatedMetadata 
+    });
+
+    // 🔄 refresca el perfil desde el backend
+    await auth.fetchCurrentUser();
+
+    // sincroniza estado local con backend
+    stores.value = Array.isArray(user.value?.metadata?.favoriteStores)
+        ? [...(user.value!.metadata.favoriteStores!)]
+        : [];
+
+    showSuccessToast('Favorite stores saved');
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? 'Could not save favorite stores');
+  }
+}
+
+async function addStore() {
+  const v = newStore.value.trim();
+  if (!v) return;
+  if (stores.value.includes(v)) {
+    showErrorToast("Already added");
+    return;
+  }
+  stores.value.push(v);
+  newStore.value = "";
+  addingStore.value = false;
+  try {
+    await saveStores();
+    showSuccessToast("Store added");
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? "Could not save");
+  }
+}
+
+async function removeStore(store: string) {
+  stores.value = stores.value.filter(s => s !== store);
+  try {
+    await saveStores();
+    showSuccessToast("Store removed");
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? "Could not save");
+  }
+}
+
+// ---------- Carga de datos del perfil (sin romper si no hay overview/activity) ----------
+async function loadData() {
+  try {
+    if (!user.value) await auth.fetchCurrentUser();
+
+    // Si después agregás endpoints de overview/activity en tu servicio,
+    // podés descomentar y usarlos. Por ahora, lo dejamos silencioso.
+    /*
+    const [ov, act] = await Promise.all([
+      UsersService.getOverview(),
+      UsersService.getActivity(6),
+    ]);
+    overview.value = ov;
+    activity.value = act;
+    */
+  } catch (e: any) {
+    showErrorToast(e?.response?.data?.message ?? "Failed to load profile");
+  }
+}
+
+// Avatar upload functionality removed - no backend endpoint available
+// Users will have stable avatars based on their email/ID
+
+
+
+
+onMounted(loadData);
+
+// Exportamos lo que el template necesita (no obligatorio en <script setup>, pero claro para lectura)
+</script>
 <style scoped>
+
+/*  ====== HOME & SETTINGS ====== */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0 20px;
+}
+
+.topbar h1 {
+  font-size: 28px;
+  margin: 0;
+  font-weight: 600;
+  color: #edeaf6;
+}
+
+.home-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #26234a;
+  color: #bdb7e3;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.home-btn:hover {
+  background: #312e5a;
+  border-color: transparent;
+}
+
+
 /* Using styles from src/assets/styles.css */
 .profile-view {
   background-color: #1C1C30;
@@ -232,6 +570,12 @@ export default {
   border: 3px solid #8B7CFF;
 }
 
+.edit-profile-btn{
+  background-color: #8B7CFF;
+  color: #EDEAF6;
+  border: none
+}
+
 .profile-text h2 {
   margin: 0;
   font-weight: bold;
@@ -241,23 +585,6 @@ export default {
   margin: 0.25rem 0 0;
 }
 
-.edit-profile-btn {
-  background-color: #8B7CFF;
-  color: #EDEAF6;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.3s;
-}
-
-.edit-profile-btn:hover {
-  background-color: #7a6ad9;
-}
 
 /* Shopping Overview */
 .shopping-overview {
@@ -268,6 +595,12 @@ export default {
 
 .overview-card {
   text-align: center;
+}
+
+.icon {
+  color: #8b7cf6; /* violet */
+  width: 32px;
+  height: 32px;
 }
 
 .overview-icon {
@@ -429,10 +762,33 @@ input:checked + .slider:before {
   font-size: 1.5rem;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .add-btn:hover {
   background-color: #5f589c;
+}
+
+.tag-input {
+  background-color: #4A4472;
+  color: #EDEAF6;
+  border: 1px solid #8B7CFF;
+  border-radius: 16px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  outline: none;
+  min-width: 150px;
+}
+
+.tag-input:focus {
+  border-color: #BDB7E3;
+  box-shadow: 0 0 0 2px rgba(139, 124, 255, 0.2);
+}
+
+.tag-input::placeholder {
+  color: #BDB7E3;
 }
 
 /* Favorite Stores */
@@ -446,11 +802,18 @@ input:checked + .slider:before {
   background-color: #4A4472;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.favorite-stores .add-btn {
-    align-self: flex-start;
-    margin-top: 0.5rem;
+.store-item:hover {
+  background-color: #5f589c;
+}
+
+.add-store-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 
 /* Responsive */

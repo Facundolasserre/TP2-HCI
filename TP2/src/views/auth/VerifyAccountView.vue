@@ -115,7 +115,7 @@ async function resendCode() {
 }
 
 function goToLogin() {
-  router.push('/login');
+  router.push('/Home');
 }
 </script>
 

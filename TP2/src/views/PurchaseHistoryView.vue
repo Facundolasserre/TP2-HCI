@@ -79,8 +79,8 @@ import { useShoppingListsStore } from '@/stores/shoppingLists';
 import { useToast } from '@/composables/useToast';
 import { useI18n } from '@/composables/useI18n';
 
-import Topbar from '@/components/Topbar.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import Topbar from '@/components/layout/Topbar.vue';
+import Sidebar from '@/components/layout/Sidebar.vue';
 import IconStar from '@/assets/star.svg';
 
 const router = useRouter();

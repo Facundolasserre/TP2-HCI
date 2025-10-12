@@ -7,7 +7,7 @@
         :aria-label="t('topbar.open_menu')"
     >
       <img
-          src="@/assets/fonts/burgerIcon.png"
+          src="../../assets/fonts/burgerIcon.png"
           :alt="t('topbar.menu_icon')"
           class="topbar-icon"
       />
@@ -17,14 +17,14 @@
       <div class="icon-group">
         <button class="round-btn" :title="t('topbar.filter')" @click="$emit('filter')">
           <img
-              src="@/assets/fonts/filter.png"
+              src="../../assets/fonts/filter.png"
               :alt="t('topbar.filter_icon')"
               class="topbar-icon"
           />
         </button>
         <button class="round-btn" :title="t('topbar.sort')" @click="$emit('sort')">
           <img
-              src="@/assets/fonts/sort.png"
+              src="../../assets/fonts/sort.png"
               :alt="t('topbar.sort_icon')"
               class="topbar-icon"
           />

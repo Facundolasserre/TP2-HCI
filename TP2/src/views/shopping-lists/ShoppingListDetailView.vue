@@ -270,7 +270,7 @@ import { useListItemsStore } from '@/stores/listItems'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 import type { ListItem, User } from '@/types/shopping-lists'
-import ShareMembersModal from '@/components/ShareMembersModal.vue'
+import ShareMembersModal from '@/components/members/ShareMembersModal.vue'
 
 const router = useRouter()
 const route = useRoute()

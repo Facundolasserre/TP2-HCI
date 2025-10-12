@@ -68,7 +68,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
-import AddMember from '@/components/AddMember.vue'
+import AddMember from '@/components/members/AddMember.vue'
 import * as shoppingListsService from '@/api/shopping-lists.service'
 
 type User = {

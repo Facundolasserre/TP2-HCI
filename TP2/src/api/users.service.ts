@@ -57,6 +57,8 @@ class UsersService {
   async logout(): Promise<void> {
     await http.post('/api/users/logout');
   }
+
+
 }
 
 export default new UsersService();

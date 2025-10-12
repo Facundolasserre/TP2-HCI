@@ -1,4 +1,5 @@
 <template>
+  <div class="settings-page">
   <div class="settings-wrap" v-if="!isLoading">
     <header class="topbar">
       <button class="home-btn" @click="goBack" aria-label="Go home">
@@ -9,17 +10,6 @@
       </button>
       <h1>Settings</h1>
     </header>
-
-    <section class="user-profile-header">
-      <img v-if="photoUrl" :src="photoUrl" :alt="name" class="profile-avatar" />
-      <div v-else class="profile-avatar-placeholder">
-        <span>{{ name ? name.charAt(0) : '?' }}</span>
-      </div>
-      <h2 class="profile-name">Welcome, {{ name }}!</h2>
-      <p class="profile-description">
-        Manage your information and privacy and security options to make BagIt more relevant to you
-      </p>
-    </section>
 
     <section class="card">
       <h2>Profile</h2>
@@ -37,10 +27,11 @@
             </div>
           </div>
         </div>
-
-        <div class="col full">
-          <label for="photoUrl">Photo (URL)</label>
-          <input id="photoUrl" type="url" v-model="photoUrl" placeholder="https://..." />
+        <div class="photo-grid">
+        <label class="edit-profile-btn square" :class="{ disabled: avatarUploading }">
+          <input type="file" accept="image/*" @change="onAvatarChange" style="display:none" />
+          {{ avatarUploading ? 'Uploading...' : 'Change Photo' }}
+        </label>
         </div>
       </div>
 
@@ -96,8 +87,8 @@
       </div>
     </section>
   </div>
-
   <div v-else class="loading">Loading…</div>
+  </div>
 </template>
 
 
@@ -246,10 +237,16 @@ function goBack() {
 </script>
 
 <style scoped>
+
+.settings-page {
+  min-height: 140vh; /* fuerza que sea más alta que la pantalla */
+}
 /* ====== Base & Layout ====== */
 .settings-wrap {
   width: min(800px, 92vw);
-  margin: 0 auto 64px;
+  margin: 0 auto 128px; /* aumentá este valor */
+  min-height: 120vh; /* hace que el contenedor tenga más largo vertical */
+  padding-top: 48px;
 }
 
 .topbar {
@@ -284,39 +281,7 @@ function goBack() {
 }
 
 /* ====== User Profile Header ====== */
-.user-profile-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin: 30px 0 50px;
-  padding: 20px;
-}
 
-.profile-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #3a3768;
-  margin-bottom: 20px;
-  background-color: #3a3768; /* Fallback color */
-}
-
-.profile-avatar-placeholder {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background-color: #3a3768;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #edeaf6;
-  font-size: 50px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
 .profile-avatar-placeholder span {
   text-transform: uppercase;
 }
@@ -538,4 +503,41 @@ input::placeholder {
     max-width: none;
   }
 }
+
+/* ==== change photo ==== */
+
+.photo-grid {
+  display: flex;
+  justify-content: center; /* o flex-start si querés alinearlo a la izquierda */
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.edit-profile-btn {
+  background-color: #8B7CFF;
+  color: #EDEAF6;
+  border: none;
+  border-radius: 10px;
+  width: 120px;            /* ancho fijo */
+  height: 120px;           /* alto fijo para hacerlo cuadrado */
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;  /* ícono arriba, texto abajo */
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s;
+  margin: 1rem auto;       /* centrado */
+}
+
+.edit-profile-btn:hover {
+  background-color: #7a6ad9;
+}
+
+.edit-profile-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
 </style>

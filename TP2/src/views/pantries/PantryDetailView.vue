@@ -302,7 +302,7 @@ import { usePantryItemsStore } from '@/stores/pantryItems'
 import { useLanguageStore } from '@/stores/language'
 import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
-import Sidebar from '@/components/Sidebar.vue'
+import Sidebar from '@/components/layout/Sidebar.vue'
 import type { PantryItem, PantryItemCreate, PantryItemUpdate } from '@/types/pantry'
 import type { GetUser } from '@/types/user'
 

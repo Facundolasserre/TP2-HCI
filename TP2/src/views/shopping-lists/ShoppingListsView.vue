@@ -175,8 +175,8 @@ import { useToast } from '@/composables/useToast'
 import { useLanguageStore } from '@/stores/language'
 import { useI18n } from '@/composables/useI18n'
 import type { ShoppingList } from '@/types/shopping-lists'
-import Sidebar from '@/components/Sidebar.vue'
-import ShareMembersModal from '@/components/ShareMembersModal.vue'
+import Sidebar from '@/components/layout/Sidebar.vue'
+import ShareMembersModal from '@/components/members/ShareMembersModal.vue'
 
 const router = useRouter()
 const store = useShoppingListsStore()
