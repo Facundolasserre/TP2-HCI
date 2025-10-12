@@ -84,8 +84,8 @@
 
       <!-- Toolbar - Full Width -->
       <section class="toolbar">
+        <!-- Filter Tabs (Left) -->
         <div class="toolbar-left">
-          <!-- Filter Tabs -->
           <div class="filter-tabs">
             <button 
               :class="['tab', { active: ownerFilter === undefined }]"
@@ -106,27 +106,28 @@
               {{ t('pantries.filters.shared') }}
             </button>
           </div>
-
-          <!-- Search & Create Pantry -->
-          <div class="toolbar-center">
-            <div class="search-box">
-              <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                v-model="searchQuery"
-                type="text"
-                :placeholder="t('pantries.search_placeholder')"
-                class="search-input"
-              />
-            </div>
-            <button class="btn-primary" @click="openCreateModal">
-              {{ t('pantries.new_button') }}
-            </button>
-
-          </div>
         </div>
+
+        <!-- Search & Create (Center) -->
+        <div class="toolbar-center">
+          <div class="search-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('pantries.search_placeholder')"
+              class="search-input"
+            />
+          </div>
+          <button class="btn-primary" @click="openCreateModal">
+            {{ t('pantries.new_button') }}
+          </button>
+        </div>
+
+        <!-- View Toggle & Sort (Right) -->
         <div class="toolbar-right">
           <!-- View Toggle -->
           <div class="view-toggle">
@@ -663,6 +664,9 @@ onMounted(async () => {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.25s ease;
+  white-space: nowrap;
+  min-width: 140px;
+  flex-shrink: 0;
 }
 
 .btn-primary:hover {
@@ -847,37 +851,31 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1 1 0;
-  min-width: 0;
-  justify-content: flex-start;
+  flex-shrink: 0;
 }
 
 .toolbar-center {
-  flex: 2;
+  flex: 1;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   min-width: 0;
-  padding-right: 24px;
 }
 
 .toolbar-right {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1 1 0;
-  min-width: 0;
-  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 /* Filter Tabs */
@@ -916,8 +914,9 @@ onMounted(async () => {
 /* Search Box */
 .search-box {
   position: relative;
-  flex-shrink: 1;
+  flex: 1;
   max-width: 400px;
+  min-width: 200px;
 }
 
 .search-icon {
@@ -1502,6 +1501,26 @@ onMounted(async () => {
   }
 }
 
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .toolbar {
+    gap: 20px;
+  }
+
+  .toolbar-center {
+    gap: 16px;
+  }
+
+  .search-box {
+    max-width: 300px;
+  }
+
+  .btn-primary {
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 1024px) {
   .top-nav {
     padding: 0 24px;
@@ -1514,21 +1533,32 @@ onMounted(async () => {
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
 
   .toolbar-left {
-    min-width: 100%;
-    flex-direction: column;
+    width: 100%;
+    justify-content: center;
   }
 
   .toolbar-center {
-    justify-content: flex-start;
+    justify-content: stretch;
     width: 100%;
-    margin-top: 12px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .toolbar-center .search-box {
+    max-width: 100%;
+  }
+
+  .toolbar-center .btn-primary {
+    width: 100%;
   }
 
   .toolbar-right {
     justify-content: space-between;
+    width: 100%;
   }
 
   .search-wrapper {

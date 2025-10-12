@@ -89,13 +89,13 @@
 
             <div class="item-info">
               <div class="item-name">{{ product.name }}</div>
-              <div class="item-meta">{{ product.amount }} {{ product.unit }}</div>
+              <div class="item-meta">{{ product.amount }} {{ getUnitText(product.amount, product.unit) }}</div>
             </div>
           </div>
 
           <!-- Right: quantity + action buttons -->
           <div class="item-right">
-            <div class="item-quantity">{{ product.amount }} {{ product.unit }}</div>
+            <div class="item-quantity">{{ product.amount }} {{ getUnitText(product.amount, product.unit) }}</div>
             <button 
               class="action-btn edit-btn" 
               @click="editItem(product.id)"
@@ -128,7 +128,7 @@
     <Modal :open="showAddItemModal" @close="closeAddItemModal" size="md">
       <template #header>
         <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
-          Add Product to List
+          {{ t('listView.modal.add_title') }}
         </h2>
       </template>
 
@@ -136,12 +136,12 @@
         <div class="add-item-modal-content">
           <!-- Search existing products -->
           <div v-if="!showCreateProductInline" class="form-group">
-            <label for="search-product">Search Product</label>
+            <label for="search-product">{{ t('listView.modal.search_label') }}</label>
             <input
               id="search-product"
               v-model="searchProductQuery"
               type="text"
-              placeholder="Type to search products..."
+              :placeholder="t('listView.modal.search_placeholder')"
               class="form-input"
             />
             
@@ -158,16 +158,16 @@
               >
                 <div class="product-info-left">
                   <span class="product-name">{{ product.name }}</span>
-                  <span class="product-category">{{ product.category?.name || 'No category' }}</span>
+                  <span class="product-category">{{ product.category?.name || t('listView.modal.no_category') }}</span>
                 </div>
-                <span v-if="isProductInList(product.id)" class="already-badge">Already in list</span>
+                <span v-if="isProductInList(product.id)" class="already-badge">{{ t('listView.modal.already_in_list') }}</span>
               </div>
               
               <div
                 v-if="filteredModalProducts.length === 0"
                 class="no-products"
               >
-                No products found. Create a new one below.
+                {{ t('listView.modal.no_products') }}
               </div>
             </div>
 
@@ -176,24 +176,24 @@
               class="create-product-btn"
               @click="showCreateProductInline = true"
             >
-              ➕ Create New Product
+              {{ t('listView.modal.create_new_product') }}
             </button>
           </div>
 
           <!-- Create new product inline -->
           <div v-else class="form-group">
-            <label for="new-product-name">New Product Name <span style="color: #FF6B9D;">*</span></label>
+            <label for="new-product-name">{{ t('listView.modal.new_product_name') }} <span style="color: #FF6B9D;">*</span></label>
             <input
               id="new-product-name"
               v-model="newProductName"
               type="text"
-              placeholder="Enter product name"
+              :placeholder="t('listView.modal.new_product_placeholder')"
               class="form-input"
               maxlength="50"
               required
             />
 
-            <label for="new-product-category">Category <span style="color: #FF6B9D;">*</span></label>
+            <label for="new-product-category">{{ t('listView.modal.category_label') }} <span style="color: #FF6B9D;">*</span></label>
             <select
               id="new-product-category"
               v-model="newProductCategoryId"
@@ -201,7 +201,7 @@
               required
               @change="onCategoryChange"
             >
-              <option :value="null">Select a category</option>
+              <option :value="null">{{ t('listView.modal.select_category') }}</option>
               <option
                 v-for="category in categoriesStore.items"
                 :key="category.id"
@@ -210,7 +210,7 @@
                 {{ category.name }}
               </option>
               <option value="NEW_CATEGORY" style="font-style: italic; font-weight: 600;">
-                ➕ New Category
+                {{ t('listView.modal.new_category') }}
               </option>
             </select>
 
@@ -220,14 +220,14 @@
                 class="btn-secondary"
                 @click="showCreateProductInline = false; newProductName = ''; newProductCategoryId = null; newCategoryName = ''"
               >
-                Cancel
+                {{ t('common.cancel') }}
               </button>
               <button
                 type="button"
                 class="btn-primary"
                 @click="createProductInline"
               >
-                Create Product
+                {{ t('listView.modal.create_product') }}
               </button>
             </div>
           </div>
@@ -235,7 +235,7 @@
           <!-- Quantity and Unit -->
           <div v-if="selectedProductId && !showCreateProductInline" class="quantity-section">
             <div class="form-group quantity-group">
-              <label for="quantity">Quantity *</label>
+              <label for="quantity">{{ t('listView.modal.quantity_label') }} *</label>
               <input
                 id="quantity"
                 v-model.number="quantity"
@@ -243,24 +243,24 @@
                 min="1"
                 step="1"
                 class="form-input"
-                placeholder="Enter quantity"
+                :placeholder="t('listView.modal.quantity_placeholder')"
               />
             </div>
 
             <div class="form-group unit-group">
-              <label for="unit">Unit *</label>
+              <label for="unit">{{ t('listView.modal.unit_label') }} *</label>
               <select
                 id="unit"
                 v-model="unit"
                 class="form-input"
               >
-                <option value="units">Units</option>
-                <option value="kg">Kg</option>
-                <option value="g">g</option>
-                <option value="L">L</option>
-                <option value="mL">mL</option>
-                <option value="lbs">lbs</option>
-                <option value="oz">oz</option>
+                <option value="units">{{ t('listView.modal.unit_units') }}</option>
+                <option value="kg">{{ t('listView.modal.unit_kg') }}</option>
+                <option value="g">{{ t('listView.modal.unit_g') }}</option>
+                <option value="L">{{ t('listView.modal.unit_l') }}</option>
+                <option value="mL">{{ t('listView.modal.unit_ml') }}</option>
+                <option value="lbs">{{ t('listView.modal.unit_lbs') }}</option>
+                <option value="oz">{{ t('listView.modal.unit_oz') }}</option>
               </select>
             </div>
           </div>
@@ -270,7 +270,7 @@
       <template #footer>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" @click="closeAddItemModal">
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -278,7 +278,7 @@
             :disabled="!selectedProductId || showCreateProductInline || quantity <= 0"
             @click="addItemToList"
           >
-            Add to List
+            {{ t('listView.modal.add_to_list') }}
           </button>
         </div>
       </template>
@@ -288,7 +288,7 @@
     <Modal :open="showEditItemModal" @close="closeEditItemModal" size="md">
       <template #header>
         <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
-          Edit product
+          {{ t('listView.modal.edit_title') }}
         </h2>
       </template>
 
@@ -297,7 +297,7 @@
           <!-- Product Name (Read-only) -->
           <div class="form-group">
             <label for="edit-product-name">
-              Name <span class="required-indicator">*</span>
+              {{ t('listView.modal.name_label') }} <span class="required-indicator">*</span>
             </label>
             <input
               id="edit-product-name"
@@ -312,7 +312,7 @@
           <!-- Category (Read-only) -->
           <div class="form-group">
             <label for="edit-product-category">
-              Category <span class="required-indicator">*</span>
+              {{ t('listView.modal.category_readonly') }} <span class="required-indicator">*</span>
             </label>
             <input
               id="edit-product-category"
@@ -326,7 +326,7 @@
 
           <!-- Description (Empty, disabled) -->
           <div class="form-group">
-            <label for="edit-product-description">Description</label>
+            <label for="edit-product-description">{{ t('products.form.description_label') }}</label>
             <textarea
               id="edit-product-description"
               class="form-input"
@@ -339,7 +339,7 @@
           <!-- Quantity and Unit -->
           <div class="quantity-section">
             <div class="form-group quantity-group">
-              <label for="edit-quantity">Quantity *</label>
+              <label for="edit-quantity">{{ t('listView.modal.quantity_label') }} *</label>
               <input
                 id="edit-quantity"
                 v-model.number="editingQuantity"
@@ -347,24 +347,24 @@
                 min="1"
                 step="1"
                 class="form-input"
-                placeholder="Enter quantity"
+                :placeholder="t('listView.modal.quantity_placeholder')"
               />
             </div>
 
             <div class="form-group unit-group">
-              <label for="edit-unit">Unit *</label>
+              <label for="edit-unit">{{ t('listView.modal.unit_label') }} *</label>
               <select
                 id="edit-unit"
                 v-model="editingUnit"
                 class="form-input"
               >
-                <option value="units">Units</option>
-                <option value="kg">Kg</option>
-                <option value="g">g</option>
-                <option value="L">L</option>
-                <option value="mL">mL</option>
-                <option value="lbs">lbs</option>
-                <option value="oz">oz</option>
+                <option value="units">{{ t('listView.modal.unit_units') }}</option>
+                <option value="kg">{{ t('listView.modal.unit_kg') }}</option>
+                <option value="g">{{ t('listView.modal.unit_g') }}</option>
+                <option value="L">{{ t('listView.modal.unit_l') }}</option>
+                <option value="mL">{{ t('listView.modal.unit_ml') }}</option>
+                <option value="lbs">{{ t('listView.modal.unit_lbs') }}</option>
+                <option value="oz">{{ t('listView.modal.unit_oz') }}</option>
               </select>
             </div>
           </div>
@@ -374,15 +374,15 @@
       <template #footer>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" @click="closeEditItemModal">
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
             class="btn-save"
-            :disabled="editingQuantity <= 0 || !editingUnit.trim()"
+            :disabled="editingQuantity <= 0"
             @click="saveEditItem"
           >
-            Update
+            {{ t('listView.modal.save_changes') }}
           </button>
         </div>
       </template>
@@ -392,24 +392,24 @@
     <Modal :open="showCreateCategoryModal" @close="closeCreateCategoryModal" size="sm">
       <template #header>
         <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
-          Create new category
+          {{ t('products.category_modal.title') }}
         </h2>
       </template>
 
       <template #default>
         <div class="category-modal-content">
           <div class="form-group">
-            <label for="category-name">Category name <span style="color: #FF6B9D;">*</span></label>
+            <label for="category-name">{{ t('products.category_modal.name_label') }} <span style="color: #FF6B9D;">*</span></label>
             <input
               id="category-name"
               v-model="newCategoryName"
               type="text"
-              placeholder="Enter category name"
+              :placeholder="t('products.category_modal.name_placeholder')"
               class="form-input"
               maxlength="50"
               @keyup.enter="createCategory"
             />
-            <p style="color: #9B95B8; font-size: 13px; margin-top: 8px;">Maximum 50 characters</p>
+            <p style="color: #9B95B8; font-size: 13px; margin-top: 8px;">{{ t('products.category_modal.name_hint') }}</p>
           </div>
         </div>
       </template>
@@ -417,7 +417,7 @@
       <template #footer>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" @click="closeCreateCategoryModal">
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -425,7 +425,7 @@
             :disabled="!newCategoryName.trim()"
             @click="createCategory"
           >
-            Create
+            {{ t('common.create') }}
           </button>
         </div>
       </template>
@@ -482,6 +482,16 @@ const listId = computed(() => {
 })
 
 const currentList = computed(() => listsStore.currentList)
+
+// Helper function to get the correct unit text based on quantity
+const getUnitText = (quantity: number, unit: string) => {
+  // Special handling for "units" translation
+  if (unit === 'units') {
+    return quantity === 1 ? t('listView.units.unit') : t('listView.units.units')
+  }
+  // For other units (kg, g, L, mL, etc.), return as-is
+  return unit
+}
 
 const filteredProducts = computed(() => {
   let items = itemsStore.items
