@@ -9,6 +9,7 @@
   "login.signup": "Sign up",
   "login.error_credentials": "Login error. Check your credentials.",
   "login.error_fill_fields": "Please fill all fields",
+  "login.error_invalid_credentials": "Email or password incorrect. Please try again.",
   "login.error_no_account": "We couldn't find an account with that email. Redirecting to sign up...",
 
   "register.title": "Welcome to BagIt",

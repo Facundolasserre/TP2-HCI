@@ -9,6 +9,7 @@
   "login.signup": "Registrate",
   "login.error_credentials": "Error al iniciar sesión. Verifica tus credenciales.",
   "login.error_fill_fields": "Por favor complete todos los campos",
+  "login.error_invalid_credentials": "Email o contraseña incorrectos. Intentalo de nuevo.",
   "login.error_no_account": "No encontramos una cuenta con ese email. Redirigiendo al registro...",
 
   "register.title": "Bienvenido a BagIt",

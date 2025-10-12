@@ -117,7 +117,7 @@ export async function createNewUserToken(userData: LoginUserData): Promise<strin
       .where('user.email = :email', { email: userData.email })
       .getOne();
     if (!user) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+      throw new NotFoundError(ERROR_MESSAGES.NOT_FOUND.USER);
     } else if (!isValidPassword(userData.password, user.password)) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
     } else if (!user.isVerified) {

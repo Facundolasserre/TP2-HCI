@@ -82,7 +82,13 @@ async function onSubmit() {
   } catch (err: any) {
     const status = err.response?.status;
     const backendMessage = err.response?.data?.message;
-    if (status === 401 && backendMessage === 'Invalid credentials') {
+    const normalizedMessage = backendMessage?.toLowerCase() ?? '';
+    if (status === 401 && normalizedMessage.includes('invalid credential')) {
+      if (registerRedirectTimeout) {
+        clearTimeout(registerRedirectTimeout);
+      }
+      errorMessage.value = t('login.error_invalid_credentials');
+    } else if (status === 404 || normalizedMessage.includes('not found')) {
       if (registerRedirectTimeout) {
         clearTimeout(registerRedirectTimeout);
       }
