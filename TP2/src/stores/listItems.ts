@@ -9,6 +9,7 @@ import type {
   ApiError,
 } from '@/types/shopping-lists'
 import * as listItemsService from '@/api/list-items.service'
+import { useShoppingListsStore } from './shoppingLists'
 
 export const useListItemsStore = defineStore('listItems', () => {
   // State
@@ -178,14 +179,38 @@ export const useListItemsStore = defineStore('listItems', () => {
     }
 
     try {
-      const updatedItem = await listItemsService.togglePurchased(listId, itemId, purchased)
+      const response = await listItemsService.togglePurchased(listId, itemId, purchased)
       
-      // Update with real data from server
+      // Update with real item data from server
       if (index !== -1) {
-        items.value[index] = updatedItem
+        items.value[index] = response.item
       }
       
-      return updatedItem
+      // Update the list's completed status in the shopping lists store
+      if (response.list) {
+        console.log('📋 List completed status changed:', {
+          listId,
+          completed: response.list.completed,
+          listName: response.list.name
+        })
+        
+        const shoppingListsStore = useShoppingListsStore()
+        const listIndex = shoppingListsStore.items.findIndex(l => l.id === listId)
+        if (listIndex !== -1) {
+          // Replace the entire list object to trigger reactivity
+          const updatedList = { ...shoppingListsStore.items[listIndex] }
+          updatedList.completed = response.list.completed
+          shoppingListsStore.items[listIndex] = updatedList
+          
+          // Force a reactive update by reassigning the array
+          shoppingListsStore.items = [...shoppingListsStore.items]
+          
+          console.log('✅ Updated shopping lists store. List should now appear in:', 
+            response.list.completed ? 'Purchase History' : 'Home')
+        }
+      }
+      
+      return response.item
     } catch (err) {
       // Rollback on error
       items.value = originalItems

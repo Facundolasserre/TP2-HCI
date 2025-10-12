@@ -43,6 +43,9 @@
   "home.empty_title": "No lists yet",
   "home.empty_text": "Create your first shopping list to get started",
   "home.create_list": "Create List",
+
+  "history.empty_title": "No history yet",
+  "history.empty_text": "Completed lists will appear here",
   "home.add_favorite": "Add to favorites",
   "home.remove_favorite": "Remove from favorites",
   "home.favorite_added": "List added to favorites",

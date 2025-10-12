@@ -215,14 +215,14 @@ export async function updateListItemService(
  * @param {number} listId - Parent list ID
  * @param {number} itemId - Item ID
  * @param {boolean} purchased - New purchased status
- * @returns {Promise<ListItem>} Updated item
+ * @returns {Promise<{item: ListItem, list: any}>} Updated item and list with completed status
  * @throws {NotFoundError} If item is not found
  */
 export async function toggleListItemPurchasedService(
     listId: number,
     itemId: number,
     purchased: boolean
-): Promise<ListItem> {
+): Promise<{item: any, list: any}> {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -238,8 +238,20 @@ export async function toggleListItemPurchasedService(
         item.purchased = purchased;
         await queryRunner.manager.save(item);
 
+        // Fetch the updated list with all active items to calculate completed status
+        const updatedList = await queryRunner.manager.createQueryBuilder(List, "list")
+            .leftJoinAndSelect("list.owner", "owner")
+            .leftJoinAndSelect("list.sharedWith", "sharedWith")
+            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
+            .where("list.id = :listId", { listId })
+            .getOne();
+
         await queryRunner.commitTransaction();
-        return item.getFormattedListItem() as unknown as ListItem;
+        
+        return {
+            item: item.getFormattedListItem(),
+            list: updatedList ? updatedList.getFormattedList() : null
+        };
     } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;

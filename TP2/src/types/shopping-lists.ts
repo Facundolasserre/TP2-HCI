@@ -39,6 +39,7 @@ export interface ShoppingList {
   metadata?: Record<string, any>
   owner: User
   sharedWith: User[]
+  completed: boolean // Computed field: true if all items are purchased
   lastPurchasedAt?: string | null
   createdAt: string
   updatedAt: string

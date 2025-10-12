@@ -209,7 +209,7 @@ export const togglePurchased = async (
   listId: number,
   itemId: number,
   purchased: boolean
-): Promise<ListItem> => {
+): Promise<{item: ListItem, list: any}> => {
   if (!listId || listId < 1) {
     throw new Error('ID de lista inválido')
   }
@@ -219,7 +219,7 @@ export const togglePurchased = async (
 
   const url = `${getListItemsEndpoint(listId)}/${itemId}`
   const data: TogglePurchasedRequest = { purchased }
-  const response = await patch<ListItem>(url, data)
+  const response = await patch<{item: ListItem, list: any}>(url, data)
   return response
 }
 

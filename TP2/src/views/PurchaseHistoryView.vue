@@ -1,421 +1,479 @@
 <template>
-  <div class="purchase-history-view">
-    <Sidebar
-      :open="sidebarOpen"
-      :active="active"
-      @close="closeSidebar"
-      @update:active="val => active = val"
-    />
-    <div class="container">
-      <header class="view-header">
-        <div class="title-container">
-          <button @click="sidebarOpen = true" class="burger-icon">
-            <i class="fas fa-bars"></i>
-          </button>
-          <h1 class="page-title">Historial de Compras</h1>
-        </div>
-      </header>
+  <!-- WRAPPER TOPBAR -->
+  <div class="layout-topbar">
+    <Topbar
+        v-model:query="q"
+        :favorites-active="showFavoritesOnly"
+        @toggle-sidebar="toggleSidebar"
+        @filter="onFilter"
+        @sort="onSort"
+        @favorites="onFavs"
+        @new="onNew" 
+        @search="onSearch"
+      />
+    <!-- Profile Button -->
+    <button class="profile-btn" @click="goProfile">
+      <img src="@/assets/fonts/account.png" alt="Profile" />
+    </button>
+  </div>
 
-      <div class="filter-bar">
-        <div class="filter-card total-purchases-card">
-          <i class="fas fa-receipt icon"></i>
-          <div class="total-purchases-info">
-            <span class="label">Total Compras</span>
-            <span class="count">{{ filteredPurchases.length }}</span>
+  <!-- WRAPPER GRID -->
+  <div class="layout-grid">
+    <div class="grid-container">
+      <main v-if="filtered.length > 0" class="grid">
+        <article
+          v-for="card in filtered"
+          :key="card.id"
+          class="card"
+          @click="openCard(card)"
+        >
+          <div class="card-icon-wrapper" :style="{ borderColor: card.color, backgroundColor: card.color + '20' }">
+            <img :src="card.icon" :alt="card.title" class="card-icon" />
           </div>
-        </div>
-        <div class="date-range-filter">
-          <input type="date" v-model="fromDate" placeholder="dd/mm/aaaa" />
-          <span class="date-divider">-</span>
-          <input type="date" v-model="toDate" placeholder="dd/mm/aaaa" />
-        </div>
-        <div class="search-bar">
-          <i class="fas fa-search"></i>
-          <input type="text" v-model="searchQuery" @input="debouncedSearch" placeholder="Buscar por nombre..." />
+          <div class="card-content">
+            <h3 class="card-title">{{ card.title }}</h3>
+            <p class="card-sub">
+              <em v-if="card.sharedWith?.length">
+                {{ t('home.shared_with') }} {{ shareText(card.sharedWith) }}
+              </em>
+              <em v-else>{{ t('home.no_shares') }}</em>
+            </p>
+          </div>
+          <button 
+            class="favorite-btn" 
+            :class="{ active: isFavorite(card.id) }"
+            @click.stop="toggleFavorite(card.id)"
+            :title="isFavorite(card.id) ? t('home.remove_favorite') : t('home.add_favorite')"
+          >
+            <img :src="IconStar" alt="Favorite" class="star-icon" />
+          </button>
+        </article>
+      </main>
+      
+      <!-- Empty state -->
+      <div v-else class="empty-state">
+        <div class="empty-content">
+          <div class="empty-icon">
+            <img src="@/assets/emptyLogo.png"/>
+          </div>
+          <h2 class="empty-title">{{ t('history.empty_title') }}</h2>
+          <p class="empty-text">{{ t('history.empty_text') }}</p>
         </div>
       </div>
-
-      <main class="content-area">
-        <div v-if="loading" class="skeleton-container">
-          <div class="skeleton-card" v-for="n in 3" :key="n"></div>
-        </div>
-
-        <div v-else-if="error" class="error-state-container">
-          <div class="error-card">
-            <i class="fas fa-exclamation-triangle error-icon"></i>
-            <h2>Error al Cargar</h2>
-            <p>No se pudo obtener el historial de compras. Por favor, intente de nuevo.</p>
-            <button @click="fetchPurchaseHistory" class="retry-button">Reintentar</button>
-          </div>
-        </div>
-
-        <div v-else class="purchase-list">
-          <div v-for="purchase in filteredPurchases" :key="purchase.id" class="purchase-card">
-            <div class="card-content">
-              <div class="card-header">
-                <span class="list-name">{{ purchase.title }}</span>
-                <span class="status-badge">Completada</span>
-              </div>
-              <div class="purchase-details">
-                <span><i class="fas fa-calendar-alt"></i> Hace 4 días</span>
-                <span><i class="fas fa-list-ul"></i> {{ purchase.items }} artículos</span>
-                <span><i class="fas fa-dollar-sign"></i> {{ purchase.total.toFixed(2) }}</span>
-              </div>
-            </div>
-            <button @click="restorePurchase(purchase.id)" class="restore-button">Restaurar</button>
-          </div>
-        </div>
-      </main>
     </div>
   </div>
+
+  <!-- SIDEBAR -->
+  <Sidebar
+    :open="sidebarOpen"
+    :active="active"
+    @close="closeSidebar"
+    @update:active="val => active = val"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import Sidebar from "@/components/Sidebar.vue";
-// import http from '@/services/http';
+import { useRouter } from 'vue-router';
+import { useShoppingListsStore } from '@/stores/shoppingLists';
+import { useToast } from '@/composables/useToast';
+import { useI18n } from '@/composables/useI18n';
 
-interface Purchase {
-  id: number;
-  title: string;
-  status: 'completed' | 'active';
-  items: number;
-  total: number;
-  currency: string;
-  date: string;
-}
+import Topbar from '@/components/Topbar.vue';
+import Sidebar from '@/components/Sidebar.vue';
+import IconStar from '@/assets/star.svg';
 
-// Mock Data for demonstration
-const mockPurchases: Purchase[] = [
-  { id: 1, title: "Birthday Party Shopping", status: 'completed', items: 12, total: 145.50, currency: "USD", date: "2023-10-22T10:00:00Z" },
-  { id: 2, title: "Weekly Groceries", status: 'completed', items: 25, total: 89.90, currency: "USD", date: "2023-10-20T18:30:00Z" },
-  { id: 3, title: "Hardware Store Run", status: 'completed', items: 5, total: 210.00, currency: "USD", date: "2023-10-19T14:15:00Z" },
+const router = useRouter();
+const shoppingListsStore = useShoppingListsStore();
+const toast = useToast();
+const { t } = useI18n();
+
+const q = ref('');
+const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('history');
+const sidebarOpen = ref(false);
+const favorites = ref<Set<number>>(new Set());
+const showFavoritesOnly = ref(false);
+
+// Icon mapping using proper URL resolution for Vite
+const iconMap: Record<string, string> = {
+  'shopping_cart.svg': new URL('@/assets/shopping_cart.svg', import.meta.url).href,
+  'family.svg': new URL('@/assets/family.svg', import.meta.url).href,
+  'travel.svg': new URL('@/assets/travel.svg', import.meta.url).href,
+  'liquor.svg': new URL('@/assets/liquor.svg', import.meta.url).href,
+  'grid_view.svg': new URL('@/assets/grid_view.svg', import.meta.url).href,
+  'lists.svg': new URL('@/assets/lists.svg', import.meta.url).href,
+  'house.svg': new URL('@/assets/house.svg', import.meta.url).href,
+  'work.svg': new URL('@/assets/work.svg', import.meta.url).href,
+};
+
+// Color palette for lists
+const colors = [
+  '#6B7CFF', // Primary blue
+  '#5EC5A7', // Teal
+  '#F0B429', // Yellow
+  '#E76F51', // Coral
+  '#E91E63', // Pink
+  '#9B59B6', // Purple
+  '#3498DB', // Blue
+  '#F39C12', // Orange
 ];
 
-const purchases = ref<Purchase[]>([]);
-const loading = ref(true);
-const error = ref(false);
-const searchQuery = ref('');
-const fromDate = ref('');
-const toDate = ref('');
-const sidebarOpen = ref(false);
-const active = ref('history');
-let debounceTimer: number;
+// Type for card items
+interface CardItem {
+  id: number;
+  title: string;
+  icon: string;
+  color: string;
+  sharedWith: any[];
+}
+
+// Load favorites from localStorage
+onMounted(() => {
+  const storedFavorites = localStorage.getItem('favorites');
+  if (storedFavorites) {
+    try {
+      const parsed = JSON.parse(storedFavorites);
+      favorites.value = new Set(parsed);
+    } catch (error) {
+      console.error('Error parsing favorites from localStorage:', error);
+    }
+  }
+
+  // For now, we don't have completed lists implementation
+  // So this will show an empty state
+  // In the future, you can add a 'completed' field to lists and filter them here
+});
+
+// Computed list of completed lists
+const completedLists = computed<CardItem[]>(() => {
+  // Filter only completed lists (all items are purchased)
+  const completed = shoppingListsStore.items.filter(list => list.completed);
+  
+  return completed.map(list => {
+    const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg';
+    const icon = iconMap[iconName] || iconMap['shopping_cart.svg'];
+    const color = (list.metadata as any)?.color || colors[list.id % colors.length];
+    
+    return {
+      id: list.id,
+      title: list.name,
+      icon,
+      color,
+      sharedWith: list.sharedWith.map(u => `${u.name} ${u.surname}`),
+    };
+  });
+});
+
+// Filter lists based on search and favorites
+const filtered = computed(() => {
+  let lists = completedLists.value;
+
+  // Filter by favorites
+  if (showFavoritesOnly.value) {
+    lists = lists.filter(card => favorites.value.has(card.id));
+  }
+
+  // Filter by search
+  if (q.value.trim()) {
+    const search = q.value.toLowerCase();
+    lists = lists.filter(card => card.title.toLowerCase().includes(search));
+  }
+
+  return lists;
+});
+
+// Format shared with text
+const shareText = (sharedWith: any[]) => {
+  if (!sharedWith || sharedWith.length === 0) return '';
+  if (sharedWith.length === 1) return sharedWith[0].name || sharedWith[0].email;
+  return `${sharedWith.length} ${t('home.people')}`;
+};
+
+// Sidebar handlers
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
 
 const closeSidebar = () => {
   sidebarOpen.value = false;
 };
 
-const fetchPurchaseHistory = async () => {
-  loading.value = true;
-  error.value = false;
-  try {
-    // Simulating API call
-    await new Promise(res => setTimeout(res, 1500));
-    // Uncomment the line below to use actual API
-    // const response = await http.get('/api/purchases/history');
-    // purchases.value = response.data;
-    purchases.value = mockPurchases; // Using mock data
-  } catch (err) {
-    error.value = true;
-    console.error('Error fetching purchase history:', err);
-  } finally {
-    loading.value = false;
-  }
+// Navigation handlers
+const openCard = (card: any) => {
+  router.push(`/List/${card.id}`);
 };
 
-const restorePurchase = async (id: number) => {
-  try {
-    // await http.post(`/api/purchases/${id}/restore`);
-    alert(`Compra ${id} restaurada con éxito`);
-  } catch (err) {
-    alert('Error al restaurar la compra');
-    console.error('Error restoring purchase:', err);
-  }
+const goProfile = () => {
+  router.push('/profile');
 };
 
-const debouncedSearch = () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    // The computed property will react to searchQuery changes automatically
-  }, 300);
+const onNew = () => {
+  router.push('/lists/new');
 };
 
-const filteredPurchases = computed(() => {
-  let filtered = purchases.value;
-  const searchLower = searchQuery.value.toLowerCase();
+// Favorites handlers
+const isFavorite = (id: number): boolean => {
+  return favorites.value.has(id);
+};
 
-  if (searchLower) {
-    filtered = filtered.filter(p => p.title.toLowerCase().includes(searchLower));
+const toggleFavorite = (id: number) => {
+  if (favorites.value.has(id)) {
+    favorites.value.delete(id);
+  } else {
+    favorites.value.add(id);
   }
 
-  if (fromDate.value && toDate.value) {
-    const from = new Date(fromDate.value);
-    const to = new Date(toDate.value);
-    to.setHours(23, 59, 59, 999); // Include the whole end day
+  // Save to localStorage
+  localStorage.setItem('favorites', JSON.stringify(Array.from(favorites.value)));
+};
 
-    filtered = filtered.filter(p => {
-      const purchaseDate = new Date(p.date);
-      return purchaseDate >= from && purchaseDate <= to;
-    });
-  }
+const onFavs = () => {
+  showFavoritesOnly.value = !showFavoritesOnly.value;
+};
 
-  return filtered;
-});
+// Placeholder handlers
+const onFilter = () => {
+  toast.info(t('home.filter_coming_soon'));
+};
 
-onMounted(() => {
-  fetchPurchaseHistory();
-});
+const onSort = () => {
+  toast.info(t('home.sort_coming_soon'));
+};
+
+const onSearch = () => {
+  // Search is handled reactively by the computed property
+};
 </script>
 
 <style scoped>
-/* Using variables from src/assets/styles.css */
 :root {
-  --background: #1C1C30;
-  --surface: #322D59;
-  --text: #EDEAF6;
-  --secondary-text: #BDB7E3;
-  --accent: #8B7CFF;
-  --shadow-color: rgba(0, 0, 0, 0.2);
+  --bg: #1C1C30;
+  --ink: #EDEAF6;
 }
 
-.purchase-history-view {
-  background-color: var(--background);
-  min-height: 100vh;
-  color: var(--text);
-  font-family: 'Roboto', sans-serif;
+.profile-btn {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.profile-btn img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.profile-btn:hover {
+  opacity: 0.8;
+  transform: scale(1.07);
+}
+@media (max-width: 600px) {
+  .profile-btn {
+    top: 12px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+  }
+}
+.layout-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg);
+  padding: 10px 0;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
-.container {
+.layout-grid{
+  margin-top: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.grid-container{
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  width: 100%;
+  padding: 0 26px;
 }
 
-.view-header {
-  padding: 2rem 0 1.5rem 0;
-}
-
-.title-container {
+:deep(.topbar){
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
+}
+:deep(.topbar button),
+:deep(.topbar .search),
+:deep(.topbar input){
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
-.burger-icon {
-  background: none; border: none; color: var(--text);
-  font-size: 1.5rem; cursor: pointer; padding: 0.5rem;
-  border-radius: 50%; display: flex; align-items: center;
-  justify-content: center; transition: background-color 0.2s;
+:deep(.search-wrap){
+  display: inline-flex;
+  align-items: center;
 }
-.burger-icon:hover { background-color: var(--surface); }
 
-.page-title { font-size: 2rem; font-weight: 700; }
+.grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 34px;
+  width: 100%;
+}
+@media (max-width: 860px){
+  .grid{ grid-template-columns: 1fr; }
+}
 
-.filter-bar {
+.card{
+  background:#0E0F1A;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  gap: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  transition: transform .08s ease;
+  cursor:pointer;
+  position: relative;
+}
+.card:hover{ transform: translateY(-2px); }
+
+.card-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
-
+  justify-content: center;
+  border: 2px solid;
+  flex-shrink: 0;
 }
 
-.filter-card {
-  background-color: #322D59;
-  border-radius: 12px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  height: 56px; /* Ensure consistent height */
-  box-sizing: border-box;
+.card-icon {
+  width: 32px;
+  height: 32px;
+  filter: brightness(0) invert(1);
 }
 
-.total-purchases-card .icon { font-size: 1.5rem; color: #322D59; }
-.total-purchases-info { display: flex; flex-direction: column; }
-.total-purchases-info .label { font-size: 0.8rem; color: var(--secondary-text); font-weight: 500; }
-.total-purchases-info .count { font-size: 1.25rem; font-weight: 700; }
-
-/* Visual Adjustment: Date Filter Squares */
-.date-range-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-}
-
-.date-range-filter input[type="date"] {
-  background-color: var(--surface);
-  color: var(--text);
-  border: 1px solid transparent;
-  border-radius: 12px;
-  height: 56px;
-  width: 160px;
-  padding: 1rem;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  transition: all 0.2s ease-in-out;
-  box-sizing: border-box;
-}
-
-.date-range-filter input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.date-range-filter input[type="date"]:hover {
-  border-color: var(--accent);
-  filter: brightness(1.1);
-}
-
-.date-range-filter input[type="date"]:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(139, 124, 255, 0.4);
-}
-
-.date-range-filter input[type="date"]:hover::-webkit-calendar-picker-indicator {
-  opacity: 1;
-}
-
-.date-divider {
-  color: var(--secondary-text);
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.search-bar {
+.card-content {
   flex-grow: 1;
-  display: flex; align-items: center; gap: 0.75rem;
-  background-color: var(--surface);
-  border-radius: 12px; padding: 0 1rem;
-  box-shadow: 0 4px 8px var(--shadow-color);
-  border: 1px solid transparent;
-  transition: border-color 0.2s;
-  height: 56px; /* Ensure consistent height */
-  box-sizing: border-box;
-}
-.search-bar:focus-within { border-color: var(--accent); }
-.search-bar i { color: var(--secondary-text); }
-.search-bar input {
-  flex-grow: 1; background: none; border: none; color: var(--text);
-  padding: 1rem 0; font-family: inherit; font-size: 1rem;
-}
-.search-bar input::placeholder { color: var(--secondary-text); }
-
-.content-area { padding-bottom: 2rem; }
-
-.purchase-list { display: grid; gap: 1rem; }
-
-.purchase-card {
-  background-color: var(--surface);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  box-shadow: 0 4px 12px var(--shadow-color);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.purchase-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px var(--shadow-color); }
-
-.card-content { flex-grow: 1; }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.list-name { font-size: 1.25rem; font-weight: 700; }
-.status-badge {
-  background-color: var(--accent);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
 }
 
-.purchase-details {
-  display: flex;
-  gap: 1.5rem;
-  color: var(--secondary-text);
-  font-size: 0.9rem;
-}
-.purchase-details i { margin-right: 0.5rem; color: var(--accent); }
+.card-title{ margin:0; font-weight:800; color:#fff; font-size: 20px; text-align: left; }
+.card-sub{ margin:4px 0 0; color:#CFC9E6; font-size:14px; text-align: left; }
 
-.restore-button {
-  background-color: var(--accent);
-  color: white;
+/* Favorite Button */
+.favorite-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-.restore-button:hover { background-color: #7A6EE3; }
-
-.skeleton-container { display: grid; gap: 1rem; }
-.skeleton-card {
-  background-color: var(--surface);
-  border-radius: 12px;
-  height: 120px;
+  transition: all 0.2s ease;
+  z-index: 10;
+  padding: 0;
 }
 
-.error-state-container, .skeleton-container {
-  margin-top: 2rem;
+.favorite-btn .star-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(670%) hue-rotate(201deg) brightness(98%) contrast(91%);
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.error-card {
-  background-color: var(--surface); border-radius: 12px;
-  padding: 2.5rem; text-align: center; max-width: 450px;
-  margin: 4rem auto;
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-.error-icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem; }
-.retry-button {
-  background-color: var(--accent); color: white; border: none;
-  border-radius: 8px; padding: 0.75rem 1.5rem; cursor: pointer;
-  font-weight: 500; transition: background-color 0.2s;
-}
-.retry-button:hover { background-color: #7A6EE3; }
-
-/* Responsive Behavior */
-@media (max-width: 1100px) { /* Adjusted breakpoint */
-  .filter-bar {
-    flex-wrap: wrap;
-  }
-  .search-bar {
-    width: 100%;
-    order: -1; /* Move search bar to the top on wrap */
-  }
-  .date-range-filter {
-    flex-grow: 1;
-  }
-  .date-range-filter input[type="date"] {
-    width: 100%;
-  }
+.favorite-btn:hover .star-icon {
+  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
+  transform: scale(1.15);
 }
 
-@media (max-width: 768px) {
-  .container { padding: 0 1rem; }
-  .page-title { font-size: 1.75rem; }
-  .purchase-card { flex-direction: column; align-items: stretch; }
-  .restore-button { margin-top: 1rem; text-align: center; }
-  .purchase-details { flex-direction: column; gap: 0.5rem; }
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.favorite-btn.active .star-icon {
+  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
+  transform: scale(1.1);
+}
+
+.favorite-btn.active:hover .star-icon {
+  transform: scale(1.2);
+}
+
+.empty-state{
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  width: 100%;
+}
+.empty-content{
+  text-align: center;
+  max-width: 400px;
+  padding: 40px 20px;
+}
+.empty-icon{
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+.empty-icon img{
+  width: 350px;
+  height: 350px;
+  object-fit: contain;
+}
+.empty-title{
+  font-size: 32px;
+  font-weight: 800;
+  color: #EDEAF6;
+  margin: 0 0 12px;
+}
+.empty-text{
+  font-size: 16px;
+  color: #CFC9E6;
+  opacity: 0.8;
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+.btn-create{
+  height: 50px;
+  padding: 0 32px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7F89FF, #6B7CFF);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+.btn-create:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(107, 124, 255, 0.4);
+}
+.plus-icon{
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
 }
 </style>

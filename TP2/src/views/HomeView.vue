@@ -112,7 +112,10 @@ const iconMap: Record<string, string> = {
 const colors = ['#6B7CFF', '#FF6B9D', '#4CAF50', '#FF9800', '#9C27B0', '#00BCD4'];
 
 const cards = computed(() => {
-  return shoppingListsStore.items.map(list => {
+  // Filter out completed lists - they should appear in Purchase History instead
+  const activeLists = shoppingListsStore.items.filter(list => !list.completed);
+  
+  return activeLists.map(list => {
     const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg';
     const icon = iconMap[iconName] || iconMap['shopping_cart.svg'];
     const color = (list.metadata as any)?.color || colors[list.id % colors.length];

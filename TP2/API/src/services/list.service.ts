@@ -61,7 +61,7 @@ export async function getListsService(listData: ListFilterOptions): Promise<Pagi
         const queryBuilder = List.createQueryBuilder("list")
             .leftJoinAndSelect("list.owner", "owner")
             .leftJoinAndSelect("list.sharedWith", "sharedWith")
-            .leftJoinAndSelect("list.items", "items")
+            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
             .andWhere("list.deletedAt IS NULL");
 
         if (listData.owner === true) {
@@ -129,7 +129,13 @@ export async function getListsService(listData: ListFilterOptions): Promise<Pagi
  */
 export async function getListByIdService(listId: number, user: User): Promise<List> {
     try {
-        const list = await List.findOne({ where: { id: listId }, relations: ["owner", "sharedWith", "items"] });
+        const list = await List.createQueryBuilder("list")
+            .leftJoinAndSelect("list.owner", "owner")
+            .leftJoinAndSelect("list.sharedWith", "sharedWith")
+            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
+            .where("list.id = :listId", { listId })
+            .getOne();
+            
         if (!list || (list.owner.id !== user.id && !list.sharedWith.some(u => u.id === user.id))) {
             throw new NotFoundError(ERROR_MESSAGES.NOT_FOUND.LIST);
         }
@@ -153,10 +159,13 @@ export async function updateListService(listId: number, data: ListUpdateData, us
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-        const list = await queryRunner.manager.findOne(List, {
-            where: { id: listId } as any,
-            relations: ["owner", "sharedWith", "items"],
-        });
+        const list = await queryRunner.manager.createQueryBuilder(List, "list")
+            .leftJoinAndSelect("list.owner", "owner")
+            .leftJoinAndSelect("list.sharedWith", "sharedWith")
+            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
+            .where("list.id = :listId", { listId })
+            .getOne();
+            
         if (!list || (list.owner.id !== user.id && !list.sharedWith.some(u => u.id === user.id))) {
             throw new NotFoundError(ERROR_MESSAGES.NOT_FOUND.LIST);
         }
@@ -166,7 +175,14 @@ export async function updateListService(listId: number, data: ListUpdateData, us
         if (data.metadata !== undefined) list.metadata = data.metadata;
         await queryRunner.manager.save(list);
         await queryRunner.commitTransaction();
-        const refreshed = await queryRunner.manager.findOne(List, { where: { id: list.id }, relations: ["owner", "sharedWith", "items"] });
+        
+        const refreshed = await queryRunner.manager.createQueryBuilder(List, "list")
+            .leftJoinAndSelect("list.owner", "owner")
+            .leftJoinAndSelect("list.sharedWith", "sharedWith")
+            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
+            .where("list.id = :listId", { listId: list.id })
+            .getOne();
+            
         return refreshed ? (refreshed.getFormattedList() as unknown as List)  : list;
     } catch (err) {
         if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction();
