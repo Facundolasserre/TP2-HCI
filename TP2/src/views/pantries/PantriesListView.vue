@@ -122,8 +122,11 @@
               class="search-input"
             />
           </div>
-          <button class="btn-primary" @click="openCreateModal">
-            {{ t('pantries.new_button') }}
+          <button class="btn-primary create-btn" @click="openCreateModal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 5c.552 0 1 .448 1 1v5h5c.552 0 1 .448 1 1s-.448 1-1 1h-5v5c0 .552-.448 1-1 1s-1-.448-1-1v-5H6c-.552 0-1-.448-1-1s.448-1 1-1h5V6c0-.552.448-1 1-1Z"/>
+            </svg>
+            <span class="create-btn-text">{{ t('pantries.new_button') }}</span>
           </button>
         </div>
 
@@ -159,14 +162,8 @@
             @click="toggleSortOrder"
             :title="sortOrder === 'ASC' ? t('common.ascending') : t('common.descending')"
           >
-            <svg v-if="sortOrder === 'ASC'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m3 8 4-4 4 4"/>
-              <path d="M7 4v16"/>
-            </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m21 16-4 4-4-4"/>
-              <path d="M17 20V4"/>
-            </svg>
+            <span v-if="sortOrder === 'ASC'" class="sort-order-icon">↑</span>
+            <span v-else class="sort-order-icon">↓</span>
           </button>
         </div>
       </section>
@@ -188,13 +185,7 @@
           </svg>
           <h3>{{ t('pantries.empty.title') }}</h3>
           <p>{{ searchQuery ? t('pantries.empty.search_hint') : t('pantries.empty.create_hint') }}</p>
-          <button class="btn-primary" @click="openCreateModal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            {{ t('pantries.new_button') }}
-          </button>
+
         </div>
 
         <!-- Table View -->
@@ -353,6 +344,7 @@
       :title="editingPantry ? t('pantries.form.modal.edit_title') : t('pantries.form.modal.create_title')"
       size="md"
       @close="closePantryModal"
+      footer-class="pantry-modal-footer"
     >
       <form @submit.prevent="savePantry" class="pantry-form">
         <div class="form-group">
@@ -373,10 +365,10 @@
       </form>
 
       <template #footer>
-        <button type="button" class="btn-secondary" @click="closePantryModal">
+        <button type="button" class="btn-secondary pantry-modal-btn" @click="closePantryModal">
           {{ t('common.cancel') }}
         </button>
-        <button type="button" class="btn-primary" @click="savePantry" :disabled="isSaving">
+        <button type="button" class="btn-primary pantry-modal-btn" @click="savePantry" :disabled="isSaving">
           {{ isSaving ? t('common.saving') : (editingPantry ? t('common.update') : t('common.create')) }}
         </button>
       </template>
@@ -763,8 +755,58 @@ onMounted(async () => {
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   white-space: nowrap;
+}
+
+.create-btn {
+  min-width: 190px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+}
+
+.create-btn svg {
+  flex-shrink: 0;
+}
+
+.create-btn span.create-btn-text {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.sort-order-btn {
+  background: rgba(28, 28, 48, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  color: #EDEAF6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sort-order-btn .sort-order-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.sort-order-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+.sort-order-btn:hover {
+  background: rgba(107, 124, 255, 0.1);
+  border-color: rgba(107, 124, 255, 0.3);
+  color: #FFFFFF;
 }
 
 .btn-primary:hover {
@@ -783,6 +825,12 @@ onMounted(async () => {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+}
+
+.create-btn {
+  min-width: 180px;
+  justify-content: center;
+  text-align: center;
 }
 
 /* ==================== METRICS BAR - FULL WIDTH ==================== */
@@ -804,11 +852,7 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
-.metric-item:hover {
-  border-color: rgba(107, 124, 255, 0.3);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
+
 
 .metric-icon {
   width: 64px;
@@ -864,8 +908,8 @@ onMounted(async () => {
 
 .toolbar-center {
   flex: 1;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 24px;
   min-width: 0;
@@ -914,9 +958,9 @@ onMounted(async () => {
 /* Search Box */
 .search-box {
   position: relative;
-  flex: 1;
-  max-width: 400px;
-  min-width: 200px;
+  width: 100%;
+  max-width: 420px;
+  min-width: 220px;
 }
 
 .search-icon {
@@ -1025,7 +1069,7 @@ onMounted(async () => {
   border-radius: 8px;
   width: 40px;
   height: 40px;
-  color: #CFC9E6;
+  color: #EDEAF6;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1033,10 +1077,16 @@ onMounted(async () => {
   transition: all 0.2s ease;
 }
 
+.sort-order-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
 .sort-order-btn:hover {
   background: rgba(107, 124, 255, 0.1);
   border-color: rgba(107, 124, 255, 0.3);
-  color: #EDEAF6;
+  color: #FFFFFF;
 }
 
 /* ==================== PANTRIES SECTION ==================== */
@@ -1490,6 +1540,15 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
+.pantry-modal-btn {
+  padding: 10px 20px;
+  min-width: auto;
+}
+
+:deep(.pantry-modal-footer) {
+  justify-content: center;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 1400px) {
   .main-content {
@@ -1542,9 +1601,8 @@ onMounted(async () => {
   }
 
   .toolbar-center {
-    justify-content: stretch;
     width: 100%;
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
