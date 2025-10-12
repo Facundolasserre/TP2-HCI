@@ -54,7 +54,12 @@
               height="24"
           />
         </button>
-        <button class="plus special-plus" :title="t('topbar.new')" @click="$emit('new')">
+        <button 
+          v-if="showNewButton"
+          class="plus special-plus" 
+          :title="t('topbar.new')" 
+          @click="$emit('new')"
+        >
           ＋
         </button>
       </div>
@@ -69,6 +74,7 @@ import IconStar from '@/assets/star.svg';
 defineProps<{ 
   query: string;
   favoritesActive?: boolean;
+  showNewButton?: boolean;
 }>();
 defineEmits<{
   (e: 'toggle-sidebar'): void;

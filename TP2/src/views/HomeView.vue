@@ -4,6 +4,7 @@
     <Topbar
         v-model:query="q"
         :favorites-active="showFavoritesOnly"
+        :show-new-button="true"
         @toggle-sidebar="toggleSidebar"
         @filter="onFilter"
         @sort="onSort"

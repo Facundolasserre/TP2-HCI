@@ -88,13 +88,15 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
 
   /**
    * Fetch shopping lists with filters
+   * @param params - Filtering and pagination parameters
+   * @param forceRefresh - If true, ignores cached completion status and rechecks all lists
    */
-  const fetchLists = async (params?: ListShoppingListsParams) => {
+  const fetchLists = async (params?: ListShoppingListsParams, forceRefresh = false) => {
     loading.value = true;
     error.value = null;
 
     try {
-      console.log('Fetching lists with params:', params);
+      console.log('Fetching lists with params:', params, 'forceRefresh:', forceRefresh);
       const response = await shoppingListsService.listLists(params);
       console.log('API response:', JSON.stringify(response, null, 2));
       
@@ -102,21 +104,44 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
       items.value = response.data;
       pagination.value = response.pagination;
       
-      // Initialize completedStatusMap based on lastPurchasedAt
-      // This ensures completed lists are properly filtered even on first load
-      response.data.forEach(list => {
-        // Only initialize if not already in map (preserve existing state)
-        if (!completedStatusMap.value.has(list.id)) {
+      // Initialize completedStatusMap by checking each list's items
+      // This is more accurate than relying on lastPurchasedAt alone
+      const listItemsService = await import('@/api/list-items.service')
+      
+      // Process lists in parallel for better performance
+      await Promise.all(response.data.map(async (list) => {
+        // Skip if we already have fresh state for this list (from recent toggles)
+        // unless forceRefresh is true
+        if (!forceRefresh && completedStatusMap.value.has(list.id)) {
+          console.log(`List ${list.id} "${list.name}": Using cached completion status: ${completedStatusMap.value.get(list.id)}`)
+          return
+        }
+        
+        try {
+          // Fetch items for this list to check completion status
+          const itemsResponse = await listItemsService.getItems(list.id, { page: 1, per_page: 100 })
+          const items = itemsResponse.data
+          
+          // List is completed if it has items AND all are purchased
+          const hasItems = items.length > 0
+          const allPurchased = items.every(item => item.purchased)
+          const isCompleted = hasItems && allPurchased
+          
+          completedStatusMap.value.set(list.id, isCompleted)
+          
+          console.log(`List ${list.id} "${list.name}": ${items.length} items, ${items.filter(i => i.purchased).length} purchased, completed: ${isCompleted}`)
+        } catch (error) {
+          // If we can't fetch items, fall back to lastPurchasedAt
+          console.warn(`Could not fetch items for list ${list.id}, using lastPurchasedAt fallback`)
           const isCompleted = list.lastPurchasedAt !== null && list.lastPurchasedAt !== undefined
           completedStatusMap.value.set(list.id, isCompleted)
         }
-      })
+      }))
       
       // Trigger reactivity
       completedStatusMap.value = new Map(completedStatusMap.value)
       
-      console.log('Processed lists:', response.data);
-      console.log('Initialized completedStatusMap:', Object.fromEntries(completedStatusMap.value));
+      console.log('Processed lists with completion status:', Object.fromEntries(completedStatusMap.value));
       
       return response.data;
     } catch (err: any) {

@@ -8,7 +8,6 @@
         @filter="onFilter"
         @sort="onSort"
         @favorites="onFavs"
-        @new="onNew" 
         @search="onSearch"
       />
     <!-- Profile Button -->
@@ -209,10 +208,6 @@ const openCard = (card: any) => {
 
 const goProfile = () => {
   router.push('/profile');
-};
-
-const onNew = () => {
-  router.push('/lists/new');
 };
 
 // Favorites handlers
