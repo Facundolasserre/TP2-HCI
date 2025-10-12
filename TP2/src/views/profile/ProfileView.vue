@@ -58,19 +58,6 @@
             <p>Active Lists</p>
             <p class="caption muted-text">—</p>
           </div>
-
-          <div class="overview-card card">
-            <div class="overview-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                   fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
-                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-              </svg>
-            </div>
-            <h3>{{ overview?.purchases ?? 0 }}</h3>
-            <p>Items Purchased</p>
-            <p class="caption muted-text">—</p>
-          </div>
-
           <div class="overview-card card">
             <div class="overview-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -85,9 +72,9 @@
 
           <div class="overview-card card">
             <div class="overview-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                   fill="#8b7cf6" viewBox="0 0 16 16" class="icon">
-                <path d="M9.828.122A.5.5 0 0 0 9.5 0h-3a.5.5 0 0 0-.328.122L.11 4.072A.5.5 0 0 0 0 4.5v7a.5.5 0 0 0 .289.454l6 3a.5.5 0 0 0 .422 0l6-3A.5.5 0 0 0 13 11.5v-7a.5.5 0 0 0-.11-.428L9.828.122zM8 1.234 12.5 4 8 6.766 3.5 4 8 1.234zM1 5.383 7.5 9v5.117L1 10.5V5.383zM8.5 14.117V9L15 5.383v5.117l-6.5 3.617z"/>
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+              fill="currentColor" class="bi bi-cart3" viewBox="0 0 16 16">
+              <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
               </svg>
             </div>
             <h3>{{ overview?.products ?? 0 }}</h3>
