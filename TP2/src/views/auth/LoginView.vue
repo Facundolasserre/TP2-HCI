@@ -1,11 +1,11 @@
 <template>
   <div class="auth-wrapper">
+    <div class="language-switcher">
+      <button @click="toggleLanguage">
+        <img src="@/assets/fonts/language.png" alt="Language" />
+      </button>
+    </div>
     <section class="card">
-      <div class="language-switcher">
-        <button @click="toggleLanguage">
-          <img src="@/assets/fonts/language.png" alt="Language" />
-        </button>
-      </div>
       <!-- Logo -->
       <div class="logo-wrap">
         <div class="logo-circle">
@@ -129,6 +129,7 @@ function toggleLanguage() {
 
 <style scoped>
 .auth-wrapper {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -148,19 +149,30 @@ function toggleLanguage() {
 
 .language-switcher {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
 }
 
 .language-switcher button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.language-switcher button:hover {
+  transform: translateY(-1px);
 }
 
 .language-switcher img {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
 }
 
 .logo-wrap { display: flex; justify-content: center; margin-top: -56px; margin-bottom: 6px; }
