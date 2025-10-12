@@ -22,22 +22,24 @@
 
         <input class="input" v-model="password" type="password" autocomplete="current-password" required :placeholder="t('login.password_placeholder')" />
 
+        <div class="forgot-password-container">
+          <a class="link underline" href="#" @click.prevent="onForgot">{{ t('login.forgot_password') }}</a>
+        </div>
+
         <!-- Error message -->
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
-        </div>
-
-        <div class="links-row">
-          <a class="link" href="#" @click.prevent="onForgot">{{ t('login.forgot_password') }}</a>
         </div>
 
         <button class="btn" type="submit" :disabled="isLoading">
           {{ isLoading ? t('login.loading') : t('login.login_button') }}
         </button>
 
-        <div class="signup-row">
-          <span>{{ t('login.no_account') }}</span>
-          <a class="link" href="#" @click.prevent="onSignUp">{{ t('login.signup') }}</a>
+        <div class="signup-container">
+          <div class="separator"></div>
+          <a class="link" href="#" @click.prevent="onSignUp">
+            <span>{{ t('login.no_account') }}</span>&nbsp;<span class="underline">{{ t('login.signup') }}</span>
+          </a>
         </div>
       </form>
     </section>
@@ -200,29 +202,6 @@ function toggleLanguage() {
   margin-top: -10px;
 }
 
-.links-row { 
-  display: inline-flex; 
-  align-self: center;
-  justify-content: center;
-  align-items: center;
-  text-decoration: underline;
-  gap: 8px;
-  text-align: center;
-}
-
-.signup-row {
-  display: inline-flex;
-  align-self: center;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  text-align: center;
-  flex-wrap: wrap;
-}
-
-.link { color: #DAD4FF; font-size: 14px; cursor: pointer; }
-
 .btn {
   margin: 12px auto 10px;
   width: 304px;
@@ -246,24 +225,30 @@ function toggleLanguage() {
   cursor: not-allowed;
 }
 
-.signup-row {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-start;
-  color: #CFC9E6;
+.forgot-password-container {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.signup-container {
+  text-align: left;
+  margin-top: 20px;
+}
+
+.separator {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.25);
+  margin-bottom: 20px;
+}
+
+.link {
+  color: #DAD4FF;
   font-size: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-  padding-top: 14px;
-  margin-top: 10px;
+  cursor: pointer;
 }
 
-.signup-row a {
-  color: #CFC9E6;
+.underline {
   text-decoration: underline;
-  font-weight: 600;
-}
-
-.signup-row a:hover {
-  color: #ffffff;
 }
 </style>
