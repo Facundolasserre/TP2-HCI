@@ -15,6 +15,7 @@
             <label class="label">{{ t('add_list.list_name_label') }}</label>
             <input class="input" v-model.trim="name" :placeholder="t('add_list.list_name_placeholder')" />
             <p v-if="touched && !name" class="error">{{ t('add_list.name_required') }}</p>
+            <p v-if="nameError" class="error">{{ nameError }}</p>
           </div>
 
           <!-- Icon selector -->
@@ -122,6 +123,7 @@ const { t } = useI18n();
 const name = ref('');
 const notes = ref('');
 const color = ref('#6B7CFF');
+const nameError = ref(''); // For 409 Conflict error
 
 const visibility = ref<'private'|'shared'>('private');
 const touched = ref(false);
@@ -197,13 +199,14 @@ function close(){ router.push('/Home'); }
 
 async function submit(){
   touched.value = true;
+  nameError.value = ''; // Clear previous errors
   if(!name.value) return;
   
   try {
     // Create list via API
     const newList = await shoppingListsStore.createList({
       name: name.value,
-      description: notes.value || undefined,
+      description: notes.value || '', // Backend requires description field (can be empty string)
       recurring: false,
       metadata: {
         icon: selectedIcon.value,
@@ -223,8 +226,9 @@ async function submit(){
     router.push('/Home');
   } catch (error: any) {
     console.error('Failed to create list:', error);
-    if (error.response?.status === 409) {
-      toast.error('Ya existe una lista con este nombre.');
+    if (error.response?.status === 409 || error.status === 409) {
+      nameError.value = 'Ya existe una lista con este nombre';
+      toast.error('Ya existe una lista con este nombre');
     } else if (error.status === 0 || error.code === 'ERR_NETWORK') {
       console.warn('⚠️ Backend not available - simulating list creation');
       toast.success('List created (mock mode - backend not available)');

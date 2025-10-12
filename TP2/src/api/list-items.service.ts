@@ -1,4 +1,5 @@
 import { get, post, put, patch, del } from './http'
+import type { PaginatedResponse } from '@/types/pagination'
 import type {
   ListItem,
   ListItemArray,
@@ -125,7 +126,7 @@ export const addItem = async (
 export const getItems = async (
   listId: number,
   params?: ListItemsParams
-): Promise<ListItemArray> => {
+): Promise<PaginatedResponse<ListItem>> => {
   if (!listId || listId < 1) {
     throw new Error('ID de lista inválido')
   }
@@ -133,42 +134,11 @@ export const getItems = async (
   // Validate and set defaults
   const validatedParams = validateListItemsParams(params)
 
-  // Build query string
-  const queryParams = new URLSearchParams()
+  const url = getListItemsEndpoint(listId)
   
-  if (validatedParams.purchased !== undefined) {
-    queryParams.append('purchased', validatedParams.purchased.toString())
-  }
-  if (validatedParams.pantry_id) {
-    queryParams.append('pantry_id', validatedParams.pantry_id.toString())
-  }
-  if (validatedParams.category_id) {
-    queryParams.append('category_id', validatedParams.category_id.toString())
-  }
-  if (validatedParams.search) {
-    queryParams.append('search', validatedParams.search)
-  }
-  queryParams.append('page', validatedParams.page!.toString())
-  queryParams.append('per_page', validatedParams.per_page!.toString())
-  queryParams.append('sort_by', validatedParams.sort_by!)
-  queryParams.append('order', validatedParams.order!)
-
-  const url = `${getListItemsEndpoint(listId)}?${queryParams.toString()}`
-  
-  const response = await get<any>(url)
-  
-  // Handle different response formats
-  if (Array.isArray(response)) {
-    return response as ListItemArray
-  } else if (response.data && Array.isArray(response.data)) {
-    return response.data as ListItemArray
-  } else if (response.items && Array.isArray(response.items)) {
-    return response.items as ListItemArray
-  } else {
-    console.warn('⚠️ Unknown response format for list items')
-    console.log('Response:', response)
-    return []
-  }
+  // API v1.0.1 returns { data: [...], pagination: {...} }
+  const response = await get<PaginatedResponse<ListItem>>(url, { params: validatedParams })
+  return response
 }
 
 /**
@@ -209,7 +179,7 @@ export const togglePurchased = async (
   listId: number,
   itemId: number,
   purchased: boolean
-): Promise<{item: ListItem, list: any}> => {
+): Promise<ListItem> => {
   if (!listId || listId < 1) {
     throw new Error('ID de lista inválido')
   }
@@ -219,7 +189,7 @@ export const togglePurchased = async (
 
   const url = `${getListItemsEndpoint(listId)}/${itemId}`
   const data: TogglePurchasedRequest = { purchased }
-  const response = await patch<{item: ListItem, list: any}>(url, data)
+  const response = await patch<ListItem>(url, data)
   return response
 }
 

@@ -113,7 +113,7 @@ const colors = ['#6B7CFF', '#FF6B9D', '#4CAF50', '#FF9800', '#9C27B0', '#00BCD4'
 
 const cards = computed(() => {
   // Filter out completed lists - they should appear in Purchase History instead
-  const activeLists = shoppingListsStore.items.filter(list => !list.completed);
+  const activeLists = shoppingListsStore.itemsWithCompletion.filter(list => !list.completed);
   
   return activeLists.map(list => {
     const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg';

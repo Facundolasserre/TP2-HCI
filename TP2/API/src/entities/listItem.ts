@@ -56,9 +56,9 @@ export class ListItem extends BaseEntity {
       unit: this.unit,
       metadata: this.metadata ?? null,
       purchased: this.purchased,
-      lastPurchasedAt: this.lastPurchasedAt?.toISOString() ?? null,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
+      lastPurchasedAt: this.lastPurchasedAt?.toISOString().substring(0, 19).replace('T', ' ') ?? null,
+      createdAt: this.createdAt.toISOString().substring(0, 19).replace('T', ' '),
+      updatedAt: this.updatedAt.toISOString().substring(0, 19).replace('T', ' '),
       product: this.product?.getFormattedProduct() ?? null,
     };
   }

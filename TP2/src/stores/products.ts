@@ -7,6 +7,7 @@ import type {
   ProductsListParams,
   ApiError,
 } from '@/types/products'
+import type { PaginationMeta } from '@/types/pagination'
 import * as productsService from '@/api/products.service'
 
 export const useProductsStore = defineStore('products', () => {
@@ -15,9 +16,16 @@ export const useProductsStore = defineStore('products', () => {
   const currentProduct = ref<Product | null>(null)
   const loading = ref(false)
   const error = ref<ApiError | null>(null)
-  const total = ref(0)
-  const currentPage = ref(1)
-  const perPage = ref(10)
+  
+  // Pagination state (from API v1.0.1)
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false
+  })
   
   // Filters state
   const filters = ref<ProductsListParams>({
@@ -35,6 +43,12 @@ export const useProductsStore = defineStore('products', () => {
   const hasProducts = computed(() => items.value.length > 0)
   const isLoading = computed(() => loading.value)
   const hasError = computed(() => error.value !== null)
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
   
   /**
    * Get products grouped by category
@@ -55,8 +69,8 @@ export const useProductsStore = defineStore('products', () => {
 
   // Actions
 
-    /**
-   * Fetch products list with filters and pagination
+  /**
+   * Fetch products list with filters and pagination (API v1.0.1)
    */
   const fetchProducts = async (params?: ProductsListParams) => {
     loading.value = true
@@ -76,15 +90,13 @@ export const useProductsStore = defineStore('products', () => {
         console.warn('⚠️ API returned empty array but we have local items. Keeping local items.')
       }
       
-      // Update total from pagination
-      total.value = response.pagination?.total || products.length
+      // Update pagination from API response
+      pagination.value = response.pagination
       
-      // Update filters and pagination state
+      // Update filters state
       if (params) {
         filters.value = { ...filters.value, ...params }
       }
-      if (params?.page) currentPage.value = params.page
-      if (params?.per_page) perPage.value = params.per_page
       
       return response
     } catch (err) {
@@ -241,9 +253,14 @@ export const useProductsStore = defineStore('products', () => {
     currentProduct.value = null
     loading.value = false
     error.value = null
-    total.value = 0
-    currentPage.value = 1
-    perPage.value = 10
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false
+    }
     resetFilters()
   }
 
@@ -253,9 +270,7 @@ export const useProductsStore = defineStore('products', () => {
     currentProduct,
     loading,
     error,
-    total,
-    currentPage,
-    perPage,
+    pagination,
     filters,
     
     // Getters
@@ -263,6 +278,12 @@ export const useProductsStore = defineStore('products', () => {
     hasProducts,
     isLoading,
     hasError,
+    total,
+    currentPage,
+    perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     productsByCategory,
     
     // Actions

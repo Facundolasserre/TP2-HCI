@@ -69,30 +69,13 @@ export class List extends BaseEntity {
 
   formatDate(date: any): string | null {
     if (!date) return null;
-    if (date instanceof Date) return date.toISOString();
+    if (date instanceof Date) return date.toISOString().substring(0, 19).replace('T', ' ');
     if (typeof date === "string") {
       const d = new Date(date);
-      if (!isNaN(d.getTime())) return d.toISOString();
-      return date;
+      if (!isNaN(d.getTime())) return d.toISOString().substring(0, 19).replace('T', ' ');
+      return date.substring(0, 19).replace('T', ' ');
     }
     return null;
-  }
-
-  /**
-   * Checks if the list is completed (all items are purchased).
-   * A list with no items is considered NOT completed.
-   * @returns {boolean} True if all items are purchased, false otherwise
-   */
-  isCompleted(): boolean {
-    if (!this.items || this.items.length === 0) {
-      return false;
-    }
-    // Filter out soft-deleted items
-    const activeItems = this.items.filter(item => !item.deletedAt);
-    if (activeItems.length === 0) {
-      return false;
-    }
-    return activeItems.every(item => item.purchased === true);
   }
 
   getFormattedList(): any {
@@ -104,7 +87,6 @@ export class List extends BaseEntity {
       metadata: this.metadata ?? null,
       owner: this.owner?.getFormattedUser() ?? null,
       sharedWith: this.sharedWith ? this.sharedWith.map(user => (user.getFormattedUser())) : [],
-      completed: this.isCompleted(),
       lastPurchasedAt: this.formatDate(this.lastPurchasedAt),
       createdAt: this.formatDate(this.createdAt),
       updatedAt: this.formatDate(this.updatedAt),

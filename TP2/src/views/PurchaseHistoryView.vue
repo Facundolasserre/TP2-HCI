@@ -127,8 +127,8 @@ interface CardItem {
   sharedWith: any[];
 }
 
-// Load favorites from localStorage
-onMounted(() => {
+// Load favorites from localStorage and fetch lists
+onMounted(async () => {
   const storedFavorites = localStorage.getItem('favorites');
   if (storedFavorites) {
     try {
@@ -139,15 +139,19 @@ onMounted(() => {
     }
   }
 
-  // For now, we don't have completed lists implementation
-  // So this will show an empty state
-  // In the future, you can add a 'completed' field to lists and filter them here
+  // Load shopping lists to filter completed ones
+  try {
+    await shoppingListsStore.fetchLists({ page: 1, per_page: 50 });
+  } catch (error) {
+    console.error('Error loading shopping lists:', error);
+    toast.error(t('history.error_loading_lists'));
+  }
 });
 
 // Computed list of completed lists
 const completedLists = computed<CardItem[]>(() => {
   // Filter only completed lists (all items are purchased)
-  const completed = shoppingListsStore.items.filter(list => list.completed);
+  const completed = shoppingListsStore.itemsWithCompletion.filter(list => list.completed);
   
   return completed.map(list => {
     const iconName = (list.metadata as any)?.icon || 'shopping_cart.svg';
@@ -183,9 +187,9 @@ const filtered = computed(() => {
 });
 
 // Format shared with text
-const shareText = (sharedWith: any[]) => {
+const shareText = (sharedWith: string[]) => {
   if (!sharedWith || sharedWith.length === 0) return '';
-  if (sharedWith.length === 1) return sharedWith[0].name || sharedWith[0].email;
+  if (sharedWith.length === 1) return sharedWith[0];
   return `${sharedWith.length} ${t('home.people')}`;
 };
 

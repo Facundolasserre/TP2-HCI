@@ -182,7 +182,7 @@
 
           <!-- Create new product inline -->
           <div v-else class="form-group">
-            <label for="new-product-name">New Product Name</label>
+            <label for="new-product-name">New Product Name <span style="color: #FF6B9D;">*</span></label>
             <input
               id="new-product-name"
               v-model="newProductName"
@@ -190,13 +190,16 @@
               placeholder="Enter product name"
               class="form-input"
               maxlength="50"
+              required
             />
 
-            <label for="new-product-category">Category</label>
+            <label for="new-product-category">Category <span style="color: #FF6B9D;">*</span></label>
             <select
               id="new-product-category"
               v-model="newProductCategoryId"
               class="form-input"
+              required
+              @change="onCategoryChange"
             >
               <option :value="null">Select a category</option>
               <option
@@ -206,13 +209,16 @@
               >
                 {{ category.name }}
               </option>
+              <option value="NEW_CATEGORY" style="font-style: italic; font-weight: 600;">
+                ➕ New Category
+              </option>
             </select>
 
             <div class="inline-actions">
               <button
                 type="button"
                 class="btn-secondary"
-                @click="showCreateProductInline = false; newProductName = ''; newProductCategoryId = null"
+                @click="showCreateProductInline = false; newProductName = ''; newProductCategoryId = null; newCategoryName = ''"
               >
                 Cancel
               </button>
@@ -381,6 +387,49 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Create Category Modal -->
+    <Modal :open="showCreateCategoryModal" @close="closeCreateCategoryModal" size="sm">
+      <template #header>
+        <h2 style="margin: 0; font-size: 24px; font-weight: 600; color: white;">
+          Create new category
+        </h2>
+      </template>
+
+      <template #default>
+        <div class="category-modal-content">
+          <div class="form-group">
+            <label for="category-name">Category name <span style="color: #FF6B9D;">*</span></label>
+            <input
+              id="category-name"
+              v-model="newCategoryName"
+              type="text"
+              placeholder="Enter category name"
+              class="form-input"
+              maxlength="50"
+              @keyup.enter="createCategory"
+            />
+            <p style="color: #9B95B8; font-size: 13px; margin-top: 8px;">Maximum 50 characters</p>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" @click="closeCreateCategoryModal">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-save"
+            :disabled="!newCategoryName.trim()"
+            @click="createCategory"
+          >
+            Create
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
   </div>
 </template>
@@ -409,6 +458,7 @@ const { t } = useI18n()
 const q = ref('')
 const showShareModal = ref(false)
 const showAddItemModal = ref(false)
+const showCreateCategoryModal = ref(false)
 const showEditItemModal = ref(false)
 const editingItemId = ref<number | null>(null)
 const editingProductName = ref('')
@@ -421,7 +471,8 @@ const quantity = ref(1)
 const unit = ref('units')
 const showCreateProductInline = ref(false)
 const newProductName = ref('')
-const newProductCategoryId = ref<number | null>(null)
+const newProductCategoryId = ref<number | string | null>(null)
+const newCategoryName = ref('')
 const sortAlphabetically = ref(false)
 
 // Get list ID from route
@@ -538,15 +589,27 @@ const closeAddItemModal = () => {
 
 // Create new product inline
 const createProductInline = async () => {
-  if (!newProductName.value.trim() || !newProductCategoryId.value) {
-    toast.error('Please enter a product name and select a category')
+  if (!newProductName.value.trim()) {
+    toast.error('Please enter a product name')
+    return
+  }
+
+  // Check if user selected "New Category"
+  if (newProductCategoryId.value === 'NEW_CATEGORY') {
+    // Open the category creation modal
+    showCreateCategoryModal.value = true
+    return
+  }
+
+  if (!newProductCategoryId.value || newProductCategoryId.value === 'NEW_CATEGORY') {
+    toast.error('Please select a category')
     return
   }
 
   try {
     const newProduct = await productsStore.createProduct({
       name: newProductName.value.trim(),
-      category: { id: newProductCategoryId.value },
+      category: { id: newProductCategoryId.value as number },
       metadata: {}
     })
     
@@ -555,6 +618,7 @@ const createProductInline = async () => {
     showCreateProductInline.value = false
     newProductName.value = ''
     newProductCategoryId.value = null
+    newCategoryName.value = ''
     toast.success('Product created successfully')
   } catch (error) {
     toast.error('Failed to create product')
@@ -647,6 +711,47 @@ const shareList = () => {
 const closeShareModal = () => {
   showShareModal.value = false
   loadData() // Refresh to get updated shared users
+}
+
+const closeCreateCategoryModal = () => {
+  showCreateCategoryModal.value = false
+  newCategoryName.value = ''
+}
+
+const onCategoryChange = () => {
+  if (newProductCategoryId.value === 'NEW_CATEGORY') {
+    showCreateCategoryModal.value = true
+  }
+}
+
+const createCategory = async () => {
+  if (!newCategoryName.value.trim()) {
+    toast.error('Please enter a category name')
+    return
+  }
+
+  try {
+    // Create the new category
+    const newCategory = await categoriesStore.createCategory({
+      name: newCategoryName.value.trim()
+    })
+    
+    await categoriesStore.fetchCategories()
+    newProductCategoryId.value = newCategory.id
+    toast.success(`Category "${newCategoryName.value}" created successfully`)
+    
+    // Close modal and clear
+    closeCreateCategoryModal()
+    
+    // Category is now selected, user can continue creating the product
+  } catch (error: any) {
+    if (error.response?.status === 409 || error.status === 409) {
+      toast.error('A category with this name already exists')
+    } else {
+      toast.error('Failed to create category')
+    }
+    console.error('Error creating category:', error)
+  }
 }
 
 const toggleCheck = async (productId: number) => {
@@ -1488,5 +1593,44 @@ const onProductAdded = () => {
 .btn-save:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Category Modal Styles */
+.category-modal-content {
+  padding: 0;
+}
+
+.category-modal-content .form-group {
+  margin-bottom: 0;
+}
+
+.category-modal-content .form-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(107, 124, 255, 0.2);
+  color: #EDEAF6;
+  padding: 14px 16px;
+  font-size: 15px;
+}
+
+.category-modal-content .form-input:focus {
+  border-color: #6B7CFF;
+  background: rgba(107, 124, 255, 0.08);
+  outline: none;
+}
+
+/* New Category Input Animation */
+.new-category-input {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

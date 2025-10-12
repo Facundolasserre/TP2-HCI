@@ -6,6 +6,7 @@ import type {
   ArrayOfCategories,
   ListCategoriesParams,
 } from '@/types/categories'
+import type { PaginatedResponse } from '@/types/pagination'
 
 const CATEGORIES_ENDPOINT = '/api/categories'
 
@@ -79,10 +80,11 @@ export const createCategory = async (
 /**
  * List categories with optional filters, pagination and sorting
  * GET /api/categories
+ * Returns paginated response with metadata
  */
 export const listCategories = async (
   params?: ListCategoriesParams
-): Promise<GetCategory[]> => {
+): Promise<PaginatedResponse<GetCategory>> => {
   // Validate and set defaults
   const validatedParams = validateListParams(params)
 
@@ -99,36 +101,10 @@ export const listCategories = async (
 
   const url = `${CATEGORIES_ENDPOINT}?${queryParams.toString()}`
   
-  // The API returns ArrayOfCategories, but we'll handle both formats
-  const response = await get<any>(url)
+  // API v1.0.1 returns { data: [...], pagination: {...} }
+  const response = await get<PaginatedResponse<GetCategory>>(url)
   
-  console.log('Raw API response for listCategories:', response)
-  console.log('Response type:', typeof response)
-  console.log('Is array?', Array.isArray(response))
-  if (response && typeof response === 'object') {
-    console.log('Response keys:', Object.keys(response))
-  }
-  
-  // Handle different response formats
-  if (Array.isArray(response)) {
-    console.log('✓ Format: Direct array, length:', response.length)
-    return response as GetCategory[]
-  } else if (response && response.categories && Array.isArray(response.categories)) {
-    console.log('✓ Format: Object with categories property, length:', response.categories.length)
-    return response.categories as GetCategory[]
-  } else if (response && response.data && Array.isArray(response.data)) {
-    console.log('✓ Format: Object with data property, length:', response.data.length)
-    return response.data as GetCategory[]
-  } else if (response && response.result && Array.isArray(response.result)) {
-    console.log('✓ Format: Object with result property, length:', response.result.length)
-    return response.result as GetCategory[]
-  } else if (response && response.items && Array.isArray(response.items)) {
-    console.log('✓ Format: Object with items property, length:', response.items.length)
-    return response.items as GetCategory[]
-  } else {
-    console.error('❌ Unknown response format, returning empty array. Response:', response)
-    return []
-  }
+  return response
 }
 
 /**

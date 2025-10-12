@@ -6,6 +6,7 @@ import type {
   ProductsListParams,
   ValidationMessages,
 } from '@/types/products'
+import type { PaginatedResponse } from '@/types/pagination'
 import {
   isValidProductName,
   isValidCategoryId,
@@ -70,9 +71,13 @@ export const createProduct = async (
  * List products with optional filters, pagination and sorting
  * GET /api/products
  */
+/**
+ * List products with optional filters, pagination and sorting (API v1.0.1)
+ * GET /api/products
+ */
 export const listProducts = async (
   params?: ProductsListParams
-): Promise<{ data: Product[], pagination: { total: number, page?: number, per_page?: number } }> => {
+): Promise<PaginatedResponse<Product>> => {
   // Validate and set defaults
   const validatedParams = validateListParams(params)
 
@@ -98,40 +103,10 @@ export const listProducts = async (
 
   const url = `${PRODUCTS_ENDPOINT}?${queryParams.toString()}`
   
-  // The API returns an object with data and pagination
-  const response = await get<any>(url)
+  // API v1.0.1 returns { data: Product[], pagination: PaginationMeta }
+  const response = await get<PaginatedResponse<Product>>(url)
   
-  console.log('Raw API response for listProducts:', response)
-  console.log('Response type:', typeof response)
-  console.log('Is array?', Array.isArray(response))
-  if (response && typeof response === 'object') {
-    console.log('Response keys:', Object.keys(response))
-  }
-  
-  // Handle different response formats
-  if (Array.isArray(response)) {
-    console.log('✓ Format: Direct array, length:', response.length)
-    return { data: response as Product[], pagination: { total: response.length } }
-  } else if (response && response.data && Array.isArray(response.data)) {
-    console.log('✓ Format: Object with data property, length:', response.data.length)
-    // Return full response with pagination info
-    return {
-      data: response.data as Product[],
-      pagination: response.pagination || { total: response.data.length }
-    }
-  } else if (response && response.products && Array.isArray(response.products)) {
-    console.log('✓ Format: Object with products property, length:', response.products.length)
-    return { data: response.products as Product[], pagination: response.pagination || { total: response.products.length } }
-  } else if (response && response.result && Array.isArray(response.result)) {
-    console.log('✓ Format: Object with result property, length:', response.result.length)
-    return { data: response.result as Product[], pagination: response.pagination || { total: response.result.length } }
-  } else if (response && response.items && Array.isArray(response.items)) {
-    console.log('✓ Format: Object with items property, length:', response.items.length)
-    return { data: response.items as Product[], pagination: response.pagination || { total: response.items.length } }
-  } else {
-    console.error('❌ Unknown response format, returning empty array. Response:', response)
-    return { data: [], pagination: { total: 0 } }
-  }
+  return response
 }
 
 /**

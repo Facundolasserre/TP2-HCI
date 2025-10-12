@@ -37,6 +37,7 @@ http.interceptors.response.use(
   (error) => {
     console.error(`API Error [${error.config?.method?.toUpperCase()} ${error.config?.url}]:`, {
       status: error.response?.status,
+      statusText: error.response?.statusText,
       data: error.response?.data,
       message: error.message
     });

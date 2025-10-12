@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { PaginationMeta } from '@/types/pagination'
 import type {
   ListItem,
   ListItemArray,
@@ -17,6 +18,24 @@ export const useListItemsStore = defineStore('listItems', () => {
   const loading = ref(false)
   const error = ref<ApiError | null>(null)
   const currentListId = ref<number | null>(null)
+  
+  // Pagination state
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false,
+  })
+
+  // Computed getters for pagination
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
 
   // Getters
   const itemsCount = computed(() => items.value.length)
@@ -40,9 +59,20 @@ export const useListItemsStore = defineStore('listItems', () => {
     currentListId.value = listId
 
     try {
-      const itemsList = await listItemsService.getItems(listId, params)
-      items.value = itemsList
-      return itemsList
+      const response = await listItemsService.getItems(listId, params)
+      // API v1.0.1 returns { data: [...], pagination: {...} }
+      items.value = response.data
+      pagination.value = response.pagination
+      
+      // Update completed status in shopping lists store
+      const allPurchased = response.data.every(item => item.purchased)
+      const hasItems = response.data.length > 0
+      const isCompleted = hasItems && allPurchased
+      
+      const shoppingListsStore = useShoppingListsStore()
+      shoppingListsStore.setListCompletedStatus(listId, isCompleted)
+      
+      return response.data
     } catch (err: any) {
       error.value = err as ApiError
       
@@ -108,6 +138,10 @@ export const useListItemsStore = defineStore('listItems', () => {
       // Add to local state if we're viewing this list
       if (currentListId.value === listId) {
         items.value.push(newItem)
+        
+        // Update completed status (adding an item makes the list incomplete)
+        const shoppingListsStore = useShoppingListsStore()
+        shoppingListsStore.setListCompletedStatus(listId, false)
       }
       
       return newItem
@@ -179,38 +213,31 @@ export const useListItemsStore = defineStore('listItems', () => {
     }
 
     try {
-      const response = await listItemsService.togglePurchased(listId, itemId, purchased)
+      const updatedItem = await listItemsService.togglePurchased(listId, itemId, purchased)
       
       // Update with real item data from server
       if (index !== -1) {
-        items.value[index] = response.item
+        items.value[index] = updatedItem
       }
       
-      // Update the list's completed status in the shopping lists store
-      if (response.list) {
-        console.log('📋 List completed status changed:', {
-          listId,
-          completed: response.list.completed,
-          listName: response.list.name
-        })
-        
-        const shoppingListsStore = useShoppingListsStore()
-        const listIndex = shoppingListsStore.items.findIndex(l => l.id === listId)
-        if (listIndex !== -1) {
-          // Replace the entire list object to trigger reactivity
-          const updatedList = { ...shoppingListsStore.items[listIndex] }
-          updatedList.completed = response.list.completed
-          shoppingListsStore.items[listIndex] = updatedList
-          
-          // Force a reactive update by reassigning the array
-          shoppingListsStore.items = [...shoppingListsStore.items]
-          
-          console.log('✅ Updated shopping lists store. List should now appear in:', 
-            response.list.completed ? 'Purchase History' : 'Home')
-        }
-      }
+      // Check if all items in the current list are now purchased
+      const allPurchased = items.value.every(item => item.purchased)
+      const hasItems = items.value.length > 0
+      const isCompleted = hasItems && allPurchased
       
-      return response.item
+      // Update the completed status in shopping lists store
+      const shoppingListsStore = useShoppingListsStore()
+      shoppingListsStore.setListCompletedStatus(listId, isCompleted)
+      
+      console.log('📋 List completed status updated:', {
+        listId,
+        completed: isCompleted,
+        allPurchased,
+        totalItems: items.value.length,
+        purchasedCount: items.value.filter(item => item.purchased).length
+      })
+      
+      return updatedItem
     } catch (err) {
       // Rollback on error
       items.value = originalItems
@@ -240,6 +267,14 @@ export const useListItemsStore = defineStore('listItems', () => {
     try {
       await listItemsService.removeItem(listId, itemId)
       // Success - optimistic update is already applied
+      
+      // Update completed status after deletion
+      const allPurchased = items.value.every(item => item.purchased)
+      const hasItems = items.value.length > 0
+      const isCompleted = hasItems && allPurchased
+      
+      const shoppingListsStore = useShoppingListsStore()
+      shoppingListsStore.setListCompletedStatus(listId, isCompleted)
     } catch (err) {
       // Rollback on error
       items.value = originalItems
@@ -294,6 +329,14 @@ export const useListItemsStore = defineStore('listItems', () => {
     loading.value = false
     error.value = null
     currentListId.value = null
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false,
+    }
   }
 
   return {
@@ -302,6 +345,15 @@ export const useListItemsStore = defineStore('listItems', () => {
     loading,
     error,
     currentListId,
+    pagination,
+    
+    // Pagination computed getters
+    total,
+    currentPage,
+    perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     
     // Getters
     itemsCount,

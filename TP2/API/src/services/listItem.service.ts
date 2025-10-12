@@ -41,9 +41,6 @@ export async function addListItemService(
 
         const itemsArray = Array.isArray(list.items) ? list.items : [];
         for (const auxItem of itemsArray) {
-            // Skip items with null product (deleted products)
-            if (!auxItem.product) continue;
-            
             if (auxItem.product.id === product.id) {
                 throw new ConflictError(ERROR_MESSAGES.CONFLICT.ITEM_EXISTS);
             }
@@ -54,7 +51,7 @@ export async function addListItemService(
         item.unit = itemData.unit;
         item.metadata = itemData.metadata ?? null;
         item.purchased = false;
-        item.list = list;
+        item.list = list.getFormattedList();
 
         await queryRunner.manager.save(item);
         await queryRunner.commitTransaction();
@@ -215,14 +212,14 @@ export async function updateListItemService(
  * @param {number} listId - Parent list ID
  * @param {number} itemId - Item ID
  * @param {boolean} purchased - New purchased status
- * @returns {Promise<{item: ListItem, list: any}>} Updated item and list with completed status
+ * @returns {Promise<ListItem>} Updated item
  * @throws {NotFoundError} If item is not found
  */
 export async function toggleListItemPurchasedService(
     listId: number,
     itemId: number,
     purchased: boolean
-): Promise<{item: any, list: any}> {
+): Promise<ListItem> {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -238,20 +235,8 @@ export async function toggleListItemPurchasedService(
         item.purchased = purchased;
         await queryRunner.manager.save(item);
 
-        // Fetch the updated list with all active items to calculate completed status
-        const updatedList = await queryRunner.manager.createQueryBuilder(List, "list")
-            .leftJoinAndSelect("list.owner", "owner")
-            .leftJoinAndSelect("list.sharedWith", "sharedWith")
-            .leftJoinAndSelect("list.items", "items", "items.deletedAt IS NULL")
-            .where("list.id = :listId", { listId })
-            .getOne();
-
         await queryRunner.commitTransaction();
-        
-        return {
-            item: item.getFormattedListItem(),
-            list: updatedList ? updatedList.getFormattedList() : null
-        };
+        return item.getFormattedListItem() as unknown as ListItem;
     } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;

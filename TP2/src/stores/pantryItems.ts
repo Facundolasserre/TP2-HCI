@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { PaginationMeta } from '@/types/pagination'
 import type {
   PantryItem,
   PantryItemArray,
@@ -15,10 +16,25 @@ export const usePantryItemsStore = defineStore('pantryItems', () => {
   const currentItem = ref<PantryItem | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const total = ref(0)
-  const currentPage = ref(1)
-  const perPage = ref(10)
   const currentPantryId = ref<number | null>(null)
+  
+  // Pagination state
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false,
+  })
+
+  // Computed getters for pagination
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
 
   // Getters
   const itemsCount = computed(() => items.value.length)
@@ -52,15 +68,13 @@ export const usePantryItemsStore = defineStore('pantryItems', () => {
     currentPantryId.value = pantryId
 
     try {
-      const pantryItems = await pantryItemsService.getItems(pantryId, params)
-      items.value = pantryItems
+      const response = await pantryItemsService.getItems(pantryId, params)
+      // API v1.0.1 returns { data: [...], pagination: {...} }
+      items.value = response.data
+      pagination.value = response.pagination
       
-      // Update pagination state
-      if (params?.page) currentPage.value = params.page
-      if (params?.per_page) perPage.value = params.per_page
-      
-      console.log('✓ Pantry items loaded:', pantryItems.length)
-      return pantryItems
+      console.log('✓ Pantry items loaded:', response.data.length)
+      return response.data
     } catch (err: any) {
       error.value = err.message || 'Error al cargar los productos de la despensa'
       console.error('✗ Error fetching pantry items:', err)
@@ -187,9 +201,14 @@ export const usePantryItemsStore = defineStore('pantryItems', () => {
     currentItem.value = null
     loading.value = false
     error.value = null
-    total.value = 0
-    currentPage.value = 1
-    perPage.value = 10
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false,
+    }
     currentPantryId.value = null
   }
 
@@ -199,10 +218,16 @@ export const usePantryItemsStore = defineStore('pantryItems', () => {
     currentItem,
     loading,
     error,
+    pagination,
+    currentPantryId,
+    
+    // Pagination computed getters
     total,
     currentPage,
     perPage,
-    currentPantryId,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     
     // Getters
     itemsCount,

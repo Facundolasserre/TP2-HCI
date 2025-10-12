@@ -1,4 +1,5 @@
 import { get, post, put, del } from './http';
+import type { PaginatedResponse } from '@/types/pagination';
 import type {
   ShoppingList,
   ShoppingListsArray,
@@ -17,8 +18,8 @@ export const createList = (data: ShoppingListCreate): Promise<ShoppingList> => {
   return post<ShoppingList>(ENDPOINT, data);
 };
 
-export const listLists = (params?: ListShoppingListsParams): Promise<ShoppingListsArray> => {
-  return get<ShoppingListsArray>(ENDPOINT, { params });
+export const listLists = (params?: ListShoppingListsParams): Promise<PaginatedResponse<ShoppingList>> => {
+  return get<PaginatedResponse<ShoppingList>>(ENDPOINT, { params });
 };
 
 export const getListById = (id: number): Promise<ShoppingList> => {

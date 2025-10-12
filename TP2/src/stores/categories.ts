@@ -7,6 +7,7 @@ import type {
   ListCategoriesParams,
   ApiError,
 } from '@/types/categories'
+import type { PaginationMeta } from '@/types/pagination'
 import * as categoriesService from '@/api/categories.service'
 
 export const useCategoriesStore = defineStore('categories', () => {
@@ -15,34 +16,44 @@ export const useCategoriesStore = defineStore('categories', () => {
   const currentCategory = ref<GetCategory | null>(null)
   const loading = ref(false)
   const error = ref<ApiError | null>(null)
-  const total = ref(0)
-  const currentPage = ref(1)
-  const perPage = ref(10)
+  
+  // Pagination state (from API v1.0.1)
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false
+  })
 
   // Getters
   const categoriesCount = computed(() => items.value.length)
   const hasCategories = computed(() => items.value.length > 0)
   const isLoading = computed(() => loading.value)
   const hasError = computed(() => error.value !== null)
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
 
   // Actions
 
   /**
-   * Fetch categories list with filters
+   * Fetch categories list with filters (API v1.0.1 returns paginated response)
    */
   const fetchCategories = async (params?: ListCategoriesParams) => {
     loading.value = true
     error.value = null
 
     try {
-      const categories = await categoriesService.listCategories(params)
-      items.value = categories
+      const response = await categoriesService.listCategories(params)
+      items.value = response.data
+      pagination.value = response.pagination
       
-      // Update pagination state
-      if (params?.page) currentPage.value = params.page
-      if (params?.per_page) perPage.value = params.per_page
-      
-      return categories
+      return response
     } catch (err) {
       error.value = err as ApiError
       throw err
@@ -183,9 +194,14 @@ export const useCategoriesStore = defineStore('categories', () => {
     currentCategory.value = null
     loading.value = false
     error.value = null
-    total.value = 0
-    currentPage.value = 1
-    perPage.value = 10
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false
+    }
   }
 
   return {
@@ -194,15 +210,19 @@ export const useCategoriesStore = defineStore('categories', () => {
     currentCategory,
     loading,
     error,
-    total,
-    currentPage,
-    perPage,
+    pagination,
     
     // Getters
     categoriesCount,
     hasCategories,
     isLoading,
     hasError,
+    total,
+    currentPage,
+    perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     
     // Actions
     fetchCategories,

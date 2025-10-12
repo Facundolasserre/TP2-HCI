@@ -214,7 +214,7 @@ const handleSubmit = async () => {
   try {
     const data: ShoppingListCreate | ShoppingListUpdate = {
       name: form.name.trim(),
-      description: form.description.trim() || undefined,
+      description: form.description.trim() || '', // Backend requires description (can be empty string)
       recurring: form.recurring,
       metadata: form.metadata,
     }
@@ -231,7 +231,13 @@ const handleSubmit = async () => {
       router.push(`/lists/${newList.id}`)
     }
   } catch (error: any) {
-    toast.error(error.message || 'Failed to save list')
+    // Handle 409 Conflict - duplicate list name
+    if (error.status === 409 || error.response?.status === 409) {
+      errors.name = 'A list with this name already exists'
+      toast.error('A list with this name already exists')
+    } else {
+      toast.error(error.message || 'Failed to save list')
+    }
   }
 }
 

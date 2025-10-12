@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { PaginationMeta } from '@/types/pagination'
 import type {
   Pantry,
   ArrayOfPantries,
@@ -17,9 +18,24 @@ export const usePantriesStore = defineStore('pantries', () => {
   const sharedUsers = ref<GetUser[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const total = ref(0)
-  const currentPage = ref(1)
-  const perPage = ref(10)
+  
+  // Pagination state
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false,
+  })
+
+  // Computed getters for pagination
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
 
   // Getters
   const pantriesCount = computed(() => items.value.length)
@@ -47,15 +63,13 @@ export const usePantriesStore = defineStore('pantries', () => {
     error.value = null
 
     try {
-      const pantries = await pantriesService.listPantries(params)
-      items.value = pantries
+      const response = await pantriesService.listPantries(params)
+      // API v1.0.1 returns { data: [...], pagination: {...} }
+      items.value = response.data
+      pagination.value = response.pagination
       
-      // Update pagination state
-      if (params?.page) currentPage.value = params.page
-      if (params?.per_page) perPage.value = params.per_page
-      
-      console.log('✓ Pantries loaded:', pantries.length)
-      return pantries
+      console.log('✓ Pantries loaded:', response.data.length)
+      return response.data
     } catch (err: any) {
       error.value = err.message || 'Error al cargar las despensas'
       console.error('✗ Error fetching pantries:', err)
@@ -278,9 +292,14 @@ export const usePantriesStore = defineStore('pantries', () => {
     sharedUsers.value = []
     loading.value = false
     error.value = null
-    total.value = 0
-    currentPage.value = 1
-    perPage.value = 10
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false,
+    }
   }
 
   return {
@@ -290,9 +309,15 @@ export const usePantriesStore = defineStore('pantries', () => {
     sharedUsers,
     loading,
     error,
+    pagination,
+    
+    // Pagination computed getters
     total,
     currentPage,
     perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     
     // Getters
     pantriesCount,

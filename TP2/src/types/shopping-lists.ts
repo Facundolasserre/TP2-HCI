@@ -30,6 +30,7 @@ export interface Product {
 
 /**
  * Shopping List (from OpenAPI definitions.ShoppingList)
+ * Note: The 'completed' field is computed client-side based on lastPurchasedAt
  */
 export interface ShoppingList {
   id: number
@@ -39,7 +40,7 @@ export interface ShoppingList {
   metadata?: Record<string, any>
   owner: User
   sharedWith: User[]
-  completed: boolean // Computed field: true if all items are purchased
+  completed?: boolean // Client-side computed: approximated from lastPurchasedAt
   lastPurchasedAt?: string | null
   createdAt: string
   updatedAt: string
@@ -54,13 +55,13 @@ export type ShoppingListsArray = ShoppingList[]
  * Data for creating a shopping list (from OpenAPI definitions.ShoppingListCreate)
  * Validations:
  * - name: required, maxLength 100
- * - description: optional
+ * - description: required (can be empty string) - API v1.0.1 requires this field
  * - recurring: optional boolean
  * - metadata: optional object
  */
 export interface ShoppingListCreate {
   name: string // required, maxLength: 100
-  description?: string
+  description: string // required in API v1.0.1 (can be empty string)
   recurring?: boolean
   metadata?: Record<string, any>
 }

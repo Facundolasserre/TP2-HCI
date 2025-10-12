@@ -1,4 +1,5 @@
 import httpClient from './http'
+import type { PaginatedResponse } from '@/types/pagination'
 import type {
   PantryItem,
   PantryItemArray,
@@ -66,12 +67,12 @@ export async function addItem(pantryId: number, data: PantryItemCreate): Promise
  * Requires: bearerAuth
  * Query params: page, per_page, sort_by, order, search, category_id
  */
-export async function getItems(pantryId: number, params?: PantryItemsListParams): Promise<PantryItemArray> {
-  const response = await httpClient.get<PantryItemArray>(
+export async function getItems(pantryId: number, params?: PantryItemsListParams): Promise<PaginatedResponse<PantryItem>> {
+  const response = await httpClient.get<PaginatedResponse<PantryItem>>(
     `/api/pantries/${pantryId}/items`,
     { params }
   )
-  console.log('✓ Pantry items fetched:', response.data.length)
+  console.log('✓ Pantry items fetched:', response.data.data.length)
   return response.data
 }
 

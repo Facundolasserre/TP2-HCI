@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { PaginationMeta } from '@/types/pagination'
 import type {
   ShoppingList,
   ShoppingListsArray,
@@ -18,15 +19,70 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
   const sharedUsers = ref<User[]>([])
   const loading = ref(false)
   const error = ref<ApiError | null>(null)
-  const total = ref(0)
-  const currentPage = ref(1)
-  const perPage = ref(10)
+  
+  // Map to track completed status by listId
+  // This gets updated when items are toggled
+  const completedStatusMap = ref<Map<number, boolean>>(new Map())
+  
+  // Pagination state
+  const pagination = ref<PaginationMeta>({
+    total: 0,
+    page: 1,
+    per_page: 10,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false,
+  })
+
+  // Computed getters for pagination
+  const total = computed(() => pagination.value.total)
+  const currentPage = computed(() => pagination.value.page)
+  const perPage = computed(() => pagination.value.per_page)
+  const totalPages = computed(() => pagination.value.total_pages)
+  const hasNextPage = computed(() => pagination.value.has_next)
+  const hasPrevPage = computed(() => pagination.value.has_prev)
 
   // Getters
   const listsCount = computed(() => items.value.length)
   const hasLists = computed(() => items.value.length > 0)
   const isLoading = computed(() => loading.value)
   const hasError = computed(() => error.value !== null)
+
+  /**
+   * Update the completed status for a specific list
+   * This is called from listItems store when items are toggled
+   */
+  const setListCompletedStatus = (listId: number, isCompleted: boolean) => {
+    completedStatusMap.value.set(listId, isCompleted)
+    
+    // Trigger reactivity by creating a new Map
+    completedStatusMap.value = new Map(completedStatusMap.value)
+  }
+
+  /**
+   * Helper function to determine if a list is completed
+   * Uses the completedStatusMap that gets updated when items are toggled
+   * Falls back to lastPurchasedAt if status is not in map
+   */
+  const isListCompleted = (list: ShoppingList): boolean => {
+    // Check if we have status in the map (updated from item toggles)
+    if (completedStatusMap.value.has(list.id)) {
+      return completedStatusMap.value.get(list.id) || false
+    }
+    
+    // Fallback to lastPurchasedAt for lists we haven't interacted with
+    return list.lastPurchasedAt !== null && list.lastPurchasedAt !== undefined
+  }
+
+  /**
+   * Get lists with computed 'completed' field
+   */
+  const itemsWithCompletion = computed(() => {
+    return items.value.map(list => ({
+      ...list,
+      completed: isListCompleted(list)
+    }))
+  })
 
   // Actions
 
@@ -42,16 +98,12 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
       const response = await shoppingListsService.listLists(params);
       console.log('API response:', JSON.stringify(response, null, 2));
       
-      // The API returns the list in a 'data' property
-      const lists = response.data || [];
-      console.log('Processed lists:', lists);
-
-      items.value = lists;
+      // The API v1.0.1 returns { data: [...], pagination: {...} }
+      items.value = response.data;
+      pagination.value = response.pagination;
+      console.log('Processed lists:', response.data);
       
-      if (params?.page) currentPage.value = params.page;
-      if (params?.per_page) perPage.value = params.per_page;
-      
-      return lists;
+      return response.data;
     } catch (err: any) {
       console.error('Error fetching lists:', err);
       error.value = err as ApiError;
@@ -89,6 +141,8 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
           metadata: { icon: 'shopping_cart.svg', color: '#6B7CFF' },
           owner: { id: 1, email: 'user@example.com', name: 'John', surname: 'Doe' },
           sharedWith: [],
+          completed: false,
+          lastPurchasedAt: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -360,9 +414,14 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
     sharedUsers.value = []
     loading.value = false
     error.value = null
-    total.value = 0
-    currentPage.value = 1
-    perPage.value = 10
+    pagination.value = {
+      total: 0,
+      page: 1,
+      per_page: 10,
+      total_pages: 0,
+      has_next: false,
+      has_prev: false,
+    }
   }
 
   return {
@@ -372,15 +431,23 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
     sharedUsers,
     loading,
     error,
+    pagination,
+    
+    // Pagination computed getters
     total,
     currentPage,
     perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
     
     // Getters
     listsCount,
     hasLists,
     isLoading,
     hasError,
+    isListCompleted,
+    itemsWithCompletion,
     
     // Actions
     fetchLists,
@@ -396,5 +463,6 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
     revokeShare,
     clearError,
     reset,
+    setListCompletedStatus,
   }
 })

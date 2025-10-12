@@ -150,7 +150,7 @@ function toggleLanguage() {
 }
 
 function goToHistory(){
-  set('purchase-history');
+  set('history');
   router.push('/purchase-history');
   emitClose();
 }

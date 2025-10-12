@@ -1,4 +1,5 @@
 import httpClient from './http'
+import type { PaginatedResponse } from '@/types/pagination'
 import type {
   Pantry,
   PantryCreate,
@@ -53,38 +54,10 @@ export async function createPantry(data: PantryCreate): Promise<Pantry> {
  * Requires: bearerAuth
  * Query params: name, owner (boolean), page, per_page, sort_by, order
  */
-export async function listPantries(params?: PantriesListParams): Promise<ArrayOfPantries> {
-  const response = await httpClient.get<any>(BASE_PATH, { params })
-  
-  // Handle different response formats from API
-  let pantries: ArrayOfPantries = []
-  
-  if (Array.isArray(response.data)) {
-    // Format 1: Direct array
-    pantries = response.data
-    console.log('✓ Pantries fetched (direct array):', pantries.length)
-  } else if (response.data && Array.isArray(response.data.pantries)) {
-    // Format 2: { pantries: [...] }
-    pantries = response.data.pantries
-    console.log('✓ Pantries fetched (pantries property):', pantries.length)
-  } else if (response.data && Array.isArray(response.data.data)) {
-    // Format 3: { data: [...] }
-    pantries = response.data.data
-    console.log('✓ Pantries fetched (data property):', pantries.length)
-  } else if (response.data && Array.isArray(response.data.result)) {
-    // Format 4: { result: [...] }
-    pantries = response.data.result
-    console.log('✓ Pantries fetched (result property):', pantries.length)
-  } else if (response.data && Array.isArray(response.data.items)) {
-    // Format 5: { items: [...] }
-    pantries = response.data.items
-    console.log('✓ Pantries fetched (items property):', pantries.length)
-  } else {
-    console.warn('⚠️ Unknown pantries response format:', response.data)
-    console.warn('Response keys:', Object.keys(response.data || {}))
-  }
-  
-  return pantries
+export async function listPantries(params?: PantriesListParams): Promise<PaginatedResponse<Pantry>> {
+  const response = await httpClient.get<PaginatedResponse<Pantry>>(BASE_PATH, { params })
+  console.log('✓ Pantries fetched:', response.data.data.length)
+  return response.data
 }
 
 /**
