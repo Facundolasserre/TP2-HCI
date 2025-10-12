@@ -254,9 +254,10 @@
 
     <!-- Share Modal -->
     <ShareMembersModal
-      v-if="showShareModal"
+      v-if="showShareModal && list"
       :list-id="listId!"
-      :list-name="list?.name || ''"
+      :list-name="list.name"
+      :owner="list.owner"
       @close="closeShareModal"
     />
   </div>

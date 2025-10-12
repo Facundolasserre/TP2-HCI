@@ -14,7 +14,7 @@
               <label class="form-label">{{ t('addToListModal.label') }}</label>
               <select v-model="selectedListId" class="form-select" required>
                 <option v-for="list in availableLists" :key="list.id" :value="String(list.id)">
-                  {{ list.title }}
+                  {{ list.name }}
                 </option>
               </select>
             </div>
@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useShoppingListsStore } from '@/stores/shoppingLists'
+import { useListItemsStore } from '@/stores/listItems'
 import { useToast } from '@/composables/useToast'
 import { useI18n } from '@/composables/useI18n'
 import type { Product } from '@/types/lists'
@@ -51,6 +52,7 @@ const emit = defineEmits<{
 }>()
 
 const shoppingListsStore = useShoppingListsStore()
+const listItemsStore = useListItemsStore()
 const toast = useToast()
 const { t } = useI18n()
 
@@ -81,15 +83,23 @@ const handleClose = () => {
   selectedListId.value = ''
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!props.product || !selectedListId.value) return
 
+  const listId = Number(selectedListId.value)
+  const productId = Number(props.product.id)
+
+  if (Number.isNaN(listId) || Number.isNaN(productId)) {
+    toast.error(t('addToListModal.toast.error'))
+    return
+  }
+
   try {
-    shoppingListsStore.addProduct({
-      name: props.product.name,
-      amount: props.product.amount,
-      notes: props.product.notes,
-      listId: selectedListId.value,
+    await listItemsStore.addItem(listId, {
+      product: { id: productId },
+      quantity: props.product.amount || 1,
+      unit: 'unit',
+      metadata: props.product.notes ? { notes: props.product.notes } : {},
     })
 
     const targetList = lists.value.find((list) => String(list.id) === selectedListId.value)

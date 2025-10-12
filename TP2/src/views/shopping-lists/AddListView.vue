@@ -101,22 +101,27 @@
     <!-- Segunda vista: Share members -->
     <ShareMembersModal
       v-if="showShare"
+      :list-id="0"
+      :list-name="name"
+      :owner="shareModalOwner"
       @close="onShareClose"
-      @save="onShareSave"
     />
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useShoppingListsStore } from '@/stores/shoppingLists';
+import { useAuthStore } from '@/stores/auth';
 import { useToast } from '@/composables/useToast';
 import { useI18n } from '@/composables/useI18n';
 import ShareMembersModal from '@/components/members/ShareMembersModal.vue';
+import type { User } from '@/types/shopping-lists';
 
 const router = useRouter();
 const shoppingListsStore = useShoppingListsStore();
+const authStore = useAuthStore();
 const toast = useToast();
 const { t } = useI18n();
 
@@ -132,6 +137,27 @@ const selectedIcon = ref('shopping_cart.svg'); // icono por defecto
 /** ============ Share modal state ============ */
 const showShare = ref(false);
 const sharedMembers = ref<string[]>([]);
+const shareModalOwner = computed<User>(() => {
+  const currentUser = authStore.user;
+  if (currentUser) {
+    return {
+      id: currentUser.id,
+      email: currentUser.email,
+      name: currentUser.name,
+      surname: currentUser.surname,
+      metadata: currentUser.metadata,
+      createdAt: currentUser.createdAt,
+      updatedAt: currentUser.updatedAt,
+    };
+  }
+
+  return {
+    id: 0,
+    email: '',
+    name: '',
+    surname: '',
+  };
+});
 
 // Iconos disponibles para seleccionar
 const availableIcons = [

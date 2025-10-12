@@ -54,6 +54,17 @@
           <input id="email" type="email" v-model="email" disabled />
         </div>
 
+        <div class="col full">
+          <label for="currentPassword">Current Password</label>
+          <input
+            id="currentPassword"
+            type="password"
+            v-model="currentPassword"
+            autocomplete="current-password"
+            placeholder="••••••••"
+          />
+        </div>
+
         <div class="grid">
           <div class="col">
             <label for="newPassword">New Password</label>
@@ -93,7 +104,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -105,12 +116,15 @@ const name = ref('')
 const username = ref('')
 const photoUrl = ref('')
 const email = ref('')
+const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 
 const isLoading = ref(true)
 const isSaving = ref(false)
 const isChangingPassword = ref(false)
+const avatarUploading = ref(false)
+let avatarPreviewUrl: string | null = null
 
 // Use reactive objects for messages to keep them grouped
 const profileMessage = reactive({ text: '', type: '' })
@@ -173,6 +187,11 @@ async function handleProfileUpdate() {
 
 async function handleChangePassword() {
   passwordMessage.text = ''
+  if (!currentPassword.value) {
+    passwordMessage.text = 'Please provide your current password.'
+    passwordMessage.type = 'error'
+    return
+  }
   if (!newPassword.value || !confirmPassword.value) {
     passwordMessage.text = 'Please fill in both password fields.'
     passwordMessage.type = 'error'
@@ -190,10 +209,10 @@ async function handleChangePassword() {
   }
   isChangingPassword.value = true
   try {
-    // @ts-ignore
-    await authStore.changePassword(newPassword.value)
+    await authStore.changePassword(currentPassword.value, newPassword.value)
     passwordMessage.text = '✓ Password changed successfully!'
     passwordMessage.type = 'ok'
+    currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
   } catch (err: any) {
@@ -234,6 +253,40 @@ async function deleteAccount() {
 function goBack() {
   router.push('/home')
 }
+
+async function onAvatarChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) {
+    return
+  }
+
+  avatarUploading.value = true
+
+  try {
+    const previewUrl = URL.createObjectURL(file)
+    if (avatarPreviewUrl) {
+      URL.revokeObjectURL(avatarPreviewUrl)
+    }
+    avatarPreviewUrl = previewUrl
+    photoUrl.value = previewUrl
+    profileMessage.text = 'Profile photo updated locally. Remember to save your changes.'
+    profileMessage.type = 'ok'
+  } catch (error) {
+    console.error('Error updating avatar preview:', error)
+    profileMessage.text = 'Could not update the profile photo.'
+    profileMessage.type = 'error'
+  } finally {
+    avatarUploading.value = false
+  }
+}
+
+onBeforeUnmount(() => {
+  if (avatarPreviewUrl) {
+    URL.revokeObjectURL(avatarPreviewUrl)
+  }
+})
 </script>
 
 <style scoped>

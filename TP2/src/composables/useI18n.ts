@@ -3,15 +3,17 @@ import { useLanguageStore } from '@/stores/language';
 import en from '@/locales/en.json';
 import es from '@/locales/es.json';
 
-const translations = {
-  en,
-  es,
+type SupportedLanguage = 'en' | 'es';
+
+const translations: Record<SupportedLanguage, Record<string, string>> = {
+  en: en as Record<string, string>,
+  es: es as Record<string, string>,
 };
 
 export function useI18n() {
   const languageStore = useLanguageStore();
-  const lang = computed<'en' | 'es'>(() =>
-    (languageStore.language as 'en' | 'es') || 'es'
+  const lang = computed<SupportedLanguage>(() =>
+    (languageStore.language as SupportedLanguage) || 'es'
   );
 
   function t(

@@ -133,6 +133,11 @@ type AddMemberPayload = {
 }
 
 async function onAddSave(payload: AddMemberPayload) {
+  if (!props.listId) {
+    toast.error(t('shareModal.toast.share_error'))
+    return
+  }
+
   try {
     await shoppingListsService.shareList(props.listId, payload.email)
     toast.success(t('shareModal.toast.shared', { email: payload.email }))
@@ -169,6 +174,11 @@ const filtered = computed(()=>{
 function toggleMenu(id: string){ openMenuId.value = openMenuId.value === id ? null : id }
 
 async function remove(id: string){
+  if (!props.listId) {
+    toast.error(t('shareModal.toast.remove_error'))
+    return
+  }
+
   try {
     await shoppingListsService.revokeShare(props.listId, parseInt(id))
     toast.success(t('shareModal.toast.removed'))
@@ -183,6 +193,11 @@ async function remove(id: string){
 }
 
 function addMember() {
+  if (!props.listId) {
+    toast.error(t('shareModal.toast.share_error'))
+    return
+  }
+
   showAdd.value = true
 }
 </script>

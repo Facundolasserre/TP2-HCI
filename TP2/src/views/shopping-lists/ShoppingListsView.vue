@@ -162,6 +162,7 @@
       v-if="showShareModal && selectedList"
       :list-id="selectedList.id"
       :list-name="selectedList.name"
+      :owner="selectedList.owner"
       @close="closeShareModal"
     />
   </div>
