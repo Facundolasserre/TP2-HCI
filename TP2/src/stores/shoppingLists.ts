@@ -101,7 +101,22 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
       // The API v1.0.1 returns { data: [...], pagination: {...} }
       items.value = response.data;
       pagination.value = response.pagination;
+      
+      // Initialize completedStatusMap based on lastPurchasedAt
+      // This ensures completed lists are properly filtered even on first load
+      response.data.forEach(list => {
+        // Only initialize if not already in map (preserve existing state)
+        if (!completedStatusMap.value.has(list.id)) {
+          const isCompleted = list.lastPurchasedAt !== null && list.lastPurchasedAt !== undefined
+          completedStatusMap.value.set(list.id, isCompleted)
+        }
+      })
+      
+      // Trigger reactivity
+      completedStatusMap.value = new Map(completedStatusMap.value)
+      
       console.log('Processed lists:', response.data);
+      console.log('Initialized completedStatusMap:', Object.fromEntries(completedStatusMap.value));
       
       return response.data;
     } catch (err: any) {
