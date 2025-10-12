@@ -81,7 +81,16 @@ async function onSubmit() {
     
   } catch (err: any) {
     console.error('Error sending recovery code:', err)
-    errorMessage.value = err.response?.data?.message || err.message || t('forgotPassword.error_generic')
+    const status = err.response?.status
+    if (status === 404) {
+      errorMessage.value = t('forgotPassword.error_not_found')
+    } else if (status === 400) {
+      errorMessage.value = err.response?.data?.message || t('forgotPassword.error_invalid')
+    } else if (status && status >= 500) {
+      errorMessage.value = t('forgotPassword.error_server')
+    } else {
+      errorMessage.value = err.response?.data?.message || err.message || t('forgotPassword.error_generic')
+    }
   } finally {
     isLoading.value = false
   }

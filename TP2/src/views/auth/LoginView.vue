@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useI18n } from '@/composables/useI18n';
@@ -59,6 +59,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const { t } = useI18n();
 const languageStore = useLanguageStore();
+let registerRedirectTimeout: ReturnType<typeof setTimeout> | null = null;
 
 async function onSubmit() {
   if (!email.value.trim() || !password.value) {
@@ -77,19 +78,39 @@ async function onSubmit() {
 
     router.push('/Home');
   } catch (err: any) {
-    let message = err.response?.data?.message || err.message || t('login.error_credentials');
-    if (message === 'Invalid credentials') {
-      message = t('login.error_credentials');
-    }
-    errorMessage.value = message;
-    if (message.toLowerCase().includes('verified') || message.toLowerCase().includes('verificado')) {
-      router.push({ name: 'verify-account', query: { email: email.value } });
+    const status = err.response?.status;
+    const backendMessage = err.response?.data?.message;
+    if (status === 401 && backendMessage === 'Invalid credentials') {
+      if (registerRedirectTimeout) {
+        clearTimeout(registerRedirectTimeout);
+      }
+      errorMessage.value = t('login.error_no_account');
+      registerRedirectTimeout = setTimeout(() => {
+        router.push({
+          name: 'register',
+          query: { email: email.value.trim() },
+        });
+      }, 1800);
+    } else {
+      let message = backendMessage || err.message || t('login.error_credentials');
+      if (message === 'Invalid credentials') {
+        message = t('login.error_credentials');
+      }
+      errorMessage.value = message;
+      if (message.toLowerCase().includes('verified') || message.toLowerCase().includes('verificado')) {
+        router.push({ name: 'verify-account', query: { email: email.value } });
+      }
     }
   } finally {
     isLoading.value = false;
   }
 }
 
+onBeforeUnmount(() => {
+  if (registerRedirectTimeout) {
+    clearTimeout(registerRedirectTimeout);
+  }
+});
 function onForgot() {
   router.push('/forgot-password');
 }

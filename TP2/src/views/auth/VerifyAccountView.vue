@@ -12,7 +12,6 @@
 
       <!-- Form -->
       <form class="form" @submit.prevent="onSubmit">
-        <label class="label">{{ t('verify.code_label') }}</label>
         <input
           class="input"
           v-model.trim="code"

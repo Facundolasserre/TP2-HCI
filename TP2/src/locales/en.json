@@ -9,6 +9,7 @@
   "login.signup": "Sign up",
   "login.error_credentials": "Login error. Check your credentials.",
   "login.error_fill_fields": "Please fill all fields",
+  "login.error_no_account": "We couldn't find an account with that email. Redirecting to sign up...",
 
   "register.title": "Welcome to BagIt",
   "register.name_placeholder": "Name",
@@ -331,6 +332,8 @@
   "forgotPassword.loading": "Sending...",
   "forgotPassword.submit": "Reset",
   "forgotPassword.error_invalid": "Please enter a valid email",
+  "forgotPassword.error_not_found": "We couldn't find an account with that email",
+  "forgotPassword.error_server": "We couldn't send the recovery email. Please try again later.",
   "forgotPassword.success": "✓ Recovery code sent! Check your email",
   "forgotPassword.error_generic": "Error sending recovery code",
 

@@ -9,6 +9,7 @@
   "login.signup": "Registrate",
   "login.error_credentials": "Error al iniciar sesión. Verifica tus credenciales.",
   "login.error_fill_fields": "Por favor complete todos los campos",
+  "login.error_no_account": "No encontramos una cuenta con ese email. Redirigiendo al registro...",
 
   "register.title": "Bienvenido a BagIt",
   "register.name_placeholder": "Nombre",
@@ -331,6 +332,8 @@
   "forgotPassword.loading": "Enviando...",
   "forgotPassword.submit": "Restablecer",
   "forgotPassword.error_invalid": "Por favor ingresa un email válido",
+  "forgotPassword.error_not_found": "No encontramos ninguna cuenta con ese email",
+  "forgotPassword.error_server": "No pudimos enviar el correo de recuperación. Intentalo más tarde.",
   "forgotPassword.success": "✓ Código de recuperación enviado! Revisa tu email",
   "forgotPassword.error_generic": "Error al enviar código de recuperación",
 
