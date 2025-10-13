@@ -108,7 +108,7 @@
           </div>
         </div>
 
-        <!-- Search & Create (Center) -->
+        <!-- Search (Center) -->
         <div class="toolbar-center">
           <div class="search-box">
             <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -122,16 +122,17 @@
               class="search-input"
             />
           </div>
+        </div>
+
+        <!-- View Toggle & Sort (Right) -->
+        <div class="toolbar-right">
           <button class="btn-primary create-btn" @click="openCreateModal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 5c.552 0 1 .448 1 1v5h5c.552 0 1 .448 1 1s-.448 1-1 1h-5v5c0 .552-.448 1-1 1s-1-.448-1-1v-5H6c-.552 0-1-.448-1-1s.448-1 1-1h5V6c0-.552.448-1 1-1Z"/>
             </svg>
             <span class="create-btn-text">{{ t('pantries.new_button') }}</span>
           </button>
-        </div>
 
-        <!-- View Toggle & Sort (Right) -->
-        <div class="toolbar-right">
           <!-- View Toggle -->
           <div class="view-toggle">
             <button 
@@ -747,12 +748,14 @@ onMounted(async () => {
 }
 
 .create-btn {
-  min-width: 190px;
+  flex: 0 0 auto;
+  min-width: 150px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   text-align: center;
+  gap: 8px;
 }
 
 .create-btn svg {
@@ -814,7 +817,7 @@ onMounted(async () => {
 }
 
 .create-btn {
-  min-width: 180px;
+  min-width: 150px;
   justify-content: center;
   text-align: center;
 }
@@ -879,11 +882,11 @@ onMounted(async () => {
   border-radius: 16px;
   padding: 20px 24px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 32px;
+  gap: 20px;
   margin-bottom: 24px;
-  flex-wrap: nowrap;
 }
 
 .toolbar-left {
@@ -893,11 +896,11 @@ onMounted(async () => {
 }
 
 .toolbar-center {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  flex: 1 1 320px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -905,7 +908,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* Filter Tabs */
@@ -944,9 +949,9 @@ onMounted(async () => {
 /* Search Box */
 .search-box {
   position: relative;
-  width: 100%;
+  flex: 1 1 260px;
+  min-width: 160px;
   max-width: 420px;
-  min-width: 220px;
 }
 
 .search-icon {
@@ -1588,11 +1593,14 @@ onMounted(async () => {
 
   .toolbar-center {
     width: 100%;
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
     gap: 12px;
   }
 
   .toolbar-center .search-box {
+    flex: 1 1 100%;
+    min-width: 0;
     max-width: 100%;
   }
 

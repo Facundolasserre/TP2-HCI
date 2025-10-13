@@ -102,6 +102,8 @@ const { t } = useI18n();
   justify-content: space-between;
   padding: 0 26px;
   box-sizing: border-box;
+  background: #322D59;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ======= BURGER ICON ======= */

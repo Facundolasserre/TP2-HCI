@@ -332,7 +332,18 @@ export const useShoppingListsStore = defineStore('shoppingLists', () => {
 
     try {
       const updatedItems = await shoppingListsService.resetList(id)
-      
+
+      // Mark list as not completed locally
+      completedStatusMap.value.set(id, false)
+
+      const listIndex = items.value.findIndex((list) => list.id === id)
+      if (listIndex !== -1) {
+        items.value[listIndex] = {
+          ...items.value[listIndex],
+          lastPurchasedAt: null,
+        }
+      }
+
       // Refresh current list if it's the one being reset
       if (currentList.value?.id === id) {
         await fetchListById(id)

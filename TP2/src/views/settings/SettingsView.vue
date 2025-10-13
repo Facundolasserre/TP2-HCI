@@ -27,12 +27,6 @@
             </div>
           </div>
         </div>
-        <div class="photo-grid">
-        <label class="edit-profile-btn square" :class="{ disabled: avatarUploading }">
-          <input type="file" accept="image/*" @change="onAvatarChange" style="display:none" />
-          {{ avatarUploading ? 'Uploading...' : 'Change Photo' }}
-        </label>
-        </div>
       </div>
 
       <div class="actions">
