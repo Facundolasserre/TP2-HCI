@@ -3,11 +3,11 @@
     <nav class="top-nav">
       <div class="nav-left">
         <button
-          class="menu-btn"
+          class="menu-btn sidebar-toggle-btn"
           @click="toggleSidebar"
           :aria-label="t('topbar.open_menu')"
         >
-          <img :src="IconMenu" alt="Menu" width="24" height="24" />
+          <img :src="IconMenu" alt="Menu" class="sidebar-toggle-icon" />
         </button>
         <div class="nav-title">
           <h1>{{ t('pantries.title') }}</h1>
@@ -15,7 +15,7 @@
         </div>
 
         <!-- Profile Button -->
-        <button class="profile-btn" @click="goProfile">
+        <button class="profile-btn profile-pill" @click="goProfile">
           <img src="@/assets/fonts/account.png" alt="Profile" />
         </button>
       </div>
@@ -698,27 +698,13 @@ onMounted(async () => {
 }
 
 .menu-btn {
-  width: 44px;
-  height: 44px;
-  background: rgba(107, 124, 255, 0.1);
-  border: 1px solid rgba(107, 124, 255, 0.2);
-  border-radius: 10px;
-  color: #EDEAF6;
-  cursor: pointer;
-  display: flex;
+  border: none;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.menu-btn img {
-  filter: brightness(0) saturate(100%) invert(92%) sepia(6%) saturate(488%) hue-rotate(201deg) brightness(101%) contrast(94%);
-}
-
-.menu-btn:hover {
-  background: rgba(107, 124, 255, 0.2);
-  border-color: rgba(107, 124, 255, 0.4);
-  transform: scale(1.05);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .nav-title h1 {
@@ -1688,50 +1674,33 @@ onMounted(async () => {
 
 .profile-btn {
   position: absolute;
-  top: 18px;
+  top: 50%;
   right: 32px;
+  transform: translateY(-50%);
   z-index: 1100;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
-}
-.profile-btn img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .profile-btn:hover {
-  opacity: 0.8;
-  transform: scale(1.07);
+  transform: translateY(-50%) scale(1.05);
+  opacity: 0.9;
 }
 @media (max-width: 600px) {
   .profile-btn {
-    top: 12px;
     right: 16px;
-    width: 38px;
-    height: 38px;
-    padding: 4px;
   }
 }
 .layout-topbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--bg);
-  padding: 10px 0;
-  min-height: 64px;
+  background: #322D59;
+  padding: 0;
+  height: 72px;
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 

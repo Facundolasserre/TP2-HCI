@@ -53,6 +53,54 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+button.sidebar-toggle-btn,
+button.profile-pill {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #080A14;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+button.sidebar-toggle-btn:hover,
+button.profile-pill:hover {
+  background: #101223;
+}
+
+button.sidebar-toggle-btn:active,
+button.profile-pill:active {
+  transform: scale(0.95);
+}
+
+button.sidebar-toggle-btn:focus-visible,
+button.profile-pill:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.sidebar-toggle-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+}
+
+button.profile-pill > img,
+.profile-pill .profile-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  display: block;
+}
+
 .card {
   padding: 2em;
 }

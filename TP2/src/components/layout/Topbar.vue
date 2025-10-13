@@ -2,14 +2,14 @@
   <header class="topbar" data-topbar-build="v3">
     <!-- Botón con imagen (siempre a la izquierda) -->
     <button
-        class="burger"
+        class="burger sidebar-toggle-btn"
         @click="$emit('toggle-sidebar')"
         :aria-label="t('topbar.open_menu')"
     >
       <img
           src="../../assets/fonts/burgerIcon.png"
           :alt="t('topbar.menu_icon')"
-          class="topbar-icon"
+          class="topbar-icon sidebar-toggle-icon"
       />
     </button>
 
@@ -100,22 +100,18 @@ const { t } = useI18n();
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 26px;
   box-sizing: border-box;
 }
 
 /* ======= BURGER ICON ======= */
 .burger{
-  background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;                      /* +30% */
-  height: 52px;                     /* +30% */
-  flex-shrink: 0;
 }
 
 .topbar-icon{

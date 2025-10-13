@@ -13,7 +13,7 @@
         @search="onSearch"
       />
     <!-- Profile Button -->
-    <button class="profile-btn" @click="goProfile">
+    <button class="profile-btn profile-pill" @click="goProfile">
       <img src="@/assets/fonts/account.png" alt="Profile" />
     </button>
   </div>
@@ -25,14 +25,26 @@
         <article
           v-for="card in filtered"
           :key="card.id"
-          class="card"
+          :class="['card', { 'menu-open': openMenuId === card.id }]"
           @click="openCard(card)"
         >
           <div class="card-icon-wrapper" :style="{ borderColor: card.color, backgroundColor: card.color + '20' }">
             <img :src="card.icon" :alt="card.title" class="card-icon" />
           </div>
           <div class="card-content">
-            <h3 class="card-title">{{ card.title }}</h3>
+            <h3 class="card-title">
+              <span
+                v-if="isFavorite(card.id)"
+                class="favorite-indicator"
+                aria-hidden="true"
+              >
+                ★
+              </span>
+              <span>{{ card.title }}</span>
+              <span v-if="isFavorite(card.id)" class="sr-only">
+                {{ t('home.favorite_badge') }}
+              </span>
+            </h3>
             <p class="card-sub">
               <em v-if="card.sharedWith?.length">
                 {{ t('home.shared_with') }} {{ shareText(card.sharedWith) }}
@@ -40,14 +52,50 @@
               <em v-else>{{ t('home.no_shares') }}</em>
             </p>
           </div>
-          <button 
-            class="favorite-btn" 
-            :class="{ active: isFavorite(card.id) }"
-            @click.stop="toggleFavorite(card.id)"
-            :title="isFavorite(card.id) ? t('home.remove_favorite') : t('home.add_favorite')"
-          >
-            <img :src="IconStar" alt="Favorite" class="star-icon" />
-          </button>
+          <div class="card-actions">
+            <button
+              class="actions-btn"
+              type="button"
+              @click.stop="toggleMenu(card.id)"
+              :aria-expanded="openMenuId === card.id"
+              aria-haspopup="true"
+              :title="t('home.menu.open')"
+            >
+              <span class="sr-only">{{ t('home.menu.open') }}</span>
+              <span aria-hidden="true" class="actions-icon">⋯</span>
+            </button>
+            <transition name="menu-fade">
+              <div
+                v-if="openMenuId === card.id"
+                class="card-menu"
+                role="menu"
+                @click.stop
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  @click="handleFavoriteAction(card.id)"
+                >
+                  {{ isFavorite(card.id) ? t('home.menu.unfavorite') : t('home.menu.favorite') }}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  @click="handleReset(card.id)"
+                >
+                  {{ t('home.menu.reset') }}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="danger"
+                  @click="handleDelete(card.id)"
+                >
+                  {{ t('home.menu.delete') }}
+                </button>
+              </div>
+            </transition>
+          </div>
         </article>
       </main>
       
@@ -78,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useShoppingListsStore } from '@/stores/shoppingLists';
 import { useToast } from '@/composables/useToast';
@@ -86,8 +134,6 @@ import { useI18n } from '@/composables/useI18n';
 
 import Topbar from '@/components/layout/Topbar.vue';
 import Sidebar from '@/components/layout/Sidebar.vue';
-import IconStar from '@/assets/star.svg';
-
 const router = useRouter();
 const route = useRoute();
 const shoppingListsStore = useShoppingListsStore();
@@ -95,13 +141,24 @@ const toast = useToast();
 const { t } = useI18n();
 
 const q = ref('');
-const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('home');
+const active = ref<'home'|'history'|'pantries'|'products'>('home');
 const sidebarOpen = ref(false);
 const favorites = ref<Set<number>>(new Set());
 const showFavoritesOnly = ref(false);
+const openMenuId = ref<number | null>(null);
 
 function toggleSidebar(){ sidebarOpen.value = !sidebarOpen.value; }
 function closeSidebar(){ sidebarOpen.value = false; }
+function closeMenu(){ openMenuId.value = null; }
+function toggleMenu(id: number){
+  openMenuId.value = openMenuId.value === id ? null : id;
+}
+function handleGlobalClick(event: MouseEvent){
+  const target = event.target as HTMLElement;
+  if (!target.closest('.card-menu') && !target.closest('.actions-btn')) {
+    closeMenu();
+  }
+}
 
 const iconMap: Record<string, string> = {
   'shopping_cart.svg': new URL('@/assets/shopping_cart.svg', import.meta.url).href,
@@ -153,6 +210,7 @@ function shareText(list: string[]){
 }
 
 function openCard(card: { id: number; title: string; icon: string; color: string; sharedWith?: string[] }){
+  closeMenu();
   router.push(`/List/${card.id}`);
 }
 
@@ -188,6 +246,39 @@ function loadFavorites() {
   }
 }
 
+function handleFavoriteAction(id: number) {
+  toggleFavorite(id);
+  closeMenu();
+}
+
+async function handleReset(id: number) {
+  try {
+    await shoppingListsStore.resetList(id);
+    toast.success(t('home.menu.reset_success'));
+    await loadLists();
+  } catch (error) {
+    console.error('Error resetting list:', error);
+    toast.error(t('home.menu.reset_error'));
+  } finally {
+    closeMenu();
+  }
+}
+
+async function handleDelete(id: number) {
+  try {
+    await shoppingListsStore.deleteList(id);
+    favorites.value.delete(id);
+    saveFavorites();
+    toast.success(t('home.menu.delete_success'));
+    await loadLists();
+  } catch (error) {
+    console.error('Error deleting list:', error);
+    toast.error(t('home.menu.delete_error'));
+  } finally {
+    closeMenu();
+  }
+}
+
 function onFilter(){ console.log('filter'); }
 function onSort(){ console.log('sort'); }
 function onFavs(){ 
@@ -217,8 +308,13 @@ async function loadLists() {
 }
 
 onMounted(async () => {
+  document.addEventListener('click', handleGlobalClick);
   loadFavorites();
   await loadLists();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleGlobalClick);
 });
 
 watch(cards, (newCards) => {
@@ -240,50 +336,33 @@ watch(cards, (newCards) => {
 
 .profile-btn {
   position: absolute;
-  top: 18px;
+  top: 50%;
   right: 32px;
+  transform: translateY(-50%);
   z-index: 1100;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
-}
-.profile-btn img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .profile-btn:hover {
-  opacity: 0.8;
-  transform: scale(1.07);
+  transform: translateY(-50%) scale(1.05);
+  opacity: 0.9;
 }
 @media (max-width: 600px) {
   .profile-btn {
-    top: 12px;
     right: 16px;
-    width: 38px;
-    height: 38px;
-    padding: 4px;
   }
 }
 .layout-topbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--bg);
-  padding: 10px 0;
-  min-height: 64px;
+  background: var(--panel);
+  height: 72px;
+  padding: 0;
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .layout{
@@ -317,16 +396,8 @@ watch(cards, (newCards) => {
   object-fit: cover;
 }
 
-.layout-topbar{ 
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: var(--bg);
-  padding: 10px 0;
-}
-
 .layout-grid{
-  margin-top: 60px;
+  margin-top: 72px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -346,7 +417,7 @@ watch(cards, (newCards) => {
 :deep(.topbar button),
 :deep(.topbar .search),
 :deep(.topbar input){
-  height: 44px;
+  height: 52px;
   display: inline-flex;
   align-items: center;
 }
@@ -377,8 +448,10 @@ watch(cards, (newCards) => {
   transition: transform .08s ease;
   cursor:pointer;
   position: relative;
+  z-index: 0;
 }
 .card:hover{ transform: translateY(-2px); }
+.card.menu-open { z-index: 20; }
 
 .card-icon-wrapper {
   width: 60px;
@@ -401,47 +474,138 @@ watch(cards, (newCards) => {
   flex-grow: 1;
 }
 
-.card-title{ margin:0; font-weight:800; color:#fff; font-size: 20px; text-align: left; }
-.card-sub{ margin:4px 0 0; color:#CFC9E6; font-size:14px; text-align: left; }
-
-/* Favorite Button */
-.favorite-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
+.card-title{
+  margin:0;
+  color:#fff;
+  font-size: 20px;
+  text-align: left;
+  font-weight:800;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+.favorite-indicator{
+  color: #FFD166;
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
+  filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.45));
+}
+.card-sub{ margin:4px 0 0; color:#CFC9E6; font-size:14px; text-align: left; }
+
+.card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  z-index: 25;
+}
+
+.actions-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
   padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #EDEAF6;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
-.favorite-btn .star-icon {
-  width: 24px;
-  height: 24px;
-  filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(670%) hue-rotate(201deg) brightness(98%) contrast(91%);
-  transition: filter 0.2s ease, transform 0.2s ease;
+.actions-btn:hover {
+  color: #FFFFFF;
+  background: rgba(107, 124, 255, 0.18);
+  transform: translateY(-1px);
 }
 
-.favorite-btn:hover .star-icon {
-  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
-  transform: scale(1.15);
+.actions-btn:focus-visible {
+  outline: 2px solid var(--edge);
+  outline-offset: 2px;
 }
 
-.favorite-btn.active .star-icon {
-  filter: brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(471%) hue-rotate(3deg) brightness(104%) contrast(101%);
-  transform: scale(1.1);
+.actions-icon {
+  font-size: 26px;
+  letter-spacing: 6px;
+  font-weight: 700;
+  transform: translateY(-1px);
 }
 
-.favorite-btn.active:hover .star-icon {
-  transform: scale(1.2);
+.card-actions .card-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 190px;
+  background: rgba(18, 20, 38, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  z-index: 30;
+  backdrop-filter: blur(6px);
+}
+
+.card-menu button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #EDEAF6;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.card-menu button + button {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card-menu button:hover {
+  background: rgba(107, 124, 255, 0.15);
+}
+
+.card-menu button.danger {
+  color: #FF7B7B;
+}
+
+.card-menu button.danger:hover {
+  background: rgba(255, 107, 107, 0.18);
+  color: #FFE1E1;
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .empty-state{

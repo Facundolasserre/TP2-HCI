@@ -2,30 +2,22 @@
   <div class="products-view">
     <!-- Header -->
     <div class="page-header">
-      <div class="header-content">
-        <div class="header-left">
-          <button
-            class="menu-button"
-            @click="toggleSidebar"
-            :aria-label="t('topbar.open_menu')"
-          >
-            <img :src="IconMenu" alt="Menu" width="24" height="24" />
-          </button>
-          <div>
-            <h1 class="title">{{ t('products.title') }}</h1>
-            <p class="subtitle">{{ t('products.subtitle') }}</p>
-          </div>
-        </div>
-        <!-- Reemplaza el botón en el template -->
-        <button class="btn-primary" @click="$router.push({ name: 'profileView' })">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 15c2.5 0 4.5-2 4.5-4.5S14.5 6 12 6 7.5 8 7.5 10.5 9.5 15 12 15z"/>
-          </svg>
-          {{ t('profile.button') }}
+      <div class="header-left">
+        <button
+          class="menu-button sidebar-toggle-btn"
+          @click="toggleSidebar"
+          :aria-label="t('topbar.open_menu')"
+        >
+          <img :src="IconMenu" alt="Menu" class="sidebar-toggle-icon" />
         </button>
-
+        <div>
+          <h1 class="title">{{ t('products.title') }}</h1>
+          <p class="subtitle">{{ t('products.subtitle') }}</p>
+        </div>
       </div>
+      <button class="profile-btn profile-pill" @click="$router.push({ name: 'profileView' })">
+        <img src="@/assets/fonts/account.png" :alt="t('profile.button')" />
+      </button>
     </div>
 
     <!-- Toolbar -->
@@ -737,51 +729,42 @@ onMounted(async () => {
 /* Page Header - Full Width, Sticky */
 .page-header {
   background: #322D59;
-  padding: 0 12px;
-  height: 60px;
+  padding: 0 26px;
+  height: 72px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
   display: flex;
   align-items: center;
-}
-
-.header-content {
-  width: 100%;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 }
 
 .menu-button {
-  width: 36px;
-  height: 36px;
-  display: flex;
+  border: none;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-  color: #EDEAF6;
+  flex-shrink: 0;
 }
 
-.menu-button img {
-  filter: brightness(0) saturate(100%) invert(92%) sepia(3%) saturate(1259%) hue-rotate(205deg) brightness(103%) contrast(94%);
-  transition: filter 0.2s ease;
+.profile-btn {
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.menu-button:hover {
-  background: rgba(255, 255, 255, 0.08);
+.profile-btn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
 
 .title {
@@ -1336,8 +1319,8 @@ onMounted(async () => {
   .page-header,
   .toolbar,
   .table-section {
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
 
@@ -1345,18 +1328,12 @@ onMounted(async () => {
   .page-header,
   .toolbar,
   .table-section {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
   .header-left {
-    gap: 12px;
+    gap: 14px;
   }
 
   .title {

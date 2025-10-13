@@ -11,7 +11,7 @@
         @search="onSearch"
       />
     <!-- Profile Button -->
-    <button class="profile-btn" @click="goProfile">
+    <button class="profile-btn profile-pill" @click="goProfile">
       <img src="@/assets/fonts/account.png" alt="Profile" />
     </button>
   </div>
@@ -88,7 +88,7 @@ const toast = useToast();
 const { t } = useI18n();
 
 const q = ref('');
-const active = ref<'home'|'edit'|'history'|'pantries'|'products'>('history');
+const active = ref<'home'|'history'|'pantries'|'products'>('history');
 const sidebarOpen = ref(false);
 const favorites = ref<Set<number>>(new Set());
 const showFavoritesOnly = ref(false);
@@ -252,54 +252,37 @@ const onSearch = () => {
 
 .profile-btn {
   position: absolute;
-  top: 18px;
+  top: 50%;
   right: 32px;
+  transform: translateY(-50%);
   z-index: 1100;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
-}
-.profile-btn img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .profile-btn:hover {
-  opacity: 0.8;
-  transform: scale(1.07);
+  transform: translateY(-50%) scale(1.05);
+  opacity: 0.9;
 }
 @media (max-width: 600px) {
   .profile-btn {
-    top: 12px;
     right: 16px;
-    width: 38px;
-    height: 38px;
-    padding: 4px;
   }
 }
 .layout-topbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--bg);
-  padding: 10px 0;
-  min-height: 64px;
+  background: #322D59;
+  height: 72px;
+  padding: 0;
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .layout-grid{
-  margin-top: 60px;
+  margin-top: 72px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -319,7 +302,7 @@ const onSearch = () => {
 :deep(.topbar button),
 :deep(.topbar .search),
 :deep(.topbar input){
-  height: 44px;
+  height: 52px;
   display: inline-flex;
   align-items: center;
 }
