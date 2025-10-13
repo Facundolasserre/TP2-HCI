@@ -381,7 +381,7 @@ const goBack = () => {
 
 .textarea {
   resize: vertical;
-  font-family: 'Courier New', monospace;
+  font-family: 'Roboto', sans-serif;
   line-height: 1.6;
 }
 

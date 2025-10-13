@@ -268,7 +268,7 @@ onMounted(() => {
 textarea.form-input {
   resize: vertical;
   min-height: 100px;
-  font-family: 'Courier New', monospace;
+  font-family: 'Roboto', sans-serif;
   font-size: 13px;
 }
 

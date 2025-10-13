@@ -64,6 +64,12 @@
   "home.menu.delete_success": "Lista eliminada",
   "home.menu.delete_error": "No pudimos eliminar la lista",
   "home.favorite_badge": "Lista favorita",
+  "edit_list.title": "Modificar lista",
+  "edit_list.save_button": "Guardar cambios",
+  "edit_list.success": "Lista actualizada con éxito",
+  "edit_list.load_error": "No pudimos cargar esa lista",
+  "edit_list.duplicate_error": "Ya existe una lista con ese nombre",
+  "edit_list.generic_error": "No pudimos actualizar la lista. Intentalo más tarde.",
 
   "topbar.filter": "Filtrar",
   "topbar.sort": "Ordenar",

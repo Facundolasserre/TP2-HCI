@@ -28,18 +28,7 @@
         </button>
       </header>
 
-      <!-- TITLE & EDIT -->
-      <section class="title-section">
-        <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
-        <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
-      </section>
-
-    <!-- TOOLBAR - Filter, Sort | Add -->
+    <!-- TOOLBAR - Title, Filter, Sort, Add -->
     <section class="toolbar">
       <div class="toolbar-left">
         <button class="tool-btn" @click="onFilter" :aria-label="t('listView.toolbar.filter')">
@@ -55,10 +44,22 @@
         </button>
       </div>
 
-      <button class="add-btn" @click="goToAddItem">
-        <span>{{ t('listView.toolbar.add') }}</span>
-        <span class="plus-icon">+</span>
-      </button>
+      <div class="toolbar-center">
+        <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
+        <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="add-btn" @click="goToAddItem">
+          <span>{{ t('listView.toolbar.add') }}</span>
+          <span class="plus-icon">+</span>
+        </button>
+      </div>
     </section>
 
     <!-- ITEMS LIST -->
@@ -875,7 +876,7 @@ const onProductAdded = () => {
   margin: 0;
   padding: 40px 80px 60px;
   box-sizing: border-box;
-  background: #23273A;
+  background: #1C1C30;
   color: #EDEAF6;
   display: flex;
   flex-direction: column;
@@ -935,52 +936,56 @@ const onProductAdded = () => {
 }
 
 .icon-btn svg {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
 }
 
 /* ===== TITLE SECTION ===== */
-.title-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 12px;
-}
-
-.title-section .main-title {
-  margin: 0;
-  font-size: 56px;
-  font-weight: 900;
-  color: #EDEAF6;
-  letter-spacing: -1px;
-}
-
-.title-section .edit-btn {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-}
-
-.title-section .edit-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
 /* ===== TOOLBAR: Filter/Sort | Add ===== */
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #4B497C;
+  background: #322D59;
   border-radius: 24px;
   padding: 20px 32px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .toolbar-left {
   display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.toolbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.toolbar-center .main-title {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 900;
+  color: #EDEAF6;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.toolbar-center .edit-btn {
+  width: 56px;
+  height: 56px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 20px;
+  flex: 0 0 auto;
 }
 
 .tool-btn {
@@ -988,28 +993,21 @@ const onProductAdded = () => {
   height: 60px;
   border-radius: 16px;
   border: none;
-  background: #5B5990;
+  background: #080A14;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.tool-btn.active {
-  background: #6B7CFF;
-  box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
 }
 
 .tool-btn:hover {
-  background: #6a678f;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  background: #101223;
+  transform: translateY(-2px);
 }
 
-.tool-btn.active:hover {
-  background: #7d8dff;
+.tool-btn.active {
+  background: #101223;
 }
 
 .tool-icon {
@@ -1028,18 +1026,17 @@ const onProductAdded = () => {
   gap: 14px;
   padding: 0 36px;
   border-radius: 16px;
-  background: #6B7CFF;
+  background: #080A14;
   color: #fff;
   font-weight: 800;
   font-size: 20px;
   transition: all 0.2s ease;
-  box-shadow: 0 3px 14px rgba(107, 124, 255, 0.35);
+  margin-left: auto;
 }
 
 .add-btn:hover {
-  background: #7F89FF;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(107, 124, 255, 0.45);
+  background: #101223;
+  transform: translateY(-2px);
 }
 
 .plus-icon {
@@ -1374,7 +1371,7 @@ const onProductAdded = () => {
   max-width: 100%;
   padding: 14px 18px;
   background: #0E0F1A;
-  border: 2px solid rgba(107, 124, 255, 0.3);
+  border: 2px solid rgba(255,255,255,0.12);
   border-radius: 12px;
   color: #EDEAF6;
   font-size: 16px;
@@ -1384,8 +1381,8 @@ const onProductAdded = () => {
 
 .form-input:focus {
   outline: none;
-  border-color: #6B7CFF;
-  box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.15);
+  border-color: rgba(107, 124, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.12);
 }
 
 .form-input::placeholder {
@@ -1395,7 +1392,7 @@ const onProductAdded = () => {
 .products-list {
   max-height: 300px;
   overflow-y: auto;
-  border: 2px solid rgba(107, 124, 255, 0.2);
+  border: 2px solid rgba(255,255,255,0.12);
   border-radius: 12px;
   background: #0E0F1A;
 }

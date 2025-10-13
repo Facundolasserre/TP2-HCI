@@ -25,6 +25,7 @@ import CategoryDetailView from '@/views/categories/CategoryDetailView.vue'
 // Shopping Lists
 import ShoppingListsView from '@/views/shopping-lists/ShoppingListsView.vue'
 import ShoppingListFormView from '@/views/shopping-lists/ShoppingListFormView.vue'
+import EditListView from '@/views/shopping-lists/EditListView.vue'
 import ShoppingListDetailView from '@/views/shopping-lists/ShoppingListDetailView.vue'
 
 import PurchaseHistoryView from "@/views/PurchaseHistoryView.vue";
@@ -163,7 +164,7 @@ const router = createRouter({
     { 
       path: '/lists/:id/edit', 
       name: 'shopping-list-edit', 
-      component: ShoppingListFormView,
+      component: EditListView,
       meta: { requiresAuth: true }
     },
 

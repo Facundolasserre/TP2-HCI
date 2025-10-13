@@ -184,7 +184,7 @@ function goToLogin() {
   height: 36px;
   outline: none;
   padding-left: 0;
-  font-family: monospace;
+  font-family: 'Roboto', sans-serif;
   font-size: 16px;
   letter-spacing: 1px;
 }

@@ -64,6 +64,12 @@
   "home.menu.delete_success": "List deleted successfully",
   "home.menu.delete_error": "Could not delete the list",
   "home.favorite_badge": "Favorite list",
+  "edit_list.title": "Edit List",
+  "edit_list.save_button": "Save Changes",
+  "edit_list.success": "List updated successfully",
+  "edit_list.load_error": "We couldn't load that list",
+  "edit_list.duplicate_error": "A list with this name already exists",
+  "edit_list.generic_error": "We couldn't update the list. Try again later.",
 
   "topbar.filter": "Filter",
   "topbar.sort": "Sort",

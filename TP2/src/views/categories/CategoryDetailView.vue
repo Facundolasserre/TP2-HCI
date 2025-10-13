@@ -321,7 +321,7 @@ const executeDelete = async () => {
 .metadata-json {
   margin: 0;
   color: #EDEAF6;
-  font-family: 'Courier New', monospace;
+  font-family: 'Roboto', sans-serif;
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
