@@ -8,22 +8,22 @@
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
       </button>
-      <h1>Settings</h1>
+      <h1>{{ t('settings.title') }}</h1>
     </header>
 
     <section class="card">
-      <h2>Profile</h2>
+      <h2>{{ t('settings.profile') }}</h2>
 
       <div class="form-grid">
         <div>
           <div class="grid">
             <div class="col">
-              <label for="name">Name</label>
-              <input id="name" type="text" v-model="name" placeholder="Your name" />
+              <label for="name">{{ t('settings.name') }}</label>
+              <input id="name" type="text" v-model="name" :placeholder="t('settings.your_name')" />
             </div>
             <div class="col">
-              <label for="username">Username</label>
-              <input id="username" type="text" v-model="username" placeholder="Your username" />
+              <label for="username">{{ t('settings.username') }}</label>
+              <input id="username" type="text" v-model="username" :placeholder="t('settings.your_username')" />
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@
 
       <div class="actions">
         <button class="btn primary" @click="handleProfileUpdate" :disabled="isSaving">
-          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+          {{ isSaving ? t('settings.saving') : t('settings.save_changes') }}
         </button>
       </div>
 
@@ -41,15 +41,15 @@
     </section>
 
     <section class="card">
-      <h2>Account Security</h2>
+      <h2>{{ t('settings.account_security') }}</h2>
       <div class="form-grid">
         <div class="col full">
-          <label for="email">Email</label>
+          <label for="email">{{ t('settings.email') }}</label>
           <input id="email" type="email" v-model="email" disabled />
         </div>
 
         <div class="col full">
-          <label for="currentPassword">Current Password</label>
+          <label for="currentPassword">{{ t('settings.current_password') }}</label>
           <input
             id="currentPassword"
             type="password"
@@ -61,11 +61,11 @@
 
         <div class="grid">
           <div class="col">
-            <label for="newPassword">New Password</label>
+            <label for="newPassword">{{ t('settings.new_password') }}</label>
             <input id="newPassword" type="password" v-model="newPassword" placeholder="••••••••" />
           </div>
           <div class="col">
-            <label for="confirmPassword">Repeat Password</label>
+            <label for="confirmPassword">{{ t('settings.repeat_password') }}</label>
             <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="••••••••" />
           </div>
         </div>
@@ -73,7 +73,7 @@
 
       <div class="actions">
         <button class="btn primary" @click="handleChangePassword" :disabled="isChangingPassword">
-          {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
+          {{ isChangingPassword ? t('settings.changing') : t('settings.change_password') }}
         </button>
       </div>
       <p v-if="passwordMessage.text" class="msg" :class="passwordMessage.type">
@@ -82,17 +82,17 @@
     </section>
 
     <section class="card">
-      <h2>Privacy & Data</h2>
+      <h2>{{ t('settings.privacy_data') }}</h2>
       <div class="col full">
-        <label>Delete Account</label>
-        <p class="description">Once you delete your account, there is no going back. Please be certain.</p>
+        <label>{{ t('settings.delete_account') }}</label>
+        <p class="description">{{ t('settings.delete_warning') }}</p>
         <button class="btn danger" @click="deleteAccount">
-          Delete permanently
+          {{ t('settings.delete_permanently') }}
         </button>
       </div>
     </section>
   </div>
-  <div v-else class="loading">Loading…</div>
+  <div v-else class="loading">{{ t('settings.loading') }}</div>
   </div>
 </template>
 
@@ -101,9 +101,11 @@
 import { ref, computed, onMounted, reactive, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useI18n } from '@/composables/useI18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 // --- State References ---
 const name = ref('')
@@ -146,7 +148,7 @@ onMounted(async () => {
       photoUrl.value = authStore.user.photoUrl || ''
     }
   } catch (err: any) {
-    profileMessage.text = 'Error loading profile.'
+    profileMessage.text = t('settings.error_loading')
     profileMessage.type = 'error'
     console.error(err)
   } finally {
@@ -158,7 +160,7 @@ onMounted(async () => {
 async function handleProfileUpdate() {
   profileMessage.text = ''
   if (!isProfileFormValid.value) {
-    profileMessage.text = 'Please fill in your name and username correctly.'
+    profileMessage.text = t('settings.fill_correctly')
     profileMessage.type = 'error'
     return
   }
@@ -169,10 +171,10 @@ async function handleProfileUpdate() {
       surname: username.value.trim(),
       // photoUrl: photoUrl.value.trim()
     })
-    profileMessage.text = '✓ Profile updated successfully!'
+    profileMessage.text = t('settings.profile_updated')
     profileMessage.type = 'ok'
   } catch (err: any) {
-    profileMessage.text = err.response?.data?.message || 'Error updating profile.'
+    profileMessage.text = err.response?.data?.message || t('settings.error_updating')
     profileMessage.type = 'error'
   } finally {
     isSaving.value = false
@@ -182,35 +184,35 @@ async function handleProfileUpdate() {
 async function handleChangePassword() {
   passwordMessage.text = ''
   if (!currentPassword.value) {
-    passwordMessage.text = 'Please provide your current password.'
+    passwordMessage.text = t('settings.provide_current_password')
     passwordMessage.type = 'error'
     return
   }
   if (!newPassword.value || !confirmPassword.value) {
-    passwordMessage.text = 'Please fill in both password fields.'
+    passwordMessage.text = t('settings.fill_both_passwords')
     passwordMessage.type = 'error'
     return
   }
   if (newPassword.value !== confirmPassword.value) {
-    passwordMessage.text = 'Passwords do not match.'
+    passwordMessage.text = t('settings.passwords_not_match')
     passwordMessage.type = 'error'
     return
   }
   if (newPassword.value.length < 8) {
-    passwordMessage.text = 'Password must be at least 8 characters long.'
+    passwordMessage.text = t('settings.password_min_length')
     passwordMessage.type = 'error'
     return
   }
   isChangingPassword.value = true
   try {
     await authStore.changePassword(currentPassword.value, newPassword.value)
-    passwordMessage.text = '✓ Password changed successfully!'
+    passwordMessage.text = t('settings.password_changed')
     passwordMessage.type = 'ok'
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
   } catch (err: any) {
-    passwordMessage.text = err.response?.data?.message || 'Error changing password.'
+    passwordMessage.text = err.response?.data?.message || t('settings.error_changing_password')
     passwordMessage.type = 'error'
   } finally {
     isChangingPassword.value = false
@@ -227,7 +229,7 @@ async function onLogout() {
 }
 
 async function deleteAccount() {
-  if (confirm('This action is permanent. Are you sure?')) {
+  if (confirm(t('settings.confirm_delete'))) {
     try {
       // @ts-ignore
       if (typeof authStore.deleteAccount === 'function') {
@@ -235,10 +237,10 @@ async function deleteAccount() {
         await authStore.deleteAccount()
         await onLogout()
       } else {
-        alert('Delete functionality is not available.')
+        alert(t('settings.delete_not_available'))
       }
     } catch (e) {
-      alert('Could not delete the account.')
+      alert(t('settings.could_not_delete'))
       console.error(e)
     }
   }
