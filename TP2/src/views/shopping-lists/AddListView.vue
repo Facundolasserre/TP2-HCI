@@ -62,27 +62,6 @@
             </div>
           </div>
 
-          <!-- Visibility -->
-          <div class="block">
-            <label class="label">{{ t('add_list.visibility_label') }}</label>
-            <div class="segmented">
-              <button
-                type="button"
-                class="seg"
-                :class="{ on: visibility === 'private' }"
-                @click="visibility = 'private'"
-              >{{ t('add_list.private') }}</button>
-
-              <!-- Abre modal de miembros -->
-              <button
-                type="button"
-                class="seg"
-                :class="{ on: visibility === 'shared' }"
-                @click="setShared()"
-              >{{ t('add_list.shared') }}</button>
-            </div>
-          </div>
-
           <!-- Notes -->
           <div class="block">
             <label class="label">{{ t('add_list.notes_label') }}</label>
