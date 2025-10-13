@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <div class="page">
-      <!-- TOP BAR - Home | Search | Share -->
+      <!-- TOP BAR - Home | Search | Share | Edit -->
       <header class="topbar">
         <button class="icon-btn home-btn" @click="goHome" :aria-label="t('listView.home_aria')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16,6 +16,23 @@
           class="search"
           :placeholder="t('listView.search_placeholder')"
         />
+
+        <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+        
+        <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
+          </svg>
+        </button>
 
       </header>
 
@@ -40,21 +57,6 @@
       </div>
 
       <div class="toolbar-right">
-        <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-        </button>
-        <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
-          </svg>
-        </button>
         <button class="add-btn" @click="goToAddItem">
           <span>{{ t('listView.toolbar.add') }}</span>
           <span class="plus-icon">+</span>
