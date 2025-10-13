@@ -17,15 +17,6 @@
           :placeholder="t('listView.search_placeholder')"
         />
 
-        <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-        </button>
       </header>
 
     <!-- TOOLBAR - Title, Filter, Sort, Add -->
@@ -46,15 +37,24 @@
 
       <div class="toolbar-center">
         <h1 class="main-title">{{ currentList?.name || t('listView.title_fallback') }}</h1>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="icon-btn share-btn" @click="shareList" :aria-label="t('common.share')" :title="t('listView.share_title')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
         <button class="icon-btn edit-btn" @click="editList" :aria-label="t('listView.edit_aria')" :title="t('listView.edit_title')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 20h9"/>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
           </svg>
         </button>
-      </div>
-
-      <div class="toolbar-right">
         <button class="add-btn" @click="goToAddItem">
           <span>{{ t('listView.toolbar.add') }}</span>
           <span class="plus-icon">+</span>
@@ -885,15 +885,15 @@ const onProductAdded = () => {
 
 /* ===== TOP BAR: Home | Search | Share ===== */
 .topbar {
-  display: grid;
-  grid-template-columns: 80px 1fr 80px;
+  display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 24px;
   padding: 12px 0;
   margin-bottom: 8px;
 }
 
 .search {
+  flex: 1;
   width: 100%;
   height: 52px;
   border-radius: 999px;
