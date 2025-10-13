@@ -8,7 +8,7 @@
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
     </button>
-    <h1>Profile</h1>
+    <h1>{{ t('profile.title') }}</h1>
   </header>
 </div>
 
@@ -22,7 +22,7 @@
         <div class="profile-text">
           <h2>{{ user?.name }} {{ user?.surname }}</h2>
           <p class="muted-text">
-            Organized shopper since
+            {{ t('profile.organized_since') }}
             <span v-if="user?.createdAt">
                   {{ new Date(user.createdAt).toLocaleDateString() }}
                 </span>
@@ -40,7 +40,7 @@
                class="bi bi-gear-fill" viewBox="0 0 16 16">
             <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
           </svg>
-          Edit Profile
+          {{ t('profile.edit_profile') }}
         </button>
       </div>
     </div>
@@ -56,7 +56,7 @@
           </svg>
         </div>
         <h3>{{ overview?.lists ?? 0 }}</h3>
-        <p>Active Lists</p>
+        <p>{{ t('profile.active_lists') }}</p>
         <p class="caption muted-text">—</p>
       </div>
       <div class="overview-card card">
@@ -67,7 +67,7 @@
           </svg>
         </div>
         <h3>{{ overview?.pantries ?? 0 }}</h3>
-        <p>Pantries</p>
+        <p>{{ t('profile.pantries') }}</p>
         <p class="caption muted-text">—</p>
       </div>
 
@@ -79,16 +79,16 @@
           </svg>
         </div>
         <h3>{{ overview?.products ?? 0 }}</h3>
-        <p>Products</p>
+        <p>{{ t('profile.products') }}</p>
         <p class="caption muted-text">—</p>
       </div>
     </div>
 
     <!-- Recent Activity -->
     <div class="recent-activity">
-      <h3>Recent Activity</h3>
+      <h3>{{ t('profile.recent_activity') }}</h3>
       <div class="activity-list">
-        <div v-if="activity.length === 0" class="muted-text small-text">No recent activity</div>
+        <div v-if="activity.length === 0" class="muted-text small-text">{{ t('profile.no_activity') }}</div>
 
         <div v-for="item in activity" :key="item.id" class="activity-item card">
           <p>{{ item.title }}</p>
@@ -109,9 +109,9 @@
   <div class="right-column">
     <!-- Notifications -->
     <div class="notifications card">
-      <h3>Notifications</h3>
+      <h3>{{ t('profile.notifications') }}</h3>
       <div class="notification-item">
-        <label for="email-notifications">Email Notifications</label>
+        <label for="email-notifications">{{ t('profile.email_notifications') }}</label>
         <label class="switch">
           <input
               type="checkbox"
@@ -123,7 +123,7 @@
         </label>
       </div>
       <div class="notification-item">
-        <label for="push-notifications">Push Notifications</label>
+        <label for="push-notifications">{{ t('profile.push_notifications') }}</label>
         <label class="switch">
           <input
               type="checkbox"
@@ -135,7 +135,7 @@
         </label>
       </div>
       <div class="notification-item">
-        <label for="price-alerts">Price Alerts</label>
+        <label for="price-alerts">{{ t('profile.price_alerts') }}</label>
         <label class="switch">
           <input
               type="checkbox"
@@ -150,7 +150,7 @@
 
     <!-- Dietary Preferences -->
     <div class="dietary-preferences card">
-      <h3>Dietary Preferences</h3>
+      <h3>{{ t('profile.dietary_preferences') }}</h3>
 
       <div class="preferences-tags">
         <!-- Tags dinámicas (clic para quitar) -->
@@ -170,7 +170,7 @@
               v-model="newPref"
               class="tag-input"
               type="text"
-              placeholder="Add preference…"
+              :placeholder="t('profile.add_preference')"
               @keyup.enter="addPref"
               @blur="addingPref=false"
               autofocus
@@ -185,7 +185,7 @@
 
     <!-- Favorite Stores -->
     <div class="favorite-stores card">
-      <h3>Favorite Stores</h3>
+      <h3>{{ t('profile.favorite_stores') }}</h3>
       <div class="preferences-tags">
         <span
             v-for="store in stores"
@@ -203,7 +203,7 @@
               v-model="newStore"
               class="tag-input"
               type="text"
-              placeholder="Add store…"
+              :placeholder="t('profile.add_store')"
               @keyup.enter="addStore"
               @blur="addingStore=false"
               autofocus
@@ -229,9 +229,11 @@ import UsersService, { type GetUser, type UpdateUserProfile } from '@/api/users.
 import { useAuthStore } from "@/stores/auth";
 
 import { useToast } from "@/composables/useToast";
+import { useI18n } from "@/composables/useI18n";
 
 const router = useRouter();
 const { success: showSuccessToast, error: showErrorToast } = useToast();
+const { t } = useI18n();
 
 const auth = useAuthStore();
 const { user, loading } = storeToRefs(auth);
@@ -289,9 +291,9 @@ async function saveDietary() {
         ? [...(user.value!.metadata.dietaryPreferences!)]
         : [];
 
-    showSuccessToast('Dietary preferences saved');
+    showSuccessToast(t('profile.preferences_saved'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? 'Could not save dietary preferences');
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -299,7 +301,7 @@ async function addPref() {
   const v = newPref.value.trim();
   if (!v) return;
   if (dietary.value.includes(v)) {
-    showErrorToast("Already added");
+    showErrorToast(t('profile.already_added'));
     return;
   }
   dietary.value.push(v);
@@ -307,9 +309,9 @@ async function addPref() {
   addingPref.value = false;
   try {
     await saveDietary();
-    showSuccessToast("Preference added");
+    showSuccessToast(t('profile.preference_added'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? "Could not save");
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -317,9 +319,9 @@ async function removePref(pref: string) {
   dietary.value = dietary.value.filter(p => p !== pref);
   try {
     await saveDietary();
-    showSuccessToast("Preference removed");
+    showSuccessToast(t('profile.preference_removed'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? "Could not save");
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -356,9 +358,9 @@ async function saveNotifications() {
     });
 
     await auth.fetchCurrentUser();
-    showSuccessToast('Notification preferences saved');
+    showSuccessToast(t('profile.notifications_saved'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? 'Could not save notification preferences');
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -394,9 +396,9 @@ async function saveStores() {
         ? [...(user.value!.metadata.favoriteStores!)]
         : [];
 
-    showSuccessToast('Favorite stores saved');
+    showSuccessToast(t('profile.stores_saved'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? 'Could not save favorite stores');
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -404,7 +406,7 @@ async function addStore() {
   const v = newStore.value.trim();
   if (!v) return;
   if (stores.value.includes(v)) {
-    showErrorToast("Already added");
+    showErrorToast(t('profile.already_added'));
     return;
   }
   stores.value.push(v);
@@ -412,9 +414,9 @@ async function addStore() {
   addingStore.value = false;
   try {
     await saveStores();
-    showSuccessToast("Store added");
+    showSuccessToast(t('profile.store_added'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? "Could not save");
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -422,9 +424,9 @@ async function removeStore(store: string) {
   stores.value = stores.value.filter(s => s !== store);
   try {
     await saveStores();
-    showSuccessToast("Store removed");
+    showSuccessToast(t('profile.store_removed'));
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? "Could not save");
+    showErrorToast(e?.response?.data?.message ?? t('profile.save_error'));
   }
 }
 
@@ -434,7 +436,7 @@ async function loadData() {
     if (!user.value) await auth.fetchCurrentUser();
 
   } catch (e: any) {
-    showErrorToast(e?.response?.data?.message ?? "Failed to load profile");
+    showErrorToast(e?.response?.data?.message ?? t('profile.load_error'));
   }
 }
 
